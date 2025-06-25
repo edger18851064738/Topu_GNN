@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 2 Enhanced GNN Multi-Vehicle Coordination</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .main-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .side-panel {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #network-canvas {
+            width: 100%;
+            height: calc(100vh - 120px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            cursor: crosshair;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn.active {
+            background: linear-gradient(145deg, #f093fb, #f5576c);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stats {
+            font-size: 10px;
+            line-height: 1.3;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-line;
+            font-family: 'Courier New', monospace;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .file-input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .legend {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            margin-right: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .status-running { background: #4CAF50; }
+        .status-paused { background: #FF9800; }
+        .status-error { background: #F44336; }
+
+        .vehicle-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 10px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-panel">
+            <div class="title">
+                🚛 Stage 2: Enhanced GNN Multi-Vehicle Coordination
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">
+                    Advanced Conflict Resolution & Time-Space Reservations
+                </div>
+            </div>
+            <canvas id="network-canvas"></canvas>
+            <div class="controls">
+                <button class="btn" id="startBtn">▶️ Start</button>
+                <button class="btn" id="pauseBtn">⏸️ Pause</button>
+                <button class="btn" id="resetBtn">🔄 Reset</button>
+                <button class="btn active" id="gnnBtn">🧠 GNN Mode</button>
+                <button class="btn" id="addBtn">➕ Add Vehicle</button>
+                <button class="btn" id="removeBtn">➖ Remove Vehicle</button>
+                <button class="btn" id="speedBtn">⚡ Speed: 1x</button>
+                <button class="btn" id="debugBtn">🐛 Debug: OFF</button>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="file-input" onclick="document.getElementById('fileInput').click()">
+                📁 Load Stage 1 Topology
+                <input type="file" id="fileInput" accept=".json" style="display: none;">
+            </div>
+
+            <div class="legend">
+                <div style="font-weight: bold; margin-bottom: 8px;">📋 Legend</div>
+                
+                <div style="font-weight: bold; margin: 8px 0 4px 0;">Special Points:</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    🟢 Loading Points (L0-L5)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196F3;"></div>
+                    🔵 Unloading Points (U0-U5)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9E9E9E;"></div>
+                    🅿️ Parking Points (P0-P5)
+                </div>
+
+                <div style="font-weight: bold; margin: 8px 0 4px 0;">Vehicle States:</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9E9E9E;"></div>
+                    IDLE (Waiting for task)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FF9800;"></div>
+                    PLANNING (Path finding)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFC107;"></div>
+                    WAITING (Retry delay)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFD700;"></div>
+                    CONFIRMED (Path ready)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    MOVING (In transit)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8BC34A;"></div>
+                    LOADING (At load point)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #03A9F4;"></div>
+                    UNLOADING (At unload)
+                </div>
+
+                <div style="font-weight: bold; margin: 8px 0 4px 0;">Node States:</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #E3F2FD;"></div>
+                    FREE (Available)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFE0B2;"></div>
+                    RESERVED (Scheduled)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFCDD2;"></div>
+                    OCCUPIED (In use)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFF9C4;"></div>
+                    COOLING (Safety buffer)
+                </div>
+            </div>
+
+            <div class="stats" id="stats">
+                <span class="status-indicator status-paused"></span>System Ready...
+            </div>
+        </div>
+    </div>
+
+    <div class="vehicle-tooltip" id="vehicleTooltip"></div>
+
+    <script>
+        // ============ Core Classes ============
+        
+        class VehicleState {
+            static IDLE = 'idle';
+            static PLANNING = 'planning';
+            static WAITING = 'waiting';
+            static CONFIRMED = 'confirmed';
+            static MOVING = 'moving';
+            static LOADING = 'loading';
+            static UNLOADING = 'unloading';
+            static BLOCKED = 'blocked';
+        }
+
+        class VehicleMode {
+            static PARKED = 'parked';
+            static EMPTY = 'empty';
+            static LOADED = 'loaded';
+            static RETURNING = 'returning';
+        }
+
+        class SpecialPoint {
+            constructor(nodeId, pointType, position = [0, 0]) {
+                this.nodeId = nodeId;
+                this.pointType = pointType; // 'loading', 'unloading', 'parking'
+                this.isOccupied = false;
+                this.reservedBy = null;
+                this.position = position;
+            }
+        }
+
+        class EdgeReservation {
+            constructor(vehicleId, startTime, endTime, direction) {
+                this.vehicleId = vehicleId;
+                this.startTime = startTime;
+                this.endTime = endTime;
+                this.direction = direction;
+            }
+        }
+
+        class NodeReservation {
+            constructor(vehicleId, startTime, endTime, action) {
+                this.vehicleId = vehicleId;
+                this.startTime = startTime;
+                this.endTime = endTime;
+                this.action = action;
+            }
+        }
+
+        class NodeFeature {
+            constructor() {
+                this.occupancy = 0.0;
+                this.connectivity = 0.0;
+                this.congestion = 0.0;
+                this.centrality = 0.0;
+            }
+        }
+
+        // ============ Enhanced Road Network with GNN Features ============
+        
+        class RoadNetwork {
+            constructor() {
+                this.graph = new Map(); // adjacency list
+                this.nodePositions = new Map();
+                this.nodeFeatures = new Map();
+                this.specialPoints = {
+                    loading: new Map(),
+                    unloading: new Map(),
+                    parking: new Map()
+                };
+                
+                this.edgeReservations = new Map();
+                this.nodeReservations = new Map();
+                this.nodeOccupancy = new Map();
+                this.globalTime = 0;
+                
+                // Safety parameters from demo_stage2
+                this.EDGE_SAFETY_BUFFER = 0.15;
+                this.NODE_SAFETY_BUFFER = 0.3;
+                this.PRECISION_BUFFER = 0.01;
+                this.NODE_COOLING_TIME = 0.3;
+                
+                this.vehicles = []; // Reference to vehicles for coordination
+                
+                this.createFallbackTopology();
+                this.initializeNodeFeatures();
+            }
+
+            initializeNodeFeatures() {
+                for (const nodeId of this.graph.keys()) {
+                    this.nodeFeatures.set(nodeId, new NodeFeature());
+                    this.updateNodeFeature(nodeId);
+                }
+            }
+
+            updateNodeFeature(nodeId) {
+                const neighbors = Array.from(this.graph.get(nodeId) || []);
+                const connectivity = neighbors.length;
+                
+                // Calculate congestion
+                let congestion = 0.0;
+                const currentTime = this.globalTime;
+                
+                for (const neighbor of neighbors) {
+                    const edgeKey = [nodeId, neighbor].sort().join('-');
+                    const reservations = this.edgeReservations.get(edgeKey) || [];
+                    const futureOccupied = reservations.some(r => 
+                        r.startTime <= currentTime + 2.0 && r.endTime >= currentTime
+                    );
+                    if (futureOccupied) congestion += 1;
+                }
+                
+                congestion = neighbors.length > 0 ? congestion / neighbors.length : 0;
+                
+                // Centrality (normalized)
+                const centrality = connectivity / 8.0;
+                
+                // Occupancy
+                const occupiedVehicles = this.nodeOccupancy.get(nodeId) || new Set();
+                const occupancy = occupiedVehicles.size * 0.5;
+                
+                const feature = this.nodeFeatures.get(nodeId);
+                feature.occupancy = occupancy;
+                feature.connectivity = connectivity;
+                feature.congestion = congestion;
+                feature.centrality = centrality;
+            }
+
+            createFallbackTopology() {
+                // Create a more realistic network
+                const gridSize = 5;
+                const nodeSpacing = 80;
+                const nodes = [];
+                
+                // Create grid with some randomization
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        const nodeId = `N${i}_${j}`;
+                        const x = 50 + j * nodeSpacing + (Math.random() - 0.5) * 20;
+                        const y = 50 + i * nodeSpacing + (Math.random() - 0.5) * 20;
+                        
+                        nodes.push(nodeId);
+                        this.nodePositions.set(nodeId, [x, y]);
+                        this.graph.set(nodeId, new Set());
+                        this.nodeOccupancy.set(nodeId, new Set());
+                    }
+                }
+
+                // Create edges (grid connections + some diagonals)
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        const currentNode = `N${i}_${j}`;
+                        
+                        // Right connection
+                        if (j < gridSize - 1) {
+                            const rightNode = `N${i}_${j + 1}`;
+                            this.graph.get(currentNode).add(rightNode);
+                            this.graph.get(rightNode).add(currentNode);
+                        }
+                        
+                        // Down connection
+                        if (i < gridSize - 1) {
+                            const downNode = `N${i + 1}_${j}`;
+                            this.graph.get(currentNode).add(downNode);
+                            this.graph.get(downNode).add(currentNode);
+                        }
+                        
+                        // Diagonal connections (sparse)
+                        if (i < gridSize - 1 && j < gridSize - 1 && Math.random() > 0.5) {
+                            const diagNode = `N${i + 1}_${j + 1}`;
+                            this.graph.get(currentNode).add(diagNode);
+                            this.graph.get(diagNode).add(currentNode);
+                        }
+                    }
+                }
+
+                // Create special points at edges
+                const specialIndices = {
+                    loading: [[0, 0], [0, 2], [0, 4], [2, 0], [4, 0], [4, 2]],
+                    unloading: [[4, 4], [2, 4], [0, 4], [4, 2], [4, 0], [2, 4]],
+                    parking: [[2, 2], [1, 1], [3, 3], [1, 3], [3, 1], [2, 0]]
+                };
+                
+                // Create loading points
+                for (let i = 0; i < 6; i++) {
+                    const [row, col] = specialIndices.loading[i % specialIndices.loading.length];
+                    const nodeId = `N${row}_${col}`;
+                    const pointId = `L${i}`;
+                    const pos = this.nodePositions.get(nodeId);
+                    this.specialPoints.loading.set(pointId, new SpecialPoint(nodeId, 'loading', pos));
+                }
+
+                // Create unloading points
+                for (let i = 0; i < 6; i++) {
+                    const [row, col] = specialIndices.unloading[i % specialIndices.unloading.length];
+                    const nodeId = `N${row}_${col}`;
+                    const pointId = `U${i}`;
+                    const pos = this.nodePositions.get(nodeId);
+                    this.specialPoints.unloading.set(pointId, new SpecialPoint(nodeId, 'unloading', pos));
+                }
+
+                // Create parking points
+                for (let i = 0; i < 6; i++) {
+                    const [row, col] = specialIndices.parking[i % specialIndices.parking.length];
+                    const nodeId = `N${row}_${col}`;
+                    const pointId = `P${i}`;
+                    const pos = this.nodePositions.get(nodeId);
+                    this.specialPoints.parking.set(pointId, new SpecialPoint(nodeId, 'parking', pos));
+                }
+            }
+
+            loadTopologyFromJSON(jsonData) {
+                try {
+                    console.log('Loading enhanced topology from JSON...', jsonData);
+                    
+                    // Clear existing data
+                    this.graph.clear();
+                    this.nodePositions.clear();
+                    this.nodeFeatures.clear();
+                    this.nodeOccupancy.clear();
+                    this.specialPoints = { loading: new Map(), unloading: new Map(), parking: new Map() };
+
+                    // Load from enhanced topology data if available
+                    if (jsonData.enhanced_consolidation_applied && jsonData.key_nodes_info) {
+                        console.log('Loading from enhanced Stage 1 data...');
+                        this.loadFromEnhancedData(jsonData);
+                    } else if (jsonData.graph_nodes && jsonData.graph_edges) {
+                        console.log('Loading from basic Stage 1 data...');
+                        this.loadFromBasicData(jsonData);
+                    } else {
+                        throw new Error('Invalid topology format');
+                    }
+
+                    this.parseSpecialPoints(jsonData);
+                    this.ensureSufficientSpecialPoints();
+                    this.initializeNodeFeatures();
+                    
+                    console.log('Topology loaded successfully:', {
+                        nodes: this.graph.size,
+                        edges: Array.from(this.graph.values()).reduce((sum, neighbors) => sum + neighbors.size, 0) / 2,
+                        specialPoints: {
+                            loading: this.specialPoints.loading.size,
+                            unloading: this.specialPoints.unloading.size,
+                            parking: this.specialPoints.parking.size
+                        }
+                    });
+                    return true;
+                } catch (error) {
+                    console.error('Failed to load topology:', error);
+                    this.createFallbackTopology();
+                    this.initializeNodeFeatures();
+                    return false;
+                }
+            }
+
+            // ... [Keep all the loading methods from original demo2.html: loadFromEnhancedData, loadFromBasicData, etc.]
+
+            // Enhanced reservation methods with safety buffers
+            isNodeAvailable(nodeId, startTime, duration, excludeVehicle = -1) {
+                const endTime = startTime + duration;
+                const reservations = this.nodeReservations.get(nodeId) || [];
+                
+                for (const reservation of reservations) {
+                    if (reservation.vehicleId === excludeVehicle) continue;
+                    
+                    if (!(endTime + this.NODE_SAFETY_BUFFER + this.PRECISION_BUFFER <= reservation.startTime || 
+                          startTime >= reservation.endTime + this.NODE_SAFETY_BUFFER + this.PRECISION_BUFFER)) {
+                        if (window.debugMode) {
+                            console.log(`NODE UNAVAILABLE: ${nodeId} at ${startTime.toFixed(2)}-${endTime.toFixed(2)} conflicts with V${reservation.vehicleId}`);
+                        }
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+
+            isEdgeAvailable(from, to, startTime, duration, excludeVehicle = -1) {
+                const edgeKey = [from, to].sort().join('-');
+                const endTime = startTime + duration;
+                const reservations = this.edgeReservations.get(edgeKey) || [];
+                
+                for (const reservation of reservations) {
+                    if (reservation.vehicleId === excludeVehicle) continue;
+                    
+                    if (!(endTime + this.EDGE_SAFETY_BUFFER + this.PRECISION_BUFFER <= reservation.startTime || 
+                          startTime >= reservation.endTime + this.EDGE_SAFETY_BUFFER + this.PRECISION_BUFFER)) {
+                        if (window.debugMode) {
+                            console.log(`EDGE UNAVAILABLE: ${edgeKey} at ${startTime.toFixed(2)}-${endTime.toFixed(2)} conflicts with V${reservation.vehicleId}`);
+                        }
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+
+            reserveNode(nodeId, vehicleId, startTime, duration) {
+                if (!this.nodeReservations.has(nodeId)) {
+                    this.nodeReservations.set(nodeId, []);
+                }
+                
+                const endTime = startTime + duration;
+                
+                // Double-check availability
+                if (!this.isNodeAvailable(nodeId, startTime, duration, vehicleId)) {
+                    return false;
+                }
+                
+                const reservation = new NodeReservation(vehicleId, startTime, endTime, 'occupy');
+                this.nodeReservations.get(nodeId).push(reservation);
+                
+                if (window.debugMode) {
+                    console.log(`NODE RESERVED: ${nodeId} by V${vehicleId} from ${startTime.toFixed(2)} to ${endTime.toFixed(2)}`);
+                }
+                
+                return true;
+            }
+
+            reserveEdge(from, to, vehicleId, startTime, duration) {
+                const edgeKey = [from, to].sort().join('-');
+                if (!this.edgeReservations.has(edgeKey)) {
+                    this.edgeReservations.set(edgeKey, []);
+                }
+                
+                const endTime = startTime + duration;
+                
+                // Double-check availability
+                if (!this.isEdgeAvailable(from, to, startTime, duration, vehicleId)) {
+                    return false;
+                }
+                
+                const reservation = new EdgeReservation(vehicleId, startTime, endTime, [from, to]);
+                this.edgeReservations.get(edgeKey).push(reservation);
+                
+                if (window.debugMode) {
+                    console.log(`EDGE RESERVED: ${edgeKey} by V${vehicleId} from ${startTime.toFixed(2)} to ${endTime.toFixed(2)}`);
+                }
+                
+                return true;
+            }
+
+            // GNN-enhanced pathfinding
+            gnnPathfindingWithReservation(start, end, vehicleId, currentTime) {
+                if (start === end) return { path: [start], times: [currentTime] };
+                
+                // Update all node features
+                for (const nodeId of this.graph.keys()) {
+                    this.updateNodeFeature(nodeId);
+                }
+                
+                // A* with time-space reservations
+                const heap = [[0, start, [start], [currentTime]]];
+                const visited = new Map();
+                
+                while (heap.length > 0) {
+                    heap.sort((a, b) => a[0] - b[0]);
+                    const [cost, current, path, times] = heap.shift();
+                    const currentArrivalTime = times[times.length - 1];
+                    
+                    // Skip if we've visited this node at an earlier time
+                    if (visited.has(current) && visited.get(current) <= currentArrivalTime) {
+                        continue;
+                    }
+                    visited.set(current, currentArrivalTime);
+                    
+                    if (current === end) {
+                        return { path, times };
+                    }
+                    
+                    const neighbors = Array.from(this.graph.get(current) || []);
+                    for (const neighbor of neighbors) {
+                        if (path.includes(neighbor)) continue;
+                        
+                        const travelTime = this.computeTravelTime(current, neighbor, vehicleId);
+                        const departureTime = currentArrivalTime + 0.1; // Node processing time
+                        let arrivalTime = departureTime + travelTime;
+                        
+                        // Check edge availability and find next available time if needed
+                        if (!this.isEdgeAvailable(current, neighbor, departureTime, travelTime, vehicleId)) {
+                            const nextAvailable = this.findNextAvailableTime(
+                                current, neighbor, departureTime, travelTime, vehicleId
+                            );
+                            if (nextAvailable > departureTime + 5.0) continue; // Skip if wait too long
+                            arrivalTime = nextAvailable + travelTime;
+                        }
+                        
+                        const edgeCost = this.computeGNNEdgeCost(current, neighbor, departureTime);
+                        const heuristic = this.computeHeuristic(neighbor, end);
+                        const totalCost = arrivalTime + edgeCost + heuristic;
+                        
+                        heap.push([
+                            totalCost,
+                            neighbor,
+                            [...path, neighbor],
+                            [...times, arrivalTime]
+                        ]);
+                    }
+                }
+                
+                return { path: [], times: [] };
+            }
+
+            computeTravelTime(from, to, vehicleId) {
+                const baseTime = 1.0; // Base travel time
+                const toFeature = this.nodeFeatures.get(to) || new NodeFeature();
+                const timeFactor = 1.0 + toFeature.congestion * 0.5 + toFeature.occupancy * 0.3;
+                return baseTime * timeFactor;
+            }
+
+            computeGNNEdgeCost(from, to, time) {
+                const baseWeight = 1.0;
+                const toFeature = this.nodeFeatures.get(to) || new NodeFeature();
+                
+                let cost = baseWeight;
+                cost += toFeature.occupancy * 3.0;
+                cost += toFeature.congestion * 8.0;
+                cost -= toFeature.centrality * 1.0;
+                
+                // Time-dependent congestion
+                const edgeKey = [from, to].sort().join('-');
+                const reservations = this.edgeReservations.get(edgeKey) || [];
+                const futureCongestion = reservations.filter(r => 
+                    r.startTime <= time + 3.0 && r.endTime >= time
+                ).length;
+                cost += futureCongestion * 2.0;
+                
+                return Math.max(cost, 0.1);
+            }
+
+            computeHeuristic(node1, node2) {
+                const pos1 = this.nodePositions.get(node1);
+                const pos2 = this.nodePositions.get(node2);
+                if (!pos1 || !pos2) return 0;
+                
+                const dx = pos1[0] - pos2[0];
+                const dy = pos1[1] - pos2[1];
+                return Math.sqrt(dx * dx + dy * dy) * 0.3;
+            }
+
+            findNextAvailableTime(from, to, earliestStart, duration, vehicleId) {
+                const edgeKey = [from, to].sort().join('-');
+                const reservations = this.edgeReservations.get(edgeKey) || [];
+                
+                const otherReservations = reservations
+                    .filter(r => r.vehicleId !== vehicleId)
+                    .sort((a, b) => a.startTime - b.startTime);
+                
+                let currentTime = earliestStart;
+                for (const reservation of otherReservations) {
+                    if (currentTime + duration <= reservation.startTime) {
+                        return currentTime;
+                    }
+                    currentTime = Math.max(currentTime, reservation.endTime + this.EDGE_SAFETY_BUFFER);
+                }
+                
+                return currentTime;
+            }
+
+            // Simple pathfinding for non-GNN mode
+            findPath(start, end) {
+                if (start === end) return [start];
+                
+                const queue = [[start, [start]]];
+                const visited = new Set([start]);
+                
+                while (queue.length > 0) {
+                    const [current, path] = queue.shift();
+                    
+                    if (!this.graph.has(current)) continue;
+                    
+                    for (const neighbor of this.graph.get(current)) {
+                        if (neighbor === end) {
+                            return [...path, neighbor];
+                        }
+                        
+                        if (!visited.has(neighbor)) {
+                            visited.add(neighbor);
+                            queue.push([neighbor, [...path, neighbor]]);
+                        }
+                    }
+                }
+                
+                return [];
+            }
+
+            // Keep all other methods from original demo2.html...
+            getAvailablePoint(pointType, excludeVehicle = -1) {
+                const points = this.specialPoints[pointType];
+                for (const [pointId, point] of points) {
+                    if (!point.isOccupied && (point.reservedBy === null || point.reservedBy === excludeVehicle)) {
+                        return pointId;
+                    }
+                }
+                return null;
+            }
+
+            reserveSpecialPoint(pointId, vehicleId) {
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        const point = points.get(pointId);
+                        if (!point.isOccupied && point.reservedBy === null) {
+                            point.reservedBy = vehicleId;
+                            console.log(`${pointId} reserved by V${vehicleId}`);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            occupySpecialPoint(pointId, vehicleId) {
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        const point = points.get(pointId);
+                        point.isOccupied = true;
+                        point.reservedBy = vehicleId;
+                        console.log(`${pointId} occupied by V${vehicleId}`);
+                        return;
+                    }
+                }
+            }
+
+            releaseSpecialPoint(pointId) {
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        const point = points.get(pointId);
+                        point.isOccupied = false;
+                        point.reservedBy = null;
+                        console.log(`${pointId} released`);
+                        return;
+                    }
+                }
+            }
+
+            cancelPointReservations(vehicleId) {
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    for (const [pointId, point] of points) {
+                        if (point.reservedBy === vehicleId && !point.isOccupied) {
+                            point.reservedBy = null;
+                        }
+                    }
+                }
+            }
+
+            getPointNodeId(pointId) {
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        return points.get(pointId).nodeId;
+                    }
+                }
+                return null;
+            }
+
+            addVehicleToNode(vehicleId, nodeId) {
+                if (!this.nodeOccupancy.has(nodeId)) {
+                    this.nodeOccupancy.set(nodeId, new Set());
+                }
+                this.nodeOccupancy.get(nodeId).add(vehicleId);
+            }
+
+            removeVehicleFromNode(vehicleId, nodeId) {
+                if (this.nodeOccupancy.has(nodeId)) {
+                    this.nodeOccupancy.get(nodeId).delete(vehicleId);
+                }
+            }
+
+            cancelReservations(vehicleId) {
+                // Cancel edge reservations
+                for (const [edgeKey, reservations] of this.edgeReservations) {
+                    const remaining = reservations.filter(r => r.vehicleId !== vehicleId);
+                    if (remaining.length > 0) {
+                        this.edgeReservations.set(edgeKey, remaining);
+                    } else {
+                        this.edgeReservations.delete(edgeKey);
+                    }
+                }
+
+                // Cancel node reservations
+                for (const [nodeId, reservations] of this.nodeReservations) {
+                    const remaining = reservations.filter(r => r.vehicleId !== vehicleId);
+                    if (remaining.length > 0) {
+                        this.nodeReservations.set(nodeId, remaining);
+                    } else {
+                        this.nodeReservations.delete(nodeId);
+                    }
+                }
+            }
+
+            updateTime(currentTime) {
+                this.globalTime = currentTime;
+                
+                // Clean expired reservations
+                for (const [edgeKey, reservations] of this.edgeReservations) {
+                    const active = reservations.filter(r => r.endTime > currentTime);
+                    if (active.length > 0) {
+                        this.edgeReservations.set(edgeKey, active);
+                    } else {
+                        this.edgeReservations.delete(edgeKey);
+                    }
+                }
+
+                for (const [nodeId, reservations] of this.nodeReservations) {
+                    const active = reservations.filter(r => r.endTime > currentTime);
+                    if (active.length > 0) {
+                        this.nodeReservations.set(nodeId, active);
+                    } else {
+                        this.nodeReservations.delete(nodeId);
+                    }
+                }
+            }
+
+            // Helper methods from original implementation
+            ensureSufficientSpecialPoints() {
+                const minRequired = 6;
+                
+                if (this.specialPoints.loading.size < minRequired) {
+                    this.createAdditionalSpecialPoints('loading', minRequired);
+                }
+                
+                if (this.specialPoints.unloading.size < minRequired) {
+                    this.createAdditionalSpecialPoints('unloading', minRequired);
+                }
+                
+                if (this.specialPoints.parking.size < minRequired) {
+                    this.createAdditionalSpecialPoints('parking', minRequired);
+                }
+            }
+
+            createAdditionalSpecialPoints(pointType, targetCount) {
+                const currentPoints = this.specialPoints[pointType];
+                const availableNodes = Array.from(this.nodePositions.keys());
+                
+                const usedNodes = new Set();
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    for (const point of points.values()) {
+                        usedNodes.add(point.nodeId);
+                    }
+                }
+                
+                const unusedNodes = availableNodes.filter(nodeId => !usedNodes.has(nodeId));
+                
+                let prefix = pointType === 'loading' ? 'L' : 
+                           pointType === 'unloading' ? 'U' : 'P';
+                
+                for (let i = currentPoints.size; i < targetCount && i < unusedNodes.length + currentPoints.size; i++) {
+                    const nodeId = unusedNodes[i - currentPoints.size] || availableNodes[i % availableNodes.length];
+                    const pointId = `${prefix}${i}`;
+                    const position = this.nodePositions.get(nodeId) || [Math.random() * 400, Math.random() * 300];
+                    
+                    const specialPoint = new SpecialPoint(nodeId, pointType, [...position]);
+                    currentPoints.set(pointId, specialPoint);
+                }
+            }
+
+            loadFromEnhancedData(jsonData) {
+                const keyNodes = jsonData.key_nodes_info;
+                
+                // Add nodes
+                for (const [nodeId, nodeInfo] of Object.entries(keyNodes)) {
+                    const pos = nodeInfo.position;
+                    this.nodePositions.set(nodeId, [pos[0], pos[1]]);
+                    this.graph.set(nodeId, new Set());
+                    this.nodeOccupancy.set(nodeId, new Set());
+                }
+
+                // Add edges from consolidated paths
+                const consolidatedPaths = jsonData.consolidated_paths_info || {};
+                
+                for (const [pathId, pathInfo] of Object.entries(consolidatedPaths)) {
+                    const keyNodes = pathInfo.key_nodes || [];
+                    for (let i = 0; i < keyNodes.length - 1; i++) {
+                        const node1 = keyNodes[i];
+                        const node2 = keyNodes[i + 1];
+                        if (this.graph.has(node1) && this.graph.has(node2)) {
+                            this.graph.get(node1).add(node2);
+                            this.graph.get(node2).add(node1);
+                        }
+                    }
+                }
+            }
+
+            loadFromBasicData(jsonData) {
+                // Add nodes
+                for (const node of jsonData.graph_nodes) {
+                    const nodeStr = String(node);
+                    this.graph.set(nodeStr, new Set());
+                    this.nodeOccupancy.set(nodeStr, new Set());
+                    
+                    const pos = jsonData.position_mapping?.[nodeStr] || 
+                               [Math.random() * 400, Math.random() * 300];
+                    this.nodePositions.set(nodeStr, pos);
+                }
+
+                // Add edges
+                for (const edge of jsonData.graph_edges) {
+                    const node1 = String(edge[0]);
+                    const node2 = String(edge[1]);
+                    if (this.graph.has(node1) && this.graph.has(node2)) {
+                        this.graph.get(node1).add(node2);
+                        this.graph.get(node2).add(node1);
+                    }
+                }
+            }
+
+            parseSpecialPoints(jsonData) {
+                if (!jsonData.key_nodes_info) return;
+
+                for (const [nodeId, nodeInfo] of Object.entries(jsonData.key_nodes_info)) {
+                    const position = nodeInfo.position || [0, 0];
+                    const pathMemberships = nodeInfo.path_memberships || [];
+                    const isEndpoint = nodeInfo.is_endpoint || false;
+                    
+                    if (!isEndpoint || pathMemberships.length === 0) continue;
+                    
+                    // Analyze path patterns to determine special point type
+                    const startPoints = new Set();
+                    const endPoints = new Set();
+                    
+                    for (const pathId of pathMemberships) {
+                        const parts = pathId.split('_to_');
+                        if (parts.length === 2) {
+                            startPoints.add(parts[0]);
+                            endPoints.add(parts[1]);
+                        }
+                    }
+                    
+                    let primarySpecialPoint = null;
+                    
+                    // Determine primary type based on path patterns
+                    if (startPoints.size === 1) {
+                        const startPoint = Array.from(startPoints)[0];
+                        if (startPoint.match(/^L\d+$/)) {
+                            primarySpecialPoint = { id: startPoint, type: 'loading' };
+                        }
+                    } else if (endPoints.size === 1) {
+                        const endPoint = Array.from(endPoints)[0];
+                        if (endPoint.match(/^U\d+$/)) {
+                            primarySpecialPoint = { id: endPoint, type: 'unloading' };
+                        } else if (endPoint.match(/^P\d+$/)) {
+                            primarySpecialPoint = { id: endPoint, type: 'parking' };
+                        }
+                    }
+                    
+                    // Create special point
+                    if (primarySpecialPoint) {
+                        const specialPointObj = new SpecialPoint(nodeId, primarySpecialPoint.type, position);
+                        const pointId = primarySpecialPoint.id;
+                        
+                        if (primarySpecialPoint.type === 'loading') {
+                            this.specialPoints.loading.set(pointId, specialPointObj);
+                        } else if (primarySpecialPoint.type === 'unloading') {
+                            this.specialPoints.unloading.set(pointId, specialPointObj);
+                        } else if (primarySpecialPoint.type === 'parking') {
+                            this.specialPoints.parking.set(pointId, specialPointObj);
+                        }
+                    }
+                }
+            }
+        }
+
+        // ============ Enhanced Vehicle Class ============
+        
+        class Vehicle {
+            constructor(id, startParkingPoint, roadNetwork, useGNN = true) {
+                this.id = id;
+                this.roadNetwork = roadNetwork;
+                this.useGNN = useGNN;
+                
+                this.mode = VehicleMode.PARKED;
+                this.currentParkingPoint = startParkingPoint;
+                this.targetLoadingPoint = null;
+                this.targetUnloadingPoint = null;
+                this.targetParkingPoint = null;
+                
+                // Get starting node
+                const startNodeId = this.roadNetwork.getPointNodeId(startParkingPoint);
+                this.currentNode = startNodeId || 'fallback_node';
+                
+                // Initialize position
+                const nodePosition = this.roadNetwork.nodePositions.get(this.currentNode);
+                this.position = nodePosition ? [...nodePosition] : [0, 0];
+                this.targetPosition = [...this.position];
+                
+                // Path planning
+                this.path = [];
+                this.pathTimes = [];
+                this.pathIndex = 0;
+                this.pathConfirmed = false;
+                this.pathStartTime = 0;
+                
+                // Movement
+                this.progress = 0;
+                this.speed = 0.6 + Math.random() * 0.4;
+                this.moveStartTime = 0;
+                this.moveDuration = 0;
+                
+                // State management
+                this.state = VehicleState.IDLE;
+                this.waitUntil = 0;
+                this.retryCount = 0;
+                this.maxRetries = 3;
+                this.operationStartTime = 0;
+                
+                // Operation timings
+                this.loadingTime = 2.0;
+                this.unloadingTime = 1.5;
+                
+                // Statistics
+                this.completedCycles = 0;
+                this.totalDistance = 0;
+                this.waitTime = 0;
+                
+                // Visualization
+                this.colors = ['#ff4444', '#4444ff', '#44ff44', '#ffaa00', '#aa44ff', '#44aaff'];
+                this.color = this.colors[id % this.colors.length];
+                
+                // Register with network
+                this.roadNetwork.addVehicleToNode(this.id, this.currentNode);
+                this.roadNetwork.occupySpecialPoint(startParkingPoint, this.id);
+            }
+
+            get targetPointId() {
+                switch (this.mode) {
+                    case VehicleMode.PARKED:
+                    case VehicleMode.EMPTY:
+                        return this.targetLoadingPoint;
+                    case VehicleMode.LOADED:
+                        return this.targetUnloadingPoint;
+                    case VehicleMode.RETURNING:
+                        return this.targetParkingPoint;
+                    default:
+                        return null;
+                }
+            }
+
+            get targetNodeId() {
+                const targetPoint = this.targetPointId;
+                return targetPoint ? this.roadNetwork.getPointNodeId(targetPoint) : null;
+            }
+
+            update(currentTime, dt) {
+                switch (this.state) {
+                    case VehicleState.IDLE:
+                        this.planNextTask(currentTime);
+                        break;
+                    case VehicleState.PLANNING:
+                        this.executePlanning(currentTime);
+                        break;
+                    case VehicleState.WAITING:
+                        if (currentTime >= this.waitUntil) {
+                            this.state = VehicleState.IDLE;
+                            this.retryCount++;
+                            if (this.retryCount > this.maxRetries) {
+                                this.resetCurrentTask();
+                                this.retryCount = 0;
+                            }
+                        } else {
+                            this.waitTime += dt;
+                        }
+                        break;
+                    case VehicleState.CONFIRMED:
+                        if (currentTime >= this.pathStartTime) {
+                            this.startConfirmedPath(currentTime);
+                        }
+                        break;
+                    case VehicleState.MOVING:
+                        this.updateMovement(currentTime, dt);
+                        break;
+                    case VehicleState.LOADING:
+                        this.updateLoading(currentTime);
+                        break;
+                    case VehicleState.UNLOADING:
+                        this.updateUnloading(currentTime);
+                        break;
+                    case VehicleState.BLOCKED:
+                        this.roadNetwork.cancelReservations(this.id);
+                        this.roadNetwork.cancelPointReservations(this.id);
+                        this.state = VehicleState.IDLE;
+                        this.retryCount++;
+                        break;
+                }
+            }
+
+            planNextTask(currentTime) {
+                switch (this.mode) {
+                    case VehicleMode.PARKED:
+                        // Look for available loading point
+                        const availableLoading = this.roadNetwork.getAvailablePoint('loading', this.id);
+                        if (availableLoading && this.roadNetwork.reserveSpecialPoint(availableLoading, this.id)) {
+                            // Release parking point
+                            if (this.currentParkingPoint) {
+                                this.roadNetwork.releaseSpecialPoint(this.currentParkingPoint);
+                                this.currentParkingPoint = null;
+                            }
+                            this.targetLoadingPoint = availableLoading;
+                            this.mode = VehicleMode.EMPTY;
+                            this.planPathToTarget(currentTime);
+                        } else {
+                            this.waitAndRetry(currentTime);
+                        }
+                        break;
+                        
+                    case VehicleMode.EMPTY:
+                        // Should already have loading point target
+                        if (this.targetLoadingPoint) {
+                            this.planPathToTarget(currentTime);
+                        } else {
+                            this.mode = VehicleMode.PARKED;
+                            this.state = VehicleState.IDLE;
+                        }
+                        break;
+                        
+                    case VehicleMode.LOADED:
+                        // Look for available unloading point
+                        const availableUnloading = this.roadNetwork.getAvailablePoint('unloading', this.id);
+                        if (availableUnloading && this.roadNetwork.reserveSpecialPoint(availableUnloading, this.id)) {
+                            this.targetUnloadingPoint = availableUnloading;
+                            this.planPathToTarget(currentTime);
+                        } else {
+                            this.waitAndRetry(currentTime);
+                        }
+                        break;
+                        
+                    case VehicleMode.RETURNING:
+                        // Look for available parking point
+                        const availableParking = this.roadNetwork.getAvailablePoint('parking', this.id);
+                        if (availableParking && this.roadNetwork.reserveSpecialPoint(availableParking, this.id)) {
+                            this.targetParkingPoint = availableParking;
+                            this.planPathToTarget(currentTime);
+                        } else {
+                            this.waitAndRetry(currentTime);
+                        }
+                        break;
+                }
+            }
+
+            planPathToTarget(currentTime) {
+                const targetNode = this.targetNodeId;
+                if (!targetNode) {
+                    this.waitAndRetry(currentTime);
+                    return;
+                }
+
+                this.state = VehicleState.PLANNING;
+                this.roadNetwork.cancelReservations(this.id);
+                
+                if (this.useGNN) {
+                    // Use GNN pathfinding with reservations
+                    const result = this.roadNetwork.gnnPathfindingWithReservation(
+                        this.currentNode, targetNode, this.id, currentTime
+                    );
+                    this.path = result.path;
+                    this.pathTimes = result.times;
+                } else {
+                    // Simple pathfinding
+                    this.path = this.roadNetwork.findPath(this.currentNode, targetNode);
+                    if (this.path.length > 0) {
+                        // Calculate simple path times
+                        this.pathTimes = [];
+                        let currentT = currentTime + 0.5;
+                        
+                        for (let i = 0; i < this.path.length; i++) {
+                            if (i === 0) {
+                                this.pathTimes.push(currentT);
+                            } else {
+                                const travelTime = this.roadNetwork.computeTravelTime(
+                                    this.path[i-1], this.path[i], this.id
+                                );
+                                currentT += travelTime;
+                                this.pathTimes.push(currentT);
+                            }
+                        }
+                    } else {
+                        this.pathTimes = [];
+                    }
+                }
+                
+                const modeText = this.mode === VehicleMode.EMPTY ? "Empty→LoadPt" :
+                               this.mode === VehicleMode.LOADED ? "Loaded→UnloadPt" :
+                               this.mode === VehicleMode.RETURNING ? "Returning→ParkPt" :
+                               "Parked";
+                console.log(`Vehicle ${this.id} (${modeText}): Planned path ${this.path}`);
+            }
+
+            executePlanning(currentTime) {
+                if (!this.path || this.path.length < 2) {
+                    this.waitAndRetry(currentTime);
+                    return;
+                }
+
+                // Validate and reserve path
+                let success = false;
+                if (this.useGNN) {
+                    success = this.validateAndReservePath(currentTime);
+                } else {
+                    success = this.validateSimplePath(currentTime);
+                }
+
+                if (success) {
+                    // Path confirmed
+                    this.pathConfirmed = true;
+                    this.pathIndex = 0;
+                    
+                    // Set path start time
+                    this.pathStartTime = this.pathTimes ? 
+                        Math.max(this.pathTimes[0], currentTime + 0.5) : 
+                        currentTime + 0.5;
+                    
+                    this.state = VehicleState.CONFIRMED;
+                    console.log(`Vehicle ${this.id}: Path confirmed, will start at ${this.pathStartTime.toFixed(1)}s`);
+                } else {
+                    // Validation failed, retry
+                    if (this.useGNN) {
+                        this.roadNetwork.cancelReservations(this.id);
+                    }
+                    this.waitAndRetry(currentTime);
+                }
+            }
+
+            validateAndReservePath(currentTime) {
+                if (!this.pathTimes || this.pathTimes.length !== this.path.length) {
+                    console.log(`Vehicle ${this.id}: Invalid path times`);
+                    return false;
+                }
+
+                // Adjust times to ensure they start from current time
+                const adjustedTimes = [];
+                const baseTime = Math.max(currentTime + 0.5, this.pathTimes[0]);
+                
+                for (let i = 0; i < this.pathTimes.length; i++) {
+                    if (i === 0) {
+                        adjustedTimes.push(baseTime);
+                    } else {
+                        const interval = this.pathTimes[i] - this.pathTimes[i-1];
+                        adjustedTimes.push(adjustedTimes[i-1] + interval);
+                    }
+                }
+                
+                this.pathTimes = adjustedTimes;
+                
+                console.log(`Vehicle ${this.id}: Validating path with times ${this.pathTimes.map(t => t.toFixed(2))}`);
+                
+                const nodeDuration = 0.4; // Node occupancy duration
+                
+                // Phase 1: Validate entire path availability
+                // Check all nodes
+                for (let i = 0; i < this.path.length; i++) {
+                    const node = this.path[i];
+                    const nodeStartTime = this.pathTimes[i];
+                    const duration = i === this.path.length - 1 ? nodeDuration * 3 : nodeDuration;
+                    
+                    if (!this.roadNetwork.isNodeAvailable(node, nodeStartTime, duration, this.id)) {
+                        console.log(`Vehicle ${this.id}: Node validation failed at ${node}`);
+                        return false;
+                    }
+                }
+                
+                // Check all edges
+                for (let i = 0; i < this.path.length - 1; i++) {
+                    const fromNode = this.path[i];
+                    const toNode = this.path[i + 1];
+                    const edgeStartTime = this.pathTimes[i] + nodeDuration;
+                    const edgeDuration = this.pathTimes[i + 1] - edgeStartTime;
+                    
+                    if (edgeDuration <= 0) {
+                        console.log(`Vehicle ${this.id}: Invalid edge duration ${edgeDuration}`);
+                        return false;
+                    }
+                    
+                    if (!this.roadNetwork.isEdgeAvailable(fromNode, toNode, edgeStartTime, edgeDuration, this.id)) {
+                        console.log(`Vehicle ${this.id}: Edge validation failed at ${fromNode}-${toNode}`);
+                        return false;
+                    }
+                }
+                
+                // Phase 2: Reserve entire path
+                // Reserve all nodes
+                for (let i = 0; i < this.path.length; i++) {
+                    const node = this.path[i];
+                    const nodeStartTime = this.pathTimes[i];
+                    const duration = i === this.path.length - 1 ? nodeDuration * 3 : nodeDuration;
+                    
+                    if (!this.roadNetwork.reserveNode(node, this.id, nodeStartTime, duration)) {
+                        console.log(`Vehicle ${this.id}: Failed to reserve node ${node}`);
+                        this.roadNetwork.cancelReservations(this.id);
+                        return false;
+                    }
+                }
+                
+                // Reserve all edges
+                for (let i = 0; i < this.path.length - 1; i++) {
+                    const fromNode = this.path[i];
+                    const toNode = this.path[i + 1];
+                    const edgeStartTime = this.pathTimes[i] + nodeDuration;
+                    const edgeDuration = this.pathTimes[i + 1] - edgeStartTime;
+                    
+                    if (!this.roadNetwork.reserveEdge(fromNode, toNode, this.id, edgeStartTime, edgeDuration)) {
+                        console.log(`Vehicle ${this.id}: Failed to reserve edge ${fromNode}-${toNode}`);
+                        this.roadNetwork.cancelReservations(this.id);
+                        return false;
+                    }
+                }
+                
+                console.log(`Vehicle ${this.id}: Successfully reserved entire path`);
+                return true;
+            }
+
+            validateSimplePath(currentTime) {
+                if (!this.pathTimes || this.pathTimes.length !== this.path.length) {
+                    return false;
+                }
+
+                // For simple mode, just check for basic conflicts with other vehicles
+                let baseTime = currentTime + 0.5;
+                
+                // Check if other vehicles are moving
+                const otherVehicles = this.roadNetwork.vehicles || [];
+                for (const other of otherVehicles) {
+                    if (other.id === this.id) continue;
+                    
+                    if (other.state === VehicleState.MOVING || other.state === VehicleState.CONFIRMED) {
+                        if (other.pathStartTime && other.pathTimes && other.pathTimes.length > 0) {
+                            const otherEndTime = other.pathTimes[other.pathTimes.length - 1];
+                            if (baseTime < otherEndTime + 0.5) {
+                                baseTime = otherEndTime + 0.5 + Math.random() * 0.5;
+                            }
+                        }
+                    }
+                }
+                
+                // Recalculate times
+                const adjustedTimes = [];
+                let currentT = baseTime;
+                
+                for (let i = 0; i < this.path.length; i++) {
+                    if (i === 0) {
+                        adjustedTimes.push(currentT);
+                    } else {
+                        const travelTime = this.roadNetwork.computeTravelTime(
+                            this.path[i-1], this.path[i], this.id
+                        );
+                        currentT += travelTime;
+                        adjustedTimes.push(currentT);
+                    }
+                }
+                
+                this.pathTimes = adjustedTimes;
+                console.log(`Vehicle ${this.id}: Simple mode path scheduled from ${baseTime.toFixed(2)}`);
+                return true;
+            }
+
+            startConfirmedPath(currentTime) {
+                if (this.pathIndex + 1 >= this.path.length) {
+                    this.state = VehicleState.IDLE;
+                    return;
+                }
+                
+                this.startNextMove(currentTime);
+                console.log(`Vehicle ${this.id}: Starting confirmed path execution`);
+            }
+
+            startNextMove(currentTime) {
+                if (this.pathIndex + 1 >= this.path.length) {
+                    this.state = VehicleState.IDLE;
+                    return;
+                }
+
+                const nextNode = this.path[this.pathIndex + 1];
+                this.targetPosition = [...this.roadNetwork.nodePositions.get(nextNode)];
+                
+                if (this.useGNN && this.pathTimes) {
+                    // Strict timing for GNN mode
+                    this.moveStartTime = this.pathTimes[this.pathIndex];
+                    this.moveDuration = this.pathTimes[this.pathIndex + 1] - this.moveStartTime;
+                } else {
+                    // Simple timing
+                    this.moveStartTime = currentTime;
+                    this.moveDuration = 1.0 / this.speed;
+                }
+                
+                this.progress = 0;
+                this.state = VehicleState.MOVING;
+                console.log(`Vehicle ${this.id}: Moving from ${this.path[this.pathIndex]} to ${nextNode}`);
+            }
+
+            updateMovement(currentTime, dt) {
+                if (currentTime < this.moveStartTime) {
+                    // Not time to move yet
+                    return;
+                }
+
+                const elapsed = currentTime - this.moveStartTime;
+                this.progress = Math.min(elapsed / this.moveDuration, 1.0);
+
+                if (this.progress > 0) {
+                    const startPos = this.roadNetwork.nodePositions.get(this.path[this.pathIndex]);
+                    const smoothProgress = this.smoothStep(this.progress);
+                    this.position[0] = startPos[0] + (this.targetPosition[0] - startPos[0]) * smoothProgress;
+                    this.position[1] = startPos[1] + (this.targetPosition[1] - startPos[1]) * smoothProgress;
+                    
+                    // Update distance
+                    if (dt > 0) {
+                        const dx = this.targetPosition[0] - startPos[0];
+                        const dy = this.targetPosition[1] - startPos[1];
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        this.totalDistance += distance * (this.progress / (elapsed / dt)) * dt * 0.01;
+                    }
+                }
+
+                if (this.progress >= 1.0) {
+                    this.arriveAtNode(currentTime);
+                }
+            }
+
+            smoothStep(t) {
+                // Smooth interpolation function
+                return t * t * (3.0 - 2.0 * t);
+            }
+
+            arriveAtNode(currentTime) {
+                // Remove from old node
+                this.roadNetwork.removeVehicleFromNode(this.id, this.currentNode);
+                
+                // Move to next node
+                this.pathIndex++;
+                this.currentNode = this.path[this.pathIndex];
+                this.position = [...this.targetPosition];
+                
+                // Add to new node
+                this.roadNetwork.addVehicleToNode(this.id, this.currentNode);
+                
+                // Reset retry count
+                this.retryCount = 0;
+                
+                console.log(`Vehicle ${this.id}: Arrived at ${this.currentNode}`);
+                
+                // Check if path complete
+                if (this.pathIndex + 1 >= this.path.length) {
+                    // Path complete, check if at target
+                    const targetPoint = this.targetPointId;
+                    const targetNode = this.targetNodeId;
+
+                    if (targetNode && this.currentNode === targetNode) {
+                        if (this.mode === VehicleMode.EMPTY && targetPoint === this.targetLoadingPoint) {
+                            this.startLoading(currentTime);
+                        } else if (this.mode === VehicleMode.LOADED && targetPoint === this.targetUnloadingPoint) {
+                            this.startUnloading(currentTime);
+                        } else if (this.mode === VehicleMode.RETURNING && targetPoint === this.targetParkingPoint) {
+                            this.startParking(currentTime);
+                        } else {
+                            this.state = VehicleState.IDLE;
+                            this.pathConfirmed = false;
+                        }
+                    } else {
+                        this.state = VehicleState.IDLE;
+                        this.pathConfirmed = false;
+                    }
+                } else {
+                    // Continue path
+                    this.startNextMove(currentTime);
+                }
+            }
+
+            startLoading(currentTime) {
+                this.roadNetwork.occupySpecialPoint(this.targetLoadingPoint, this.id);
+                this.state = VehicleState.LOADING;
+                this.operationStartTime = currentTime;
+                console.log(`Vehicle ${this.id}: Starting loading at ${this.targetLoadingPoint}`);
+            }
+
+            startUnloading(currentTime) {
+                this.roadNetwork.occupySpecialPoint(this.targetUnloadingPoint, this.id);
+                this.state = VehicleState.UNLOADING;
+                this.operationStartTime = currentTime;
+                console.log(`Vehicle ${this.id}: Starting unloading at ${this.targetUnloadingPoint}`);
+            }
+
+            startParking(currentTime) {
+                this.roadNetwork.occupySpecialPoint(this.targetParkingPoint, this.id);
+                this.currentParkingPoint = this.targetParkingPoint;
+                this.targetParkingPoint = null;
+                this.mode = VehicleMode.PARKED;
+                this.state = VehicleState.IDLE;
+                this.completedCycles++;
+                this.pathConfirmed = false;
+                console.log(`Vehicle ${this.id}: Parked at ${this.currentParkingPoint}, completed cycle ${this.completedCycles}`);
+            }
+
+            updateLoading(currentTime) {
+                if (currentTime - this.operationStartTime >= this.loadingTime) {
+                    this.roadNetwork.releaseSpecialPoint(this.targetLoadingPoint);
+                    this.mode = VehicleMode.LOADED;
+                    this.targetLoadingPoint = null;
+                    this.state = VehicleState.IDLE;
+                    this.pathConfirmed = false;
+                    console.log(`Vehicle ${this.id}: Loading completed, switching to loaded mode`);
+                }
+            }
+
+            updateUnloading(currentTime) {
+                if (currentTime - this.operationStartTime >= this.unloadingTime) {
+                    this.roadNetwork.releaseSpecialPoint(this.targetUnloadingPoint);
+                    this.mode = VehicleMode.RETURNING;
+                    this.targetUnloadingPoint = null;
+                    this.state = VehicleState.IDLE;
+                    this.pathConfirmed = false;
+                    console.log(`Vehicle ${this.id}: Unloading completed, switching to returning mode`);
+                }
+            }
+
+            waitAndRetry(currentTime) {
+                this.waitUntil = currentTime + 1.0 + Math.random();
+                this.state = VehicleState.WAITING;
+            }
+
+            resetCurrentTask() {
+                this.roadNetwork.cancelPointReservations(this.id);
+                this.targetLoadingPoint = null;
+                this.targetUnloadingPoint = null;
+                this.targetParkingPoint = null;
+                this.retryCount = 0;
+            }
+        }
+
+        // ============ Enhanced Visualization ============
+        
+        class Visualization {
+            constructor(canvas, roadNetwork) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.roadNetwork = roadNetwork;
+                this.vehicles = [];
+                
+                this.setupCanvas();
+                this.setupTransform();
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width * window.devicePixelRatio;
+                this.canvas.height = rect.height * window.devicePixelRatio;
+                this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            }
+
+            setupTransform() {
+                // Calculate network bounds
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                for (const [nodeId, pos] of this.roadNetwork.nodePositions) {
+                    minX = Math.min(minX, pos[0]);
+                    minY = Math.min(minY, pos[1]);
+                    maxX = Math.max(maxX, pos[0]);
+                    maxY = Math.max(maxY, pos[1]);
+                }
+                
+                const margin = 50;
+                const canvasWidth = this.canvas.width / window.devicePixelRatio;
+                const canvasHeight = this.canvas.height / window.devicePixelRatio;
+                
+                const networkWidth = maxX - minX;
+                const networkHeight = maxY - minY;
+                
+                this.scale = Math.min(
+                    (canvasWidth - 2 * margin) / networkWidth,
+                    (canvasHeight - 2 * margin) / networkHeight
+                );
+                
+                this.offsetX = margin - minX * this.scale + (canvasWidth - networkWidth * this.scale) / 2;
+                this.offsetY = margin - minY * this.scale + (canvasHeight - networkHeight * this.scale) / 2;
+            }
+
+            transformPoint(x, y) {
+                return [
+                    x * this.scale + this.offsetX,
+                    y * this.scale + this.offsetY
+                ];
+            }
+
+            draw(currentTime) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.drawNetwork();
+                this.drawReservations(currentTime);
+                this.drawSpecialPoints();
+                this.drawVehicles();
+            }
+
+            drawNetwork() {
+                // Draw edges
+                this.ctx.strokeStyle = '#e0e0e0';
+                this.ctx.lineWidth = 1.5;
+                
+                const drawnEdges = new Set();
+                
+                for (const [nodeId, neighbors] of this.roadNetwork.graph) {
+                    const pos1 = this.roadNetwork.nodePositions.get(nodeId);
+                    const [x1, y1] = this.transformPoint(pos1[0], pos1[1]);
+                    
+                    for (const neighborId of neighbors) {
+                        const edgeKey = [nodeId, neighborId].sort().join('-');
+                        if (drawnEdges.has(edgeKey)) continue;
+                        drawnEdges.add(edgeKey);
+                        
+                        const pos2 = this.roadNetwork.nodePositions.get(neighborId);
+                        const [x2, y2] = this.transformPoint(pos2[0], pos2[1]);
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x1, y1);
+                        this.ctx.lineTo(x2, y2);
+                        this.ctx.stroke();
+                    }
+                }
+
+                // Draw regular nodes
+                for (const [nodeId, pos] of this.roadNetwork.nodePositions) {
+                    // Skip special points
+                    let isSpecial = false;
+                    for (const [type, points] of Object.entries(this.roadNetwork.specialPoints)) {
+                        for (const [pointId, point] of points) {
+                            if (point.nodeId === nodeId) {
+                                isSpecial = true;
+                                break;
+                            }
+                        }
+                        if (isSpecial) break;
+                    }
+                    
+                    if (isSpecial) continue;
+
+                    const [x, y] = this.transformPoint(pos[0], pos[1]);
+                    const degree = this.roadNetwork.graph.get(nodeId)?.size || 0;
+                    const occupiedVehicles = this.roadNetwork.nodeOccupancy.get(nodeId) || new Set();
+                    
+                    // Check reservation status
+                    const currentTime = this.roadNetwork.globalTime;
+                    const reservations = this.roadNetwork.nodeReservations.get(nodeId) || [];
+                    const hasActiveReservation = reservations.some(r => 
+                        r.startTime <= currentTime && r.endTime >= currentTime
+                    );
+                    const hasFutureReservation = reservations.some(r => 
+                        r.startTime > currentTime
+                    );
+                    const recentlyCooling = reservations.some(r => 
+                        currentTime > r.endTime && 
+                        currentTime - r.endTime <= this.roadNetwork.NODE_COOLING_TIME
+                    );
+                    
+                    // Determine node color
+                    let fillColor, strokeColor, strokeWidth;
+                    if (hasActiveReservation) {
+                        fillColor = '#ffcdd2'; // Red - occupied
+                        strokeColor = '#d32f2f';
+                        strokeWidth = 2;
+                    } else if (recentlyCooling) {
+                        fillColor = '#fff9c4'; // Yellow - cooling
+                        strokeColor = '#f57f17';
+                        strokeWidth = 2;
+                    } else if (hasFutureReservation) {
+                        fillColor = '#ffe0b2'; // Orange - reserved
+                        strokeColor = '#f57c00';
+                        strokeWidth = 2;
+                    } else if (occupiedVehicles.size > 0) {
+                        fillColor = '#fce4ec'; // Pink - vehicle present
+                        strokeColor = '#c2185b';
+                        strokeWidth = 2;
+                    } else {
+                        fillColor = '#e3f2fd'; // Blue - free
+                        strokeColor = '#1976d2';
+                        strokeWidth = 1;
+                    }
+                    
+                    // Draw node
+                    const radius = Math.max(4, Math.min(10, 4 + degree * 1.5));
+                    
+                    this.ctx.fillStyle = fillColor;
+                    this.ctx.strokeStyle = strokeColor;
+                    this.ctx.lineWidth = strokeWidth;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                    
+                    // Node label
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.font = '9px monospace';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'bottom';
+                    
+                    let label = nodeId.length > 6 ? nodeId.slice(-6) : nodeId;
+                    if (hasActiveReservation) {
+                        const activeVehicle = reservations.find(r => 
+                            r.startTime <= currentTime && r.endTime >= currentTime
+                        )?.vehicleId;
+                        label += ` V${activeVehicle}`;
+                    } else if (recentlyCooling) {
+                        const coolRemaining = Math.max(...reservations
+                            .filter(r => currentTime > r.endTime)
+                            .map(r => this.roadNetwork.NODE_COOLING_TIME - (currentTime - r.endTime))
+                        );
+                        label += ` ${coolRemaining.toFixed(1)}s`;
+                    }
+                    
+                    this.ctx.fillText(label, x, y - radius - 3);
+                }
+            }
+
+            drawReservations(currentTime) {
+                // Draw edge reservations
+                const drawnReservations = new Set();
+                
+                for (const [edgeKey, reservations] of this.roadNetwork.edgeReservations) {
+                    const [node1, node2] = edgeKey.split('-');
+                    const pos1 = this.roadNetwork.nodePositions.get(node1);
+                    const pos2 = this.roadNetwork.nodePositions.get(node2);
+                    
+                    if (!pos1 || !pos2) continue;
+                    
+                    const [x1, y1] = this.transformPoint(pos1[0], pos1[1]);
+                    const [x2, y2] = this.transformPoint(pos2[0], pos2[1]);
+                    
+                    // Sort reservations by time
+                    const activeReservations = reservations
+                        .filter(r => r.endTime > currentTime)
+                        .sort((a, b) => a.startTime - b.startTime);
+                    
+                    for (let i = 0; i < activeReservations.length; i++) {
+                        const reservation = activeReservations[i];
+                        const vehicle = this.vehicles.find(v => v.id === reservation.vehicleId);
+                        if (!vehicle) continue;
+                        
+                        // Calculate offset for multiple reservations
+                        const offsetFactor = (i - activeReservations.length / 2 + 0.5) * 0.05;
+                        const dx = pos2[1] - pos1[1];
+                        const dy = pos1[0] - pos2[0];
+                        const len = Math.sqrt(dx * dx + dy * dy);
+                        const offsetX = (dx / len) * offsetFactor * 50;
+                        const offsetY = (dy / len) * offsetFactor * 50;
+                        
+                        const ox1 = x1 + offsetX;
+                        const oy1 = y1 + offsetY;
+                        const ox2 = x2 + offsetX;
+                        const oy2 = y2 + offsetY;
+                        
+                        // Different styles for current vs future reservations
+                        if (reservation.startTime <= currentTime) {
+                            // Active reservation
+                            this.ctx.strokeStyle = vehicle.color;
+                            this.ctx.lineWidth = 5;
+                            this.ctx.globalAlpha = 0.8;
+                        } else {
+                            // Future reservation
+                            this.ctx.strokeStyle = vehicle.color;
+                            this.ctx.lineWidth = 3;
+                            this.ctx.globalAlpha = 0.4;
+                            this.ctx.setLineDash([5, 5]);
+                        }
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(ox1, oy1);
+                        this.ctx.lineTo(ox2, oy2);
+                        this.ctx.stroke();
+                        
+                        this.ctx.setLineDash([]);
+                        this.ctx.globalAlpha = 1;
+                        
+                        // Label in the middle
+                        const midX = (ox1 + ox2) / 2;
+                        const midY = (oy1 + oy2) / 2;
+                        
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.fillRect(midX - 10, midY - 8, 20, 16);
+                        
+                        this.ctx.fillStyle = vehicle.color;
+                        this.ctx.font = 'bold 10px monospace';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(`V${vehicle.id}`, midX, midY);
+                    }
+                }
+            }
+
+            drawSpecialPoints() {
+                const types = [
+                    { key: 'loading', symbol: 'L', color: '#4caf50', darkColor: '#2e7d32', strokeColor: '#1b5e20' },
+                    { key: 'unloading', symbol: 'U', color: '#2196f3', darkColor: '#1565c0', strokeColor: '#0d47a1' },
+                    { key: 'parking', symbol: 'P', color: '#9e9e9e', darkColor: '#424242', strokeColor: '#212121' }
+                ];
+                
+                for (const typeInfo of types) {
+                    const points = this.roadNetwork.specialPoints[typeInfo.key];
+                    
+                    for (const [pointId, point] of points) {
+                        const pos = this.roadNetwork.nodePositions.get(point.nodeId);
+                        if (!pos) continue;
+                        
+                        const [x, y] = this.transformPoint(pos[0], pos[1]);
+                        
+                        // Determine color based on state
+                        let fillColor;
+                        if (point.isOccupied) {
+                            fillColor = typeInfo.darkColor;
+                        } else if (point.reservedBy !== null) {
+                            fillColor = '#ff9800'; // Orange for reserved
+                        } else {
+                            fillColor = typeInfo.color;
+                        }
+                        
+                        // Draw special point
+                        this.ctx.fillStyle = fillColor;
+                        this.ctx.strokeStyle = typeInfo.strokeColor;
+                        this.ctx.lineWidth = 3;
+                        
+                        // Different shapes for different types
+                        if (typeInfo.key === 'loading') {
+                            // Square for loading
+                            const size = 14;
+                            this.ctx.fillRect(x - size/2, y - size/2, size, size);
+                            this.ctx.strokeRect(x - size/2, y - size/2, size, size);
+                        } else if (typeInfo.key === 'unloading') {
+                            // Triangle for unloading
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(x, y - 10);
+                            this.ctx.lineTo(x - 8, y + 6);
+                            this.ctx.lineTo(x + 8, y + 6);
+                            this.ctx.closePath();
+                            this.ctx.fill();
+                            this.ctx.stroke();
+                        } else {
+                            // Circle for parking
+                            this.ctx.beginPath();
+                            this.ctx.arc(x, y, 10, 0, 2 * Math.PI);
+                            this.ctx.fill();
+                            this.ctx.stroke();
+                        }
+                        
+                        // Symbol
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.font = 'bold 12px monospace';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(typeInfo.symbol, x, y);
+                        
+                        // Point ID
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.font = 'bold 10px monospace';
+                        this.ctx.fillText(pointId, x, y - 20);
+                        
+                        // Status indicator
+                        if (point.isOccupied || point.reservedBy !== null) {
+                            this.ctx.font = '8px monospace';
+                            const status = point.isOccupied ? `V${point.reservedBy}` : `Rsv:V${point.reservedBy}`;
+                            this.ctx.fillText(status, x, y + 20);
+                        }
+                    }
+                }
+            }
+
+            drawVehicles() {
+                for (const vehicle of this.vehicles) {
+                    const [x, y] = this.transformPoint(vehicle.position[0], vehicle.position[1]);
+                    
+                    // Vehicle size and shape based on mode and state
+                    let size = 10;
+                    let shape = 'circle';
+                    
+                    if (vehicle.mode === VehicleMode.LOADED) {
+                        size = 12;
+                        shape = 'square';
+                    } else if (vehicle.mode === VehicleMode.RETURNING) {
+                        size = 11;
+                        shape = 'diamond';
+                    }
+                    
+                    // State-based styling
+                    let strokeColor = '#333';
+                    let strokeWidth = 2;
+                    let alpha = 1.0;
+                    
+                    switch (vehicle.state) {
+                        case VehicleState.LOADING:
+                            strokeColor = '#4caf50';
+                            strokeWidth = 4;
+                            // Draw loading progress
+                            this.drawProgressBar(x, y - 25, 30, 5, 
+                                (this.roadNetwork.globalTime - vehicle.operationStartTime) / vehicle.loadingTime,
+                                '#4caf50');
+                            break;
+                        case VehicleState.UNLOADING:
+                            strokeColor = '#2196f3';
+                            strokeWidth = 4;
+                            // Draw unloading progress
+                            this.drawProgressBar(x, y - 25, 30, 5,
+                                (this.roadNetwork.globalTime - vehicle.operationStartTime) / vehicle.unloadingTime,
+                                '#2196f3');
+                            break;
+                        case VehicleState.CONFIRMED:
+                            strokeColor = '#ffd700';
+                            strokeWidth = 3;
+                            // Pulsing effect
+                            const pulse = Math.sin(this.roadNetwork.globalTime * 4) * 0.2 + 0.8;
+                            alpha = pulse;
+                            break;
+                        case VehicleState.MOVING:
+                            strokeColor = 'white';
+                            strokeWidth = 3;
+                            break;
+                        case VehicleState.WAITING:
+                            alpha = 0.5;
+                            break;
+                        case VehicleState.PLANNING:
+                            strokeColor = '#ff9800';
+                            strokeWidth = 2;
+                            break;
+                    }
+                    
+                    // Draw vehicle
+                    this.ctx.fillStyle = vehicle.color;
+                    this.ctx.strokeStyle = strokeColor;
+                    this.ctx.lineWidth = strokeWidth;
+                    this.ctx.globalAlpha = alpha;
+                    
+                    if (shape === 'square') {
+                        this.ctx.fillRect(x - size/2, y - size/2, size, size);
+                        this.ctx.strokeRect(x - size/2, y - size/2, size, size);
+                    } else if (shape === 'diamond') {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x, y - size/2);
+                        this.ctx.lineTo(x + size/2, y);
+                        this.ctx.lineTo(x, y + size/2);
+                        this.ctx.lineTo(x - size/2, y);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.stroke();
+                    } else {
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, size/2, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                        this.ctx.stroke();
+                    }
+                    
+                    this.ctx.globalAlpha = 1.0;
+                    
+                    // Vehicle ID
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = 'bold 10px monospace';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(vehicle.id.toString(), x, y);
+                    
+                    // State indicator
+                    const stateSymbol = {
+                        [VehicleState.IDLE]: 'I',
+                        [VehicleState.PLANNING]: 'P',
+                        [VehicleState.WAITING]: 'W',
+                        [VehicleState.CONFIRMED]: 'C',
+                        [VehicleState.MOVING]: 'M',
+                        [VehicleState.LOADING]: 'L',
+                        [VehicleState.UNLOADING]: 'U',
+                        [VehicleState.BLOCKED]: 'B'
+                    }[vehicle.state] || '?';
+                    
+                    const modeSymbol = {
+                        [VehicleMode.PARKED]: '🅿',
+                        [VehicleMode.EMPTY]: '○',
+                        [VehicleMode.LOADED]: '●',
+                        [VehicleMode.RETURNING]: '◇'
+                    }[vehicle.mode] || '?';
+                    
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.font = '9px monospace';
+                    this.ctx.fillText(`${stateSymbol}${modeSymbol}`, x, y - size/2 - 8);
+                    
+                    // Draw target line
+                    if (vehicle.targetNodeId) {
+                        const targetPos = this.roadNetwork.nodePositions.get(vehicle.targetNodeId);
+                        if (targetPos) {
+                            const [tx, ty] = this.transformPoint(targetPos[0], targetPos[1]);
+                            
+                            this.ctx.strokeStyle = vehicle.color;
+                            this.ctx.lineWidth = 2;
+                            this.ctx.globalAlpha = 0.5;
+                            
+                            if (vehicle.mode === VehicleMode.EMPTY) {
+                                this.ctx.strokeStyle = '#4caf50';
+                                this.ctx.setLineDash([5, 5]);
+                            } else if (vehicle.mode === VehicleMode.LOADED) {
+                                this.ctx.strokeStyle = '#2196f3';
+                                this.ctx.setLineDash([8, 3]);
+                            } else if (vehicle.mode === VehicleMode.RETURNING) {
+                                this.ctx.strokeStyle = '#9e9e9e';
+                                this.ctx.setLineDash([3, 3]);
+                            }
+                            
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(x, y);
+                            this.ctx.lineTo(tx, ty);
+                            this.ctx.stroke();
+                            
+                            this.ctx.setLineDash([]);
+                            this.ctx.globalAlpha = 1.0;
+                        }
+                    }
+                    
+                    // Draw confirmed path
+                    if (vehicle.state === VehicleState.CONFIRMED && vehicle.path.length > 1) {
+                        this.ctx.strokeStyle = vehicle.color;
+                        this.ctx.lineWidth = 6;
+                        this.ctx.globalAlpha = 0.3;
+                        
+                        this.ctx.beginPath();
+                        for (let i = 0; i < vehicle.path.length; i++) {
+                            const nodeId = vehicle.path[i];
+                            const pos = this.roadNetwork.nodePositions.get(nodeId);
+                            if (pos) {
+                                const [px, py] = this.transformPoint(pos[0], pos[1]);
+                                if (i === 0) {
+                                    this.ctx.moveTo(px, py);
+                                } else {
+                                    this.ctx.lineTo(px, py);
+                                }
+                            }
+                        }
+                        this.ctx.stroke();
+                        
+                        // Path waypoints
+                        this.ctx.globalAlpha = 0.8;
+                        for (let i = 0; i < vehicle.path.length; i++) {
+                            const nodeId = vehicle.path[i];
+                            const pos = this.roadNetwork.nodePositions.get(nodeId);
+                            if (pos) {
+                                const [px, py] = this.transformPoint(pos[0], pos[1]);
+                                
+                                this.ctx.fillStyle = vehicle.color;
+                                this.ctx.beginPath();
+                                this.ctx.arc(px, py, 8, 0, 2 * Math.PI);
+                                this.ctx.fill();
+                                
+                                this.ctx.fillStyle = 'white';
+                                this.ctx.font = 'bold 8px monospace';
+                                this.ctx.textAlign = 'center';
+                                this.ctx.textBaseline = 'middle';
+                                this.ctx.fillText(i.toString(), px, py);
+                            }
+                        }
+                        
+                        this.ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+
+            drawProgressBar(x, y, width, height, progress, color) {
+                // Background
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.fillRect(x - width/2, y, width, height);
+                
+                // Progress
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(x - width/2, y, width * progress, height);
+                
+                // Border
+                this.ctx.strokeStyle = 'white';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(x - width/2, y, width, height);
+            }
+        }
+
+        // ============ Main Simulation ============
+        
+        class Simulation {
+            constructor() {
+                this.roadNetwork = new RoadNetwork();
+                this.vehicles = [];
+                this.currentTime = 0;
+                this.useGNN = true;
+                this.isRunning = false;
+                this.speed = 1;
+                
+                this.canvas = document.getElementById('network-canvas');
+                this.visualization = new Visualization(this.canvas, this.roadNetwork);
+                
+                this.setupControls();
+                this.setupFileInput();
+                this.createInitialVehicles();
+                
+                this.lastFrameTime = 0;
+                this.animationFrame = null;
+                
+                window.debugMode = false;
+                
+                this.updateStats();
+            }
+
+            setupControls() {
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    this.isRunning = true;
+                    this.animate();
+                    this.updateControlStates();
+                });
+
+                document.getElementById('pauseBtn').addEventListener('click', () => {
+                    this.isRunning = false;
+                    if (this.animationFrame) {
+                        cancelAnimationFrame(this.animationFrame);
+                    }
+                    this.updateControlStates();
+                });
+
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.reset();
+                });
+
+                document.getElementById('gnnBtn').addEventListener('click', () => {
+                    this.toggleGNN();
+                });
+
+                document.getElementById('addBtn').addEventListener('click', () => {
+                    this.addVehicle();
+                });
+
+                document.getElementById('removeBtn').addEventListener('click', () => {
+                    this.removeVehicle();
+                });
+
+                document.getElementById('speedBtn').addEventListener('click', () => {
+                    this.toggleSpeed();
+                });
+
+                document.getElementById('debugBtn').addEventListener('click', () => {
+                    window.debugMode = !window.debugMode;
+                    document.getElementById('debugBtn').textContent = `🐛 Debug: ${window.debugMode ? 'ON' : 'OFF'}`;
+                    document.getElementById('debugBtn').classList.toggle('active', window.debugMode);
+                });
+            }
+
+            setupFileInput() {
+                const fileInput = document.getElementById('fileInput');
+                const fileInputDiv = document.querySelector('.file-input');
+                
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        fileInputDiv.style.border = '2px solid #ffeb3b';
+                        fileInputDiv.innerHTML = '📄 Loading: ' + file.name;
+                        
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const jsonData = JSON.parse(e.target.result);
+                                console.log('Loaded JSON data:', jsonData);
+                                
+                                if (this.roadNetwork.loadTopologyFromJSON(jsonData)) {
+                                    this.visualization.setupTransform();
+                                    this.reset();
+                                    fileInputDiv.style.border = '2px solid #4caf50';
+                                    fileInputDiv.innerHTML = '✅ Loaded: ' + file.name;
+                                } else {
+                                    fileInputDiv.style.border = '2px solid #f44336';
+                                    fileInputDiv.innerHTML = '❌ Failed to load topology';
+                                }
+                            } catch (error) {
+                                fileInputDiv.style.border = '2px solid #f44336';
+                                fileInputDiv.innerHTML = '❌ Invalid JSON file';
+                                console.error('Invalid JSON file:', error);
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                });
+            }
+
+            createInitialVehicles() {
+                this.vehicles = [];
+                
+                const parkingPoints = Array.from(this.roadNetwork.specialPoints.parking.keys());
+                const numVehicles = Math.min(4, parkingPoints.length);
+                
+                for (let i = 0; i < numVehicles; i++) {
+                    const startParking = parkingPoints[i % parkingPoints.length];
+                    const vehicle = new Vehicle(i, startParking, this.roadNetwork, this.useGNN);
+                    this.vehicles.push(vehicle);
+                }
+                
+                this.roadNetwork.vehicles = this.vehicles;
+                this.visualization.vehicles = this.vehicles;
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+                
+                const currentTime = performance.now();
+                const deltaTime = (currentTime - this.lastFrameTime) / 1000 * this.speed;
+                this.lastFrameTime = currentTime;
+                
+                this.update(deltaTime);
+                this.visualization.draw(this.currentTime);
+                this.updateStats();
+                
+                this.animationFrame = requestAnimationFrame(() => this.animate());
+            }
+
+            update(dt) {
+                this.currentTime += dt;
+                this.roadNetwork.updateTime(this.currentTime);
+                
+                for (const vehicle of this.vehicles) {
+                    vehicle.update(this.currentTime, dt);
+                }
+            }
+
+            updateStats() {
+                const totalCycles = this.vehicles.reduce((sum, v) => sum + v.completedCycles, 0);
+                const totalDistance = this.vehicles.reduce((sum, v) => sum + v.totalDistance, 0);
+                const totalWaitTime = this.vehicles.reduce((sum, v) => sum + v.waitTime, 0);
+                
+                const stateCounts = {};
+                const modeCounts = {};
+                
+                for (const state of Object.values(VehicleState)) {
+                    stateCounts[state] = 0;
+                }
+                for (const mode of Object.values(VehicleMode)) {
+                    modeCounts[mode] = 0;
+                }
+                
+                for (const vehicle of this.vehicles) {
+                    stateCounts[vehicle.state] = (stateCounts[vehicle.state] || 0) + 1;
+                    modeCounts[vehicle.mode] = (modeCounts[vehicle.mode] || 0) + 1;
+                }
+                
+                // Count special point usage
+                const loadingOccupied = Array.from(this.roadNetwork.specialPoints.loading.values())
+                    .filter(p => p.isOccupied).length;
+                const loadingReserved = Array.from(this.roadNetwork.specialPoints.loading.values())
+                    .filter(p => p.reservedBy !== null && !p.isOccupied).length;
+                const loadingAvailable = this.roadNetwork.specialPoints.loading.size - loadingOccupied - loadingReserved;
+                
+                const unloadingOccupied = Array.from(this.roadNetwork.specialPoints.unloading.values())
+                    .filter(p => p.isOccupied).length;
+                const unloadingReserved = Array.from(this.roadNetwork.specialPoints.unloading.values())
+                    .filter(p => p.reservedBy !== null && !p.isOccupied).length;
+                const unloadingAvailable = this.roadNetwork.specialPoints.unloading.size - unloadingOccupied - unloadingReserved;
+                
+                const parkingOccupied = Array.from(this.roadNetwork.specialPoints.parking.values())
+                    .filter(p => p.isOccupied).length;
+                const parkingReserved = Array.from(this.roadNetwork.specialPoints.parking.values())
+                    .filter(p => p.reservedBy !== null && !p.isOccupied).length;
+                const parkingAvailable = this.roadNetwork.specialPoints.parking.size - parkingOccupied - parkingReserved;
+                
+                const totalEdgeReservations = Array.from(this.roadNetwork.edgeReservations.values())
+                    .reduce((sum, reservations) => sum + reservations.length, 0);
+                const totalNodeReservations = Array.from(this.roadNetwork.nodeReservations.values())
+                    .reduce((sum, reservations) => sum + reservations.length, 0);
+                
+                const statusIndicator = this.isRunning ? 
+                    '<span class="status-indicator status-running"></span>Running' :
+                    '<span class="status-indicator status-paused"></span>Paused';
+                
+                const statsText = `
+╔═══ STAGE 2 ENHANCED GNN ═══╗
+║ Mode: ${this.useGNN ? 'GNN Enhanced' : 'Simple Mode  '}   ║
+║ Time: ${this.currentTime.toFixed(1).padStart(17)}s ║
+║ Vehicles: ${this.vehicles.length.toString().padStart(13)} ║
+║ Status: ${statusIndicator.padEnd(23)} ║
+╠═══ OPERATION STATS ════════╣
+║ Completed Cycles: ${totalCycles.toString().padStart(8)} ║
+║ Total Distance: ${totalDistance.toFixed(1).padStart(10)} ║
+║ Wait Time: ${totalWaitTime.toFixed(1).padStart(12)}s ║
+║ Avg Cycle Time: ${totalCycles > 0 ? (this.currentTime / totalCycles).toFixed(1).padStart(10) : '0.0'.padStart(10)}s ║
+╠═══ VEHICLE STATES ═════════╣
+║ Idle: ${stateCounts[VehicleState.IDLE].toString().padStart(17)} ║
+║ Planning: ${stateCounts[VehicleState.PLANNING].toString().padStart(13)} ║
+║ Waiting: ${stateCounts[VehicleState.WAITING].toString().padStart(14)} ║
+║ Confirmed: ${stateCounts[VehicleState.CONFIRMED].toString().padStart(12)} ║
+║ Moving: ${stateCounts[VehicleState.MOVING].toString().padStart(15)} ║
+║ Loading: ${stateCounts[VehicleState.LOADING].toString().padStart(14)} ║
+║ Unloading: ${stateCounts[VehicleState.UNLOADING].toString().padStart(12)} ║
+║ Blocked: ${stateCounts[VehicleState.BLOCKED].toString().padStart(14)} ║
+╠═══ VEHICLE MODES ══════════╣
+║ Parked: ${modeCounts[VehicleMode.PARKED].toString().padStart(15)} ║
+║ Empty: ${modeCounts[VehicleMode.EMPTY].toString().padStart(16)} ║
+║ Loaded: ${modeCounts[VehicleMode.LOADED].toString().padStart(15)} ║
+║ Returning: ${modeCounts[VehicleMode.RETURNING].toString().padStart(12)} ║
+╠═══ LOADING POINTS (${this.roadNetwork.specialPoints.loading.size}) ════╣
+║ Occupied: ${loadingOccupied.toString().padStart(13)} ║
+║ Reserved: ${loadingReserved.toString().padStart(13)} ║
+║ Available: ${loadingAvailable.toString().padStart(12)} ║
+╠═══ UNLOADING POINTS (${this.roadNetwork.specialPoints.unloading.size}) ══╣
+║ Occupied: ${unloadingOccupied.toString().padStart(13)} ║
+║ Reserved: ${unloadingReserved.toString().padStart(13)} ║
+║ Available: ${unloadingAvailable.toString().padStart(12)} ║
+╠═══ PARKING POINTS (${this.roadNetwork.specialPoints.parking.size}) ════╣
+║ Occupied: ${parkingOccupied.toString().padStart(13)} ║
+║ Reserved: ${parkingReserved.toString().padStart(13)} ║
+║ Available: ${parkingAvailable.toString().padStart(12)} ║
+╠═══ RESERVATION STATUS ═════╣
+║ Edge Reservations: ${totalEdgeReservations.toString().padStart(7)} ║
+║ Node Reservations: ${totalNodeReservations.toString().padStart(7)} ║
+║ Safety Buffer: ${(this.roadNetwork.EDGE_SAFETY_BUFFER * 1000).toFixed(0).padStart(9)}ms ║
+║ Cooling Time: ${(this.roadNetwork.NODE_COOLING_TIME * 1000).toFixed(0).padStart(10)}ms ║
+╚════════════════════════════╝
+
+GNN Features:
+• Node occupancy tracking
+• Edge congestion analysis  
+• Time-space reservations
+• Safety buffers (${(this.roadNetwork.EDGE_SAFETY_BUFFER * 1000).toFixed(0)}ms/${(this.roadNetwork.NODE_SAFETY_BUFFER * 1000).toFixed(0)}ms)
+• Conflict-free scheduling
+• Dynamic path replanning
+
+Operation Cycle:
+🅿️ Parking → 🟢 Loading → 
+🔵 Unloading → 🅿️ Parking
+
+Speed: ${this.speed}x | Debug: ${window.debugMode ? 'ON' : 'OFF'}
+                `.trim();
+                
+                document.getElementById('stats').innerHTML = statsText;
+            }
+
+            toggleGNN() {
+                this.useGNN = !this.useGNN;
+                for (const vehicle of this.vehicles) {
+                    vehicle.useGNN = this.useGNN;
+                    vehicle.state = VehicleState.IDLE;
+                    vehicle.pathConfirmed = false;
+                }
+                this.roadNetwork.edgeReservations.clear();
+                this.roadNetwork.nodeReservations.clear();
+                
+                const btn = document.getElementById('gnnBtn');
+                btn.textContent = this.useGNN ? '🧠 GNN Mode' : '🎯 Simple Mode';
+                btn.classList.toggle('active', this.useGNN);
+            }
+
+            addVehicle() {
+                const maxVehicles = this.roadNetwork.specialPoints.parking.size;
+                if (this.vehicles.length >= maxVehicles) {
+                    alert(`Maximum vehicles reached! (Limited by parking points: ${maxVehicles})`);
+                    return;
+                }
+                
+                const availableParking = this.roadNetwork.getAvailablePoint('parking');
+                if (!availableParking) {
+                    alert('No available parking points for new vehicle!');
+                    return;
+                }
+                
+                const vehicleId = this.vehicles.length;
+                const vehicle = new Vehicle(vehicleId, availableParking, this.roadNetwork, this.useGNN);
+                this.vehicles.push(vehicle);
+                this.roadNetwork.vehicles = this.vehicles;
+                this.visualization.vehicles = this.vehicles;
+            }
+
+            removeVehicle() {
+                if (this.vehicles.length <= 1) {
+                    alert('Must keep at least 1 vehicle!');
+                    return;
+                }
+                
+                const removed = this.vehicles.pop();
+                this.roadNetwork.cancelReservations(removed.id);
+                this.roadNetwork.removeVehicleFromNode(removed.id, removed.currentNode);
+                
+                if (removed.currentParkingPoint) {
+                    this.roadNetwork.releaseSpecialPoint(removed.currentParkingPoint);
+                }
+                if (removed.targetLoadingPoint) {
+                    this.roadNetwork.releaseSpecialPoint(removed.targetLoadingPoint);
+                }
+                if (removed.targetUnloadingPoint) {
+                    this.roadNetwork.releaseSpecialPoint(removed.targetUnloadingPoint);
+                }
+                if (removed.targetParkingPoint) {
+                    this.roadNetwork.releaseSpecialPoint(removed.targetParkingPoint);
+                }
+                
+                this.roadNetwork.vehicles = this.vehicles;
+                this.visualization.vehicles = this.vehicles;
+            }
+
+            toggleSpeed() {
+                const speeds = [0.5, 1, 2, 4];
+                const currentIndex = speeds.indexOf(this.speed);
+                this.speed = speeds[(currentIndex + 1) % speeds.length];
+                
+                document.getElementById('speedBtn').textContent = `⚡ Speed: ${this.speed}x`;
+            }
+
+            reset() {
+                this.isRunning = false;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+                
+                this.currentTime = 0;
+                this.vehicles = [];
+                this.roadNetwork.edgeReservations.clear();
+                this.roadNetwork.nodeReservations.clear();
+                
+                // Clear all node occupancy
+                for (const [nodeId, vehicles] of this.roadNetwork.nodeOccupancy) {
+                    vehicles.clear();
+                }
+                
+                // Reset all special points
+                for (const [type, points] of Object.entries(this.roadNetwork.specialPoints)) {
+                    for (const [pointId, point] of points) {
+                        point.isOccupied = false;
+                        point.reservedBy = null;
+                    }
+                }
+                
+                this.createInitialVehicles();
+                this.visualization.draw(this.currentTime);
+                this.updateStats();
+                this.updateControlStates();
+            }
+
+            updateControlStates() {
+                document.getElementById('startBtn').disabled = this.isRunning;
+                document.getElementById('pauseBtn').disabled = !this.isRunning;
+            }
+        }
+
+        // ============ Initialize ============
+        
+        let simulation;
+        
+        window.addEventListener('load', () => {
+            simulation = new Simulation();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                setTimeout(() => {
+                    simulation.visualization.setupCanvas();
+                    simulation.visualization.setupTransform();
+                    simulation.visualization.draw(simulation.currentTime);
+                }, 100);
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                switch (e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        if (simulation.isRunning) {
+                            document.getElementById('pauseBtn').click();
+                        } else {
+                            document.getElementById('startBtn').click();
+                        }
+                        break;
+                    case 'g':
+                        document.getElementById('gnnBtn').click();
+                        break;
+                    case '+':
+                    case '=':
+                        document.getElementById('addBtn').click();
+                        break;
+                    case '-':
+                        document.getElementById('removeBtn').click();
+                        break;
+                    case 'r':
+                        document.getElementById('resetBtn').click();
+                        break;
+                    case 's':
+                        document.getElementById('speedBtn').click();
+                        break;
+                    case 'd':
+                        document.getElementById('debugBtn').click();
+                        break;
+                }
+            });
+            
+            // Setup canvas tooltips
+            const tooltip = document.getElementById('vehicleTooltip');
+            simulation.canvas.addEventListener('mousemove', (e) => {
+                const rect = simulation.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Check if hovering over a vehicle
+                let hoveredVehicle = null;
+                for (const vehicle of simulation.vehicles) {
+                    const [vx, vy] = simulation.visualization.transformPoint(vehicle.position[0], vehicle.position[1]);
+                    const dist = Math.sqrt((x - vx) ** 2 + (y - vy) ** 2);
+                    if (dist < 15) {
+                        hoveredVehicle = vehicle;
+                        break;
+                    }
+                }
+                
+                if (hoveredVehicle) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = e.clientX + 10 + 'px';
+                    tooltip.style.top = e.clientY + 10 + 'px';
+                    tooltip.innerHTML = `
+                        Vehicle ${hoveredVehicle.id}<br>
+                        State: ${hoveredVehicle.state}<br>
+                        Mode: ${hoveredVehicle.mode}<br>
+                        Cycles: ${hoveredVehicle.completedCycles}<br>
+                        Distance: ${hoveredVehicle.totalDistance.toFixed(1)}
+                    `;
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            });
+            
+            simulation.canvas.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+{
+  "simulation_summary": {
+    "total_steps": 1000,
+    "final_time": 1000.0,
+    "system_type": "基于拓扑感知GNN的露天矿智能运输调度系统",
+    "stage": "第二阶段 - 多车协同调度",
+    "technology_highlights": [
+      "拓扑感知图神经网络",
+      "分布式多智能体协调",
+      "冲突检测与智能消解",
+      "真实业务流程建模"
+    ]
+  },
+  "performance_metrics": {
+    "completed_tasks": 0,
+    "pending_tasks": 86,
+    "active_vehicles": 10,
+    "total_vehicles": 10,
+    "vehicle_utilization": 1.0,
+    "total_distance": 0.0,
+    "total_conflicts": 13315,
+    "avg_distance_per_task": 0.0
+  },
+  "milestone_reports": [
+    {
+      "step": 251,
+      "progress": "25.1%",
+      "metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 12,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 2080,
+        "avg_distance_per_task": 0.0
+      }
+    },
+    {
+      "step": 501,
+      "progress": "50.1%",
+      "metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 38,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 5830,
+        "avg_distance_per_task": 0.0
+      }
+    },
+    {
+      "step": 751,
+      "progress": "75.1%",
+      "metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 68,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 9580,
+        "avg_distance_per_task": 0.0
+      }
+    },
+    {
+      "step": 1000,
+      "progress": "100.0%",
+      "metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13315,
+        "avg_distance_per_task": 0.0
+      }
+    }
+  ],
+  "detailed_step_data": [
+    {
+      "current_time": 991.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13180,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 992.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13195,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 993.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13210,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 994.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13225,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 995.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13240,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 996.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13255,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 997.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13270,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 998.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13285,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 999.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13300,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    },
+    {
+      "current_time": 1000.0,
+      "performance_metrics": {
+        "completed_tasks": 0,
+        "pending_tasks": 86,
+        "active_vehicles": 10,
+        "total_vehicles": 10,
+        "vehicle_utilization": 1.0,
+        "total_distance": 0.0,
+        "total_conflicts": 13315,
+        "avg_distance_per_task": 0.0
+      },
+      "step_stats": {
+        "assigned_tasks": 0,
+        "conflicts_detected": 15,
+        "conflicts_resolved": 15,
+        "vehicles_moved": 0
+      }
+    }
+  ],
+  "export_time": "2025-06-20 18:02:09"
+}

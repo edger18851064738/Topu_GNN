@@ -1,0 +1,3412 @@
+{
+  "system": "完整集成：基于拓扑感知GNN架构的露天矿智能调度系统",
+  "stage": "第一阶段：智能拓扑构建",
+  "export_time": "2025-06-24 15:50:06",
+  "ready_for_stage2": true,
+  "gnn_input_ready": true,
+  "stage1_progress": {
+    "current_step": 5,
+    "total_steps": 5,
+    "step_names": [
+      "双向路径智能规划",
+      "动态节点密度控制",
+      "关键节点聚类提取",
+      "车辆动力学约束拟合",
+      "图拓扑标准化输出"
+    ],
+    "completed_steps": [
+      "双向路径智能规划",
+      "动态节点密度控制",
+      "关键节点聚类提取",
+      "车辆动力学约束拟合",
+      "图拓扑标准化输出"
+    ],
+    "step_details": {
+      "双向路径智能规划": {
+        "description": "双向路径智能规划",
+        "timestamp": 1750751391.4432836,
+        "status": "完成"
+      },
+      "动态节点密度控制": {
+        "description": "动态节点密度控制",
+        "timestamp": 1750751391.4432836,
+        "status": "完成"
+      },
+      "关键节点聚类提取": {
+        "description": "关键节点聚类提取",
+        "timestamp": 1750751391.463846,
+        "status": "完成"
+      },
+      "车辆动力学约束拟合": {
+        "description": "车辆动力学约束拟合",
+        "timestamp": 1750751391.8951852,
+        "status": "完成"
+      },
+      "图拓扑标准化输出": {
+        "description": "图拓扑标准化输出",
+        "timestamp": 1750751391.8981943,
+        "status": "完成"
+      }
+    },
+    "step_status": {
+      "双向路径智能规划": "完成",
+      "动态节点密度控制": "完成",
+      "关键节点聚类提取": "完成",
+      "车辆动力学约束拟合": "完成",
+      "图拓扑标准化输出": "完成"
+    },
+    "can_execute_manually": {
+      "双向路径智能规划": true,
+      "动态节点密度控制": true,
+      "关键节点聚类提取": true,
+      "车辆动力学约束拟合": true,
+      "图拓扑标准化输出": true
+    }
+  },
+  "construction_stats": {
+    "paths_generated": 44,
+    "total_nodes": 1971,
+    "avg_quality": 0.8800000000000001,
+    "interfaces_count": 266,
+    "step_times": {
+      "双向路径智能规划": 3.874845266342163,
+      "动态节点密度控制": 0.0,
+      "关键节点聚类提取": 0.019161701202392578,
+      "车辆动力学约束拟合": 0.4313392639160156,
+      "图拓扑标准化输出": 0.0030090808868408203
+    }
+  },
+  "consolidation_stats": {
+    "key_nodes_count": 45,
+    "node_reduction_ratio": 0.9771689497716896,
+    "reconstruction_success_rate": 1.0,
+    "consolidation_time": 0.453510046005249,
+    "enhanced_curve_fitting_success": 2,
+    "complete_curve_success": 2,
+    "avg_curve_quality": 0.7586590234287829,
+    "dynamics_compliance_rate": 0.0,
+    "turning_radius_violations": 0,
+    "grade_violations": 0,
+    "endpoint_reduction_ratio": 0.8409090909090909,
+    "endpoint_clusters_count": 14,
+    "merged_endpoint_paths": 74
+  },
+  "enhanced_consolidation_applied": true,
+  "enhanced_consolidation_stats": {
+    "original_nodes_count": 1971,
+    "endpoint_nodes_count": 0,
+    "clusterable_nodes_count": 1796,
+    "key_nodes_count": 45,
+    "node_reduction_ratio": 0.9771689497716896,
+    "clustering_time": 0.0,
+    "reconstruction_time": 0.0,
+    "paths_reconstructed": 44,
+    "reconstruction_success_rate": 1.0,
+    "original_endpoints_count": 88,
+    "endpoint_clusters_count": 14,
+    "endpoint_reduction_ratio": 0.8409090909090909,
+    "endpoint_clustering_time": 0.0010018348693847656,
+    "merged_endpoint_paths": 74,
+    "enhanced_curve_fitting_used": 2,
+    "complete_curve_success": 2,
+    "segmented_curve_success": 42,
+    "fallback_reconstruction": 0,
+    "avg_curve_quality": 0.7586590234287829,
+    "dynamics_compliance_rate": 0.0,
+    "turning_radius_violations": 0,
+    "grade_violations": 0
+  },
+  "key_nodes_info": {
+    "endpoint_cluster_start_0": {
+      "position": [
+        7.014101491464213,
+        61.954733462146926,
+        -1.7730118879168106
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_U0",
+        "L0_to_P0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_U1",
+        "L0_to_P1"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L0_to_U0",
+          "L0_to_P0",
+          "L0_to_P3",
+          "L0_to_P2",
+          "L0_to_U1",
+          "L0_to_P1"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_0",
+        "position": [
+          7.014101491464213,
+          61.954733462146926,
+          -1.7730118879168106
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L0_to_U0",
+            "L0_to_P0",
+            "L0_to_P3",
+            "L0_to_P2",
+            "L0_to_U1",
+            "L0_to_P1"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L0_to_U0', 'L0_to_P0', 'L0_to_P3', 'L0_to_P2', 'L0_to_U1', 'L0_to_P1'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_start_1": {
+      "position": [
+        26.88543340468424,
+        47.86587716039573,
+        2.7039197552703427
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L1_to_U0",
+        "L1_to_P1",
+        "L1_to_P0",
+        "L1_to_P3"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L1_to_P2",
+          "L1_to_U1",
+          "L1_to_U0",
+          "L1_to_P1",
+          "L1_to_P0",
+          "L1_to_P3"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_1",
+        "position": [
+          26.88543340468424,
+          47.86587716039573,
+          2.7039197552703427
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L1_to_P2",
+            "L1_to_U1",
+            "L1_to_U0",
+            "L1_to_P1",
+            "L1_to_P0",
+            "L1_to_P3"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L1_to_P2', 'L1_to_U1', 'L1_to_U0', 'L1_to_P1', 'L1_to_P0', 'L1_to_P3'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_start_2": {
+      "position": [
+        2.9958086993136095,
+        56.99323571166906,
+        3.68224274289388
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L2_to_P1",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L2_to_P1",
+          "L2_to_U1",
+          "L2_to_U0",
+          "L2_to_P2",
+          "L2_to_P3",
+          "L2_to_P0"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_2",
+        "position": [
+          2.9958086993136095,
+          56.99323571166906,
+          3.68224274289388
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L2_to_P1",
+            "L2_to_U1",
+            "L2_to_U0",
+            "L2_to_P2",
+            "L2_to_P3",
+            "L2_to_P0"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L2_to_P1', 'L2_to_U1', 'L2_to_U0', 'L2_to_P2', 'L2_to_P3', 'L2_to_P0'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_start_3": {
+      "position": [
+        31.100828863612545,
+        39.12510610931138,
+        2.539662485532388
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L3_to_U0",
+        "L3_to_P0",
+        "L3_to_U1",
+        "L3_to_P2",
+        "L3_to_P3",
+        "L3_to_P1"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L3_to_U0",
+          "L3_to_P0",
+          "L3_to_U1",
+          "L3_to_P2",
+          "L3_to_P3",
+          "L3_to_P1"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_3",
+        "position": [
+          31.100828863612545,
+          39.12510610931138,
+          2.539662485532388
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L3_to_U0",
+            "L3_to_P0",
+            "L3_to_U1",
+            "L3_to_P2",
+            "L3_to_P3",
+            "L3_to_P1"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L3_to_U0', 'L3_to_P0', 'L3_to_U1', 'L3_to_P2', 'L3_to_P3', 'L3_to_P1'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_start_4": {
+      "position": [
+        60.14971242778423,
+        84.62159027689832,
+        1.2971465988598132
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L4_to_P0",
+        "L4_to_U1",
+        "L4_to_P2",
+        "L4_to_P3",
+        "L4_to_U0",
+        "L4_to_P1"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L4_to_P0",
+          "L4_to_U1",
+          "L4_to_P2",
+          "L4_to_P3",
+          "L4_to_U0",
+          "L4_to_P1"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_4",
+        "position": [
+          60.14971242778423,
+          84.62159027689832,
+          1.2971465988598132
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L4_to_P0",
+            "L4_to_U1",
+            "L4_to_P2",
+            "L4_to_P3",
+            "L4_to_U0",
+            "L4_to_P1"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L4_to_P0', 'L4_to_U1', 'L4_to_P2', 'L4_to_P3', 'L4_to_U0', 'L4_to_P1'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_start_5": {
+      "position": [
+        86.57982456899623,
+        81.80206853202579,
+        -0.5408591273639187
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L5_to_P0",
+        "L5_to_U1",
+        "L5_to_U0",
+        "L5_to_P1",
+        "L5_to_P3",
+        "L5_to_P2"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L5_to_P0",
+          "L5_to_U1",
+          "L5_to_U0",
+          "L5_to_P1",
+          "L5_to_P3",
+          "L5_to_P2"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_5",
+        "position": [
+          86.57982456899623,
+          81.80206853202579,
+          -0.5408591273639187
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L5_to_P0",
+            "L5_to_U1",
+            "L5_to_U0",
+            "L5_to_P1",
+            "L5_to_P3",
+            "L5_to_P2"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L5_to_P0', 'L5_to_U1', 'L5_to_U0', 'L5_to_P1', 'L5_to_P3', 'L5_to_P2'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_start_6": {
+      "position": [
+        84.0,
+        9.0,
+        4.71238898038469
+      ],
+      "importance": 20.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "U0_to_P0",
+        "U0_to_P2",
+        "U0_to_P1",
+        "U0_to_P3"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 4,
+        "merged_path_ids": [
+          "U0_to_P0",
+          "U0_to_P2",
+          "U0_to_P1",
+          "U0_to_P3"
+        ],
+        "cluster_importance": 4
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_6",
+        "position": [
+          84.0,
+          9.0,
+          4.71238898038469
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 4,
+          "merged_path_ids": [
+            "U0_to_P0",
+            "U0_to_P2",
+            "U0_to_P1",
+            "U0_to_P3"
+          ],
+          "cluster_importance": 4
+        },
+        "paths": "{'U0_to_P0', 'U0_to_P2', 'U0_to_P1', 'U0_to_P3'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_start_7": {
+      "position": [
+        76.8862090556868,
+        13.97853346384733,
+        2.172934015399666
+      ],
+      "importance": 20.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "U1_to_P0",
+        "U1_to_P2",
+        "U1_to_P1",
+        "U1_to_P3"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 4,
+        "merged_path_ids": [
+          "U1_to_P0",
+          "U1_to_P2",
+          "U1_to_P3",
+          "U1_to_P1"
+        ],
+        "cluster_importance": 4
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_start_7",
+        "position": [
+          76.8862090556868,
+          13.97853346384733,
+          2.172934015399666
+        ],
+        "type": "start",
+        "cluster_info": {
+          "original_endpoints_count": 4,
+          "merged_path_ids": [
+            "U1_to_P0",
+            "U1_to_P2",
+            "U1_to_P3",
+            "U1_to_P1"
+          ],
+          "cluster_importance": 4
+        },
+        "paths": "{'U1_to_P0', 'U1_to_P2', 'U1_to_P1', 'U1_to_P3'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_end_0": {
+      "position": [
+        84.12370513724026,
+        9.09578858150252,
+        -1.5743158504003782
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_U0",
+        "L3_to_U0",
+        "L2_to_U0",
+        "L5_to_U0",
+        "L1_to_U0",
+        "L4_to_U0"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L0_to_U0",
+          "L3_to_U0",
+          "L2_to_U0",
+          "L5_to_U0",
+          "L1_to_U0",
+          "L4_to_U0"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_end_0",
+        "position": [
+          84.12370513724026,
+          9.09578858150252,
+          -1.5743158504003782
+        ],
+        "type": "end",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L0_to_U0",
+            "L3_to_U0",
+            "L2_to_U0",
+            "L5_to_U0",
+            "L1_to_U0",
+            "L4_to_U0"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L0_to_U0', 'L3_to_U0', 'L2_to_U0', 'L5_to_U0', 'L1_to_U0', 'L4_to_U0'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_end_1": {
+      "position": [
+        77.23683288635593,
+        14.153086905753545,
+        -1.5408506295328024
+      ],
+      "importance": 30.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L5_to_U1",
+        "L1_to_U1",
+        "L2_to_U1",
+        "L3_to_U1",
+        "L0_to_U1",
+        "L4_to_U1"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 6,
+        "merged_path_ids": [
+          "L5_to_U1",
+          "L1_to_U1",
+          "L2_to_U1",
+          "L3_to_U1",
+          "L0_to_U1",
+          "L4_to_U1"
+        ],
+        "cluster_importance": 6
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_end_1",
+        "position": [
+          77.23683288635593,
+          14.153086905753545,
+          -1.5408506295328024
+        ],
+        "type": "end",
+        "cluster_info": {
+          "original_endpoints_count": 6,
+          "merged_path_ids": [
+            "L5_to_U1",
+            "L1_to_U1",
+            "L2_to_U1",
+            "L3_to_U1",
+            "L0_to_U1",
+            "L4_to_U1"
+          ],
+          "cluster_importance": 6
+        },
+        "paths": "{'L5_to_U1', 'L1_to_U1', 'L2_to_U1', 'L3_to_U1', 'L0_to_U1', 'L4_to_U1'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_end_2": {
+      "position": [
+        88.84848904388032,
+        30.789340813562816,
+        -0.060688822165414595
+      ],
+      "importance": 40.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "U1_to_P0",
+        "U0_to_P0",
+        "L0_to_P0",
+        "L4_to_P0",
+        "L3_to_P0",
+        "L1_to_P0",
+        "L5_to_P0",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 8,
+        "merged_path_ids": [
+          "U1_to_P0",
+          "U0_to_P0",
+          "L0_to_P0",
+          "L4_to_P0",
+          "L3_to_P0",
+          "L1_to_P0",
+          "L5_to_P0",
+          "L2_to_P0"
+        ],
+        "cluster_importance": 8
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_end_2",
+        "position": [
+          88.84848904388032,
+          30.789340813562816,
+          -0.060688822165414595
+        ],
+        "type": "end",
+        "cluster_info": {
+          "original_endpoints_count": 8,
+          "merged_path_ids": [
+            "U1_to_P0",
+            "U0_to_P0",
+            "L0_to_P0",
+            "L4_to_P0",
+            "L3_to_P0",
+            "L1_to_P0",
+            "L5_to_P0",
+            "L2_to_P0"
+          ],
+          "cluster_importance": 8
+        },
+        "paths": "{'U1_to_P0', 'U0_to_P0', 'L0_to_P0', 'L4_to_P0', 'L3_to_P0', 'L1_to_P0', 'L5_to_P0', 'L2_to_P0'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_end_3": {
+      "position": [
+        88.83175904036352,
+        35.09813288880208,
+        0.10781088824890173
+      ],
+      "importance": 40.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P1",
+        "L4_to_P1",
+        "U1_to_P1",
+        "L2_to_P1",
+        "L5_to_P1",
+        "L1_to_P1",
+        "L3_to_P1",
+        "U0_to_P1"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 8,
+        "merged_path_ids": [
+          "L0_to_P1",
+          "L4_to_P1",
+          "U1_to_P1",
+          "L2_to_P1",
+          "L5_to_P1",
+          "L1_to_P1",
+          "L3_to_P1",
+          "U0_to_P1"
+        ],
+        "cluster_importance": 8
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_end_3",
+        "position": [
+          88.83175904036352,
+          35.09813288880208,
+          0.10781088824890173
+        ],
+        "type": "end",
+        "cluster_info": {
+          "original_endpoints_count": 8,
+          "merged_path_ids": [
+            "L0_to_P1",
+            "L4_to_P1",
+            "U1_to_P1",
+            "L2_to_P1",
+            "L5_to_P1",
+            "L1_to_P1",
+            "L3_to_P1",
+            "U0_to_P1"
+          ],
+          "cluster_importance": 8
+        },
+        "paths": "{'L0_to_P1', 'L4_to_P1', 'U1_to_P1', 'L2_to_P1', 'L5_to_P1', 'L1_to_P1', 'L3_to_P1', 'U0_to_P1'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_end_4": {
+      "position": [
+        88.86495231425961,
+        39.92588123891326,
+        0.00823890382037495
+      ],
+      "importance": 40.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "U0_to_P2",
+        "L0_to_P2",
+        "U1_to_P2",
+        "L2_to_P2",
+        "L3_to_P2",
+        "L4_to_P2",
+        "L5_to_P2"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 8,
+        "merged_path_ids": [
+          "L1_to_P2",
+          "U0_to_P2",
+          "L0_to_P2",
+          "U1_to_P2",
+          "L2_to_P2",
+          "L3_to_P2",
+          "L4_to_P2",
+          "L5_to_P2"
+        ],
+        "cluster_importance": 8
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_end_4",
+        "position": [
+          88.86495231425961,
+          39.92588123891326,
+          0.00823890382037495
+        ],
+        "type": "end",
+        "cluster_info": {
+          "original_endpoints_count": 8,
+          "merged_path_ids": [
+            "L1_to_P2",
+            "U0_to_P2",
+            "L0_to_P2",
+            "U1_to_P2",
+            "L2_to_P2",
+            "L3_to_P2",
+            "L4_to_P2",
+            "L5_to_P2"
+          ],
+          "cluster_importance": 8
+        },
+        "paths": "{'L1_to_P2', 'U0_to_P2', 'L0_to_P2', 'U1_to_P2', 'L2_to_P2', 'L3_to_P2', 'L4_to_P2', 'L5_to_P2'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "endpoint_cluster_end_5": {
+      "position": [
+        89.06312329523708,
+        45.90541012205099,
+        -0.019385109305761913
+      ],
+      "importance": 40.0,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P3",
+        "L3_to_P3",
+        "L4_to_P3",
+        "L5_to_P3",
+        "U1_to_P3",
+        "L2_to_P3",
+        "L0_to_P3",
+        "U0_to_P3"
+      ],
+      "traffic_capacity": 150,
+      "original_nodes_count": 0,
+      "is_endpoint": true,
+      "node_type": "endpoint",
+      "cluster_info": {
+        "original_endpoints_count": 8,
+        "merged_path_ids": [
+          "L1_to_P3",
+          "L3_to_P3",
+          "L4_to_P3",
+          "L5_to_P3",
+          "U1_to_P3",
+          "L2_to_P3",
+          "L0_to_P3",
+          "U0_to_P3"
+        ],
+        "cluster_importance": 8
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {
+        "id": "endpoint_cluster_end_5",
+        "position": [
+          89.06312329523708,
+          45.90541012205099,
+          -0.019385109305761913
+        ],
+        "type": "end",
+        "cluster_info": {
+          "original_endpoints_count": 8,
+          "merged_path_ids": [
+            "L1_to_P3",
+            "L3_to_P3",
+            "L4_to_P3",
+            "L5_to_P3",
+            "U1_to_P3",
+            "L2_to_P3",
+            "L0_to_P3",
+            "U0_to_P3"
+          ],
+          "cluster_importance": 8
+        },
+        "paths": "{'L1_to_P3', 'L3_to_P3', 'L4_to_P3', 'L5_to_P3', 'U1_to_P3', 'L2_to_P3', 'L0_to_P3', 'U0_to_P3'}",
+        "is_clustered_endpoint": true
+      }
+    },
+    "key_node_0": {
+      "position": [
+        5.183205894877615,
+        53.938757626283405,
+        0.46205756742000204
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_1": {
+      "position": [
+        5.923563526762432,
+        45.987952662897804,
+        2.3208335526659574
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_2": {
+      "position": [
+        6.204638236820145,
+        36.323583989421834,
+        1.3134206108793456
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_3": {
+      "position": [
+        5.718764360269904,
+        26.96681115572065,
+        0.95995380930145
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_4": {
+      "position": [
+        6.615995176489437,
+        17.852129356031597,
+        2.3384028415556015
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_5": {
+      "position": [
+        7.7949434841220935,
+        8.074935853149054,
+        1.8224137331366919
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_6": {
+      "position": [
+        16.466285506402574,
+        7.936696387886816,
+        1.3385265148388232
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_7": {
+      "position": [
+        22.110320336235763,
+        10.595698839256054,
+        1.7168754901982188
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_8": {
+      "position": [
+        25.381927873030737,
+        19.984076996111334,
+        0.6316807661603764
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L0_to_P0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P3",
+        "L0_to_P2",
+        "L0_to_P1",
+        "L2_to_P1",
+        "L0_to_U0",
+        "L2_to_P2",
+        "L2_to_P3",
+        "L0_to_U1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_9": {
+      "position": [
+        30.933573343395604,
+        27.33423191290503,
+        1.4212243949091972
+      ],
+      "importance": 24,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L3_to_P0",
+        "L1_to_P1",
+        "L3_to_P2",
+        "L3_to_P1",
+        "L1_to_P3",
+        "L2_to_P0",
+        "L0_to_P2",
+        "L0_to_U0",
+        "L1_to_U0",
+        "L3_to_U0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P1",
+        "L1_to_P0",
+        "L2_to_P2",
+        "L0_to_U1",
+        "L0_to_P3",
+        "L0_to_P0",
+        "L3_to_P3",
+        "L2_to_P1",
+        "L3_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 24,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_10": {
+      "position": [
+        40.32309778624606,
+        24.705885759600744,
+        0.7016516173847916
+      ],
+      "importance": 24,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L3_to_P0",
+        "L1_to_P1",
+        "L3_to_P2",
+        "L3_to_P1",
+        "L1_to_P3",
+        "L2_to_P0",
+        "L0_to_P2",
+        "L0_to_U0",
+        "L1_to_U0",
+        "L3_to_U0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P1",
+        "L1_to_P0",
+        "L2_to_P2",
+        "L0_to_U1",
+        "L0_to_P3",
+        "L0_to_P0",
+        "L3_to_P3",
+        "L2_to_P1",
+        "L3_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 24,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_11": {
+      "position": [
+        49.53074198979016,
+        26.709472505008506,
+        0.23823646028796577
+      ],
+      "importance": 24,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L3_to_P0",
+        "L1_to_P1",
+        "L3_to_P2",
+        "L3_to_P1",
+        "L1_to_P3",
+        "L2_to_P0",
+        "L0_to_P2",
+        "L0_to_U0",
+        "L1_to_U0",
+        "L3_to_U0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P1",
+        "L1_to_P0",
+        "L2_to_P2",
+        "L0_to_U1",
+        "L0_to_P3",
+        "L0_to_P0",
+        "L3_to_P3",
+        "L2_to_P1",
+        "L3_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 24,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_12": {
+      "position": [
+        57.84859818006041,
+        28.805744951685096,
+        0.24660066394517013
+      ],
+      "importance": 24,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L3_to_P0",
+        "L1_to_P1",
+        "L3_to_P2",
+        "L3_to_P1",
+        "L1_to_P3",
+        "L2_to_P0",
+        "L0_to_P2",
+        "L0_to_U0",
+        "L1_to_U0",
+        "L3_to_U0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P1",
+        "L1_to_P0",
+        "L2_to_P2",
+        "L0_to_U1",
+        "L0_to_P3",
+        "L0_to_P0",
+        "L3_to_P3",
+        "L2_to_P1",
+        "L3_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 24,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_13": {
+      "position": [
+        66.74488270429435,
+        30.68486117458168,
+        0.5455055625708516
+      ],
+      "importance": 24,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L3_to_P0",
+        "L1_to_P1",
+        "L3_to_P2",
+        "L3_to_P1",
+        "L1_to_P3",
+        "L2_to_P0",
+        "L0_to_P2",
+        "L0_to_U0",
+        "L1_to_U0",
+        "L3_to_U0",
+        "L2_to_U1",
+        "L2_to_U0",
+        "L0_to_P1",
+        "L1_to_P0",
+        "L2_to_P2",
+        "L0_to_U1",
+        "L0_to_P3",
+        "L0_to_P0",
+        "L3_to_P3",
+        "L2_to_P1",
+        "L3_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 24,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_14": {
+      "position": [
+        75.00505624229642,
+        30.90121197326001,
+        0.21908281545209027
+      ],
+      "importance": 33,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L3_to_P0",
+        "L1_to_P1",
+        "L4_to_U1",
+        "L3_to_P2",
+        "L4_to_U0",
+        "L3_to_P1",
+        "U0_to_P1",
+        "L2_to_P0",
+        "L1_to_P3",
+        "U0_to_P0",
+        "L5_to_U0",
+        "L0_to_P2",
+        "L0_to_U0",
+        "L1_to_U0",
+        "L3_to_U0",
+        "L2_to_U0",
+        "L2_to_U1",
+        "U0_to_P2",
+        "L0_to_P1",
+        "L1_to_P0",
+        "L2_to_P2",
+        "U1_to_P3",
+        "L0_to_P3",
+        "L0_to_U1",
+        "U0_to_P3",
+        "L0_to_P0",
+        "L3_to_P3",
+        "L2_to_P1",
+        "L5_to_U1",
+        "L3_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 33,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_15": {
+      "position": [
+        78.2393755877612,
+        21.734432770272285,
+        0.3408524131908264
+      ],
+      "importance": 22,
+      "road_class": "primary",
+      "path_memberships": [
+        "L4_to_P0",
+        "L1_to_U1",
+        "L4_to_U1",
+        "U1_to_P1",
+        "L4_to_U0",
+        "U0_to_P1",
+        "U0_to_P0",
+        "L5_to_U0",
+        "L0_to_U0",
+        "U1_to_P2",
+        "L1_to_U0",
+        "U1_to_P0",
+        "L3_to_U0",
+        "L2_to_U0",
+        "L2_to_U1",
+        "U0_to_P2",
+        "L1_to_P0",
+        "U1_to_P3",
+        "L0_to_U1",
+        "U0_to_P3",
+        "L5_to_U1",
+        "L3_to_U1"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 22,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_16": {
+      "position": [
+        83.27281179808693,
+        13.799888780430345,
+        1.28398902449419
+      ],
+      "importance": 10,
+      "road_class": "primary",
+      "path_memberships": [
+        "L3_to_U0",
+        "L5_to_U0",
+        "L2_to_U0",
+        "U0_to_P0",
+        "U0_to_P2",
+        "L0_to_U0",
+        "L1_to_U0",
+        "L4_to_U0",
+        "U0_to_P1",
+        "U0_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 10,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_17": {
+      "position": [
+        27.00854535544197,
+        39.6437193766812,
+        2.965481572094051
+      ],
+      "importance": 6,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L1_to_U1",
+        "L1_to_P1",
+        "L1_to_P0",
+        "L1_to_U0",
+        "L1_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 6,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_18": {
+      "position": [
+        28.055409468677215,
+        33.42572235137495,
+        2.351240254151027
+      ],
+      "importance": 12,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L3_to_U0",
+        "L1_to_U1",
+        "L3_to_P3",
+        "L3_to_P0",
+        "L1_to_P1",
+        "L1_to_P0",
+        "L1_to_U0",
+        "L3_to_P2",
+        "L3_to_U1",
+        "L3_to_P1",
+        "L1_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 12,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_19": {
+      "position": [
+        62.00464210513449,
+        78.5604012701601,
+        2.547702543122189
+      ],
+      "importance": 6,
+      "road_class": "primary",
+      "path_memberships": [
+        "L4_to_P0",
+        "L4_to_P3",
+        "L4_to_U1",
+        "L4_to_P1",
+        "L4_to_P2",
+        "L4_to_U0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 6,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_20": {
+      "position": [
+        69.61743753712578,
+        72.62846414921435,
+        3.144450279823324
+      ],
+      "importance": 6,
+      "road_class": "primary",
+      "path_memberships": [
+        "L4_to_P0",
+        "L4_to_P3",
+        "L4_to_U1",
+        "L4_to_P1",
+        "L4_to_P2",
+        "L4_to_U0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 6,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_21": {
+      "position": [
+        75.65221280835495,
+        64.10500993991376,
+        2.306575153328698
+      ],
+      "importance": 6,
+      "road_class": "primary",
+      "path_memberships": [
+        "L4_to_P0",
+        "L4_to_P3",
+        "L4_to_U1",
+        "L4_to_P1",
+        "L4_to_P2",
+        "L4_to_U0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 6,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_22": {
+      "position": [
+        79.38662773386513,
+        55.759741672250016,
+        -0.8739711976597423
+      ],
+      "importance": 9,
+      "road_class": "primary",
+      "path_memberships": [
+        "L5_to_U0",
+        "L4_to_P0",
+        "L4_to_P3",
+        "L4_to_U1",
+        "L4_to_P1",
+        "L5_to_U1",
+        "L5_to_P3",
+        "L4_to_P2",
+        "L4_to_U0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 9,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_23": {
+      "position": [
+        82.37343869200413,
+        43.84201303652925,
+        -0.5741065630809021
+      ],
+      "importance": 23,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L4_to_P0",
+        "L4_to_U1",
+        "L3_to_P2",
+        "L4_to_P2",
+        "L5_to_P2",
+        "L4_to_U0",
+        "L1_to_P3",
+        "L5_to_U0",
+        "L0_to_P2",
+        "U0_to_P2",
+        "L4_to_P3",
+        "L4_to_P1",
+        "L5_to_P1",
+        "L5_to_P0",
+        "L2_to_P2",
+        "L5_to_P3",
+        "U1_to_P3",
+        "L0_to_P3",
+        "U0_to_P3",
+        "L3_to_P3",
+        "L5_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 23,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_24": {
+      "position": [
+        79.69040283686724,
+        37.657748808992054,
+        -0.08758323106416133
+      ],
+      "importance": 22,
+      "road_class": "primary",
+      "path_memberships": [
+        "L1_to_P2",
+        "L4_to_P0",
+        "L1_to_P1",
+        "L4_to_U1",
+        "L3_to_P2",
+        "L4_to_P2",
+        "L4_to_U0",
+        "L3_to_P1",
+        "U0_to_P1",
+        "L1_to_P3",
+        "L0_to_P2",
+        "U0_to_P2",
+        "L0_to_P1",
+        "L4_to_P1",
+        "L2_to_P2",
+        "U1_to_P3",
+        "L0_to_P3",
+        "U0_to_P3",
+        "L3_to_P3",
+        "L2_to_P1",
+        "L5_to_U1",
+        "L2_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 22,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_25": {
+      "position": [
+        86.33456382374182,
+        74.81863325015357,
+        -0.3286241975765651
+      ],
+      "importance": 6,
+      "road_class": "primary",
+      "path_memberships": [
+        "L5_to_U0",
+        "L5_to_P1",
+        "L5_to_P0",
+        "L5_to_U1",
+        "L5_to_P3",
+        "L5_to_P2"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 6,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_26": {
+      "position": [
+        86.09402368422188,
+        67.16361193198263,
+        -1.6322453730083424
+      ],
+      "importance": 6,
+      "road_class": "primary",
+      "path_memberships": [
+        "L5_to_U0",
+        "L5_to_P1",
+        "L5_to_P0",
+        "L5_to_U1",
+        "L5_to_P3",
+        "L5_to_P2"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 6,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_27": {
+      "position": [
+        84.02541945598807,
+        33.14207550711716,
+        -0.046309870044154704
+      ],
+      "importance": 17,
+      "road_class": "primary",
+      "path_memberships": [
+        "U1_to_P0",
+        "U0_to_P0",
+        "L4_to_P0",
+        "L0_to_P0",
+        "L3_to_P0",
+        "L0_to_P1",
+        "L1_to_P1",
+        "L1_to_P0",
+        "L4_to_P1",
+        "L5_to_P0",
+        "L5_to_P1",
+        "U1_to_P1",
+        "L2_to_P1",
+        "U1_to_P2",
+        "L3_to_P1",
+        "U0_to_P1",
+        "L2_to_P0"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 17,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_28": {
+      "position": [
+        86.44289498953223,
+        58.93444087271649,
+        -1.638568187227594
+      ],
+      "importance": 4,
+      "road_class": "primary",
+      "path_memberships": [
+        "L5_to_P0",
+        "L5_to_P1",
+        "L5_to_P2",
+        "L5_to_P3"
+      ],
+      "traffic_capacity": 120,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 4,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_29": {
+      "position": [
+        85.91468599079853,
+        51.81259490302423,
+        -1.742370806670061
+      ],
+      "importance": 3,
+      "road_class": "secondary",
+      "path_memberships": [
+        "L5_to_P0",
+        "L5_to_P1",
+        "L5_to_P2"
+      ],
+      "traffic_capacity": 80,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 3,
+        "cluster_size": 1,
+        "is_intersection": true
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    },
+    "key_node_30": {
+      "position": [
+        73.71835957635483,
+        13.446153117965487,
+        2.8989703097819164
+      ],
+      "importance": 1,
+      "road_class": "service",
+      "path_memberships": [
+        "U0_to_P1"
+      ],
+      "traffic_capacity": 40,
+      "original_nodes_count": 1,
+      "is_endpoint": false,
+      "node_type": "key_node",
+      "cluster_info": {
+        "original_node_count": 1,
+        "path_count": 1,
+        "cluster_size": 1,
+        "is_intersection": false
+      },
+      "curve_fitting_quality": 0.0,
+      "dynamics_compliance": true,
+      "smoothness_score": 0.0,
+      "endpoint_info": {}
+    }
+  },
+  "consolidated_paths_info": {
+    "enhanced_L0_to_U0": {
+      "original_path_id": "L0_to_U0",
+      "key_nodes": [
+        "endpoint_cluster_start_0",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "key_node_16",
+        "endpoint_cluster_end_0"
+      ],
+      "path_length": 157.32148591336565,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 516,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.676547921483045,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L0_to_U1": {
+      "original_path_id": "L0_to_U1",
+      "key_nodes": [
+        "endpoint_cluster_start_0",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "endpoint_cluster_end_1"
+      ],
+      "path_length": 150.79198742791428,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 495,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6580089119745148,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L1_to_U0": {
+      "original_path_id": "L1_to_U0",
+      "key_nodes": [
+        "endpoint_cluster_start_1",
+        "key_node_17",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "key_node_16",
+        "endpoint_cluster_end_0"
+      ],
+      "path_length": 90.27037124206835,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 286,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7791891417872234,
+      "dynamics_compliance_rate": 0.0,
+      "smoothness_score": 0.7171334595616623,
+      "max_curvature": 4.925577990486067,
+      "avg_curvature": 4.925577990486067,
+      "turning_radius_compliance": false,
+      "grade_compliance": false
+    },
+    "enhanced_L1_to_U1": {
+      "original_path_id": "L1_to_U1",
+      "key_nodes": [
+        "endpoint_cluster_start_1",
+        "key_node_17",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "endpoint_cluster_end_1"
+      ],
+      "path_length": 83.74087275661698,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 276,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7541643922924051,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L2_to_U0": {
+      "original_path_id": "L2_to_U0",
+      "key_nodes": [
+        "endpoint_cluster_start_2",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "key_node_16",
+        "endpoint_cluster_end_0"
+      ],
+      "path_length": 152.85600727208643,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 501,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.689806861092821,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L2_to_U1": {
+      "original_path_id": "L2_to_U1",
+      "key_nodes": [
+        "endpoint_cluster_start_2",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "endpoint_cluster_end_1"
+      ],
+      "path_length": 146.32650878663506,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 480,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6714661438816542,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L3_to_U0": {
+      "original_path_id": "L3_to_U0",
+      "key_nodes": [
+        "endpoint_cluster_start_3",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "key_node_16",
+        "endpoint_cluster_end_0"
+      ],
+      "path_length": 82.20379393033049,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 270,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7647671475622486,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L3_to_U1": {
+      "original_path_id": "L3_to_U1",
+      "key_nodes": [
+        "endpoint_cluster_start_3",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "endpoint_cluster_end_1"
+      ],
+      "path_length": 75.67429544487912,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 249,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7359465652167807,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L4_to_U0": {
+      "original_path_id": "L4_to_U0",
+      "key_nodes": [
+        "endpoint_cluster_start_4",
+        "key_node_19",
+        "key_node_20",
+        "key_node_21",
+        "key_node_22",
+        "key_node_23",
+        "key_node_24",
+        "key_node_14",
+        "key_node_15",
+        "key_node_16",
+        "endpoint_cluster_end_0"
+      ],
+      "path_length": 86.723087397947,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 200,
+      "curve_fitting_method": "enhanced_complete_enhanced_cubic_spline",
+      "curve_quality_score": 0.915941167084546,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 0.8466629774882601,
+      "max_curvature": 0.19863845594047355,
+      "avg_curvature": 0.19863845594047355,
+      "turning_radius_compliance": true,
+      "grade_compliance": false
+    },
+    "enhanced_L4_to_U1": {
+      "original_path_id": "L4_to_U1",
+      "key_nodes": [
+        "endpoint_cluster_start_4",
+        "key_node_19",
+        "key_node_20",
+        "key_node_21",
+        "key_node_22",
+        "key_node_23",
+        "key_node_24",
+        "key_node_14",
+        "key_node_15",
+        "endpoint_cluster_end_1"
+      ],
+      "path_length": 80.19358891249561,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 264,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8625162999674046,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L5_to_U0": {
+      "original_path_id": "L5_to_U0",
+      "key_nodes": [
+        "endpoint_cluster_start_5",
+        "key_node_25",
+        "key_node_26",
+        "key_node_22",
+        "key_node_23",
+        "key_node_14",
+        "key_node_15",
+        "key_node_16",
+        "endpoint_cluster_end_0"
+      ],
+      "path_length": 78.95201209347515,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 252,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8724359076928412,
+      "dynamics_compliance_rate": 0.0,
+      "smoothness_score": 0.6862655533480229,
+      "max_curvature": 2.9497923201791942,
+      "avg_curvature": 2.9497923201791942,
+      "turning_radius_compliance": false,
+      "grade_compliance": false
+    },
+    "enhanced_L5_to_U1": {
+      "original_path_id": "L5_to_U1",
+      "key_nodes": [
+        "endpoint_cluster_start_5",
+        "key_node_25",
+        "key_node_26",
+        "key_node_22",
+        "key_node_23",
+        "key_node_24",
+        "key_node_14",
+        "key_node_15",
+        "endpoint_cluster_end_1"
+      ],
+      "path_length": 72.4943152030127,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 231,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8848141573382206,
+      "dynamics_compliance_rate": 0.0,
+      "smoothness_score": 0.6645042166959566,
+      "max_curvature": 3.764758467747806,
+      "avg_curvature": 3.764758467747806,
+      "turning_radius_compliance": false,
+      "grade_compliance": false
+    },
+    "enhanced_L0_to_P0": {
+      "original_path_id": "L0_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_0",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 148.08486536210108,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 485,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6748018193831962,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L0_to_P1": {
+      "original_path_id": "L0_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_0",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 153.09494677673476,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 502,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6574876334711374,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L0_to_P2": {
+      "original_path_id": "L0_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_0",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 155.96861535550735,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 512,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6460786362028539,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L0_to_P3": {
+      "original_path_id": "L0_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_0",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 155.38801097046522,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 510,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6428201323305401,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L1_to_P0": {
+      "original_path_id": "L1_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_1",
+        "key_node_17",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_15",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 94.25095900160393,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 310,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7291613102408181,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L1_to_P1": {
+      "original_path_id": "L1_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_1",
+        "key_node_17",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 86.04383210543743,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 283,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7610432531529037,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L1_to_P2": {
+      "original_path_id": "L1_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_1",
+        "key_node_17",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 88.91750068421003,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 293,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.741645001407967,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L1_to_P3": {
+      "original_path_id": "L1_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_1",
+        "key_node_17",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 88.33689629916789,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 291,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7425318637116853,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L2_to_P0": {
+      "original_path_id": "L2_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_2",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 143.61938672082186,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 470,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6950020765966451,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L2_to_P1": {
+      "original_path_id": "L2_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_2",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 148.62946813545554,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 487,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6776052208813741,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L2_to_P2": {
+      "original_path_id": "L2_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_2",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 151.50313671422813,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 497,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6667210142988211,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L2_to_P3": {
+      "original_path_id": "L2_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_2",
+        "key_node_0",
+        "key_node_1",
+        "key_node_2",
+        "key_node_3",
+        "key_node_4",
+        "key_node_5",
+        "key_node_6",
+        "key_node_7",
+        "key_node_8",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 150.922532329186,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 495,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6649925545992228,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L3_to_P0": {
+      "original_path_id": "L3_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_3",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 72.96717337906594,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 230,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7994545122322972,
+      "dynamics_compliance_rate": 0.0,
+      "smoothness_score": 0.7000687843968415,
+      "max_curvature": 3.846715628421398,
+      "avg_curvature": 3.846715628421398,
+      "turning_radius_compliance": false,
+      "grade_compliance": false
+    },
+    "enhanced_L3_to_P1": {
+      "original_path_id": "L3_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_3",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 77.97725479369957,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 256,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7652929946658007,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L3_to_P2": {
+      "original_path_id": "L3_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_3",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 80.85092337247217,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 266,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7487125337744399,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L3_to_P3": {
+      "original_path_id": "L3_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_3",
+        "key_node_18",
+        "key_node_9",
+        "key_node_10",
+        "key_node_11",
+        "key_node_12",
+        "key_node_13",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 80.27031898743003,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 264,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7562074578051771,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L4_to_P0": {
+      "original_path_id": "L4_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_4",
+        "key_node_19",
+        "key_node_20",
+        "key_node_21",
+        "key_node_22",
+        "key_node_23",
+        "key_node_24",
+        "key_node_15",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 88.7502165281097,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 292,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7324227763407316,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L4_to_P1": {
+      "original_path_id": "L4_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_4",
+        "key_node_19",
+        "key_node_20",
+        "key_node_21",
+        "key_node_22",
+        "key_node_23",
+        "key_node_24",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 66.05230760096812,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 217,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8398575212373823,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L4_to_P2": {
+      "original_path_id": "L4_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_4",
+        "key_node_19",
+        "key_node_20",
+        "key_node_21",
+        "key_node_22",
+        "key_node_23",
+        "key_node_24",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 64.05424773886668,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 211,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8176255874192107,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L4_to_P3": {
+      "original_path_id": "L4_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_4",
+        "key_node_19",
+        "key_node_20",
+        "key_node_21",
+        "key_node_22",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 54.86296764173737,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 181,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.848455831990024,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_L5_to_P0": {
+      "original_path_id": "L5_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_5",
+        "key_node_25",
+        "key_node_26",
+        "key_node_28",
+        "key_node_29",
+        "key_node_23",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 54.939386580868195,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 174,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8773533140138345,
+      "dynamics_compliance_rate": 0.0,
+      "smoothness_score": 0.746675143768074,
+      "max_curvature": 3.8126274489207863,
+      "avg_curvature": 3.8126274489207863,
+      "turning_radius_compliance": false,
+      "grade_compliance": false
+    },
+    "enhanced_L5_to_P1": {
+      "original_path_id": "L5_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_5",
+        "key_node_25",
+        "key_node_26",
+        "key_node_28",
+        "key_node_29",
+        "key_node_23",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 54.762198421496834,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 174,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8316449582472101,
+      "dynamics_compliance_rate": 0.0,
+      "smoothness_score": 0.6528949354036926,
+      "max_curvature": 7.64633029795807,
+      "avg_curvature": 7.64633029795807,
+      "turning_radius_compliance": false,
+      "grade_compliance": false
+    },
+    "enhanced_L5_to_P2": {
+      "original_path_id": "L5_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_5",
+        "key_node_25",
+        "key_node_26",
+        "key_node_28",
+        "key_node_29",
+        "key_node_23",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 46.32763887325403,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 147,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8626997048087027,
+      "dynamics_compliance_rate": 0.0,
+      "smoothness_score": 0.6999581880119842,
+      "max_curvature": 6.016125496821266,
+      "avg_curvature": 6.016125496821266,
+      "turning_radius_compliance": false,
+      "grade_compliance": false
+    },
+    "enhanced_L5_to_P3": {
+      "original_path_id": "L5_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_5",
+        "key_node_25",
+        "key_node_26",
+        "key_node_28",
+        "key_node_22",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 49.907632346261856,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 164,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7525885687620445,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_U0_to_P0": {
+      "original_path_id": "U0_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_6",
+        "key_node_16",
+        "key_node_15",
+        "key_node_14",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 38.632553592080484,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 127,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.6666857295604647,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_U0_to_P1": {
+      "original_path_id": "U0_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_6",
+        "key_node_16",
+        "key_node_30",
+        "key_node_15",
+        "key_node_14",
+        "key_node_24",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 53.24836814252272,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 175,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.619069851140683,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_U0_to_P2": {
+      "original_path_id": "U0_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_6",
+        "key_node_16",
+        "key_node_15",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 46.5163035854867,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 154,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.723809331210544,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_U0_to_P3": {
+      "original_path_id": "U0_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_6",
+        "key_node_16",
+        "key_node_15",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 45.93569920044458,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 152,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8065640643973192,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_U1_to_P0": {
+      "original_path_id": "U1_to_P0",
+      "key_nodes": [
+        "endpoint_cluster_start_7",
+        "key_node_15",
+        "key_node_27",
+        "endpoint_cluster_end_2"
+      ],
+      "path_length": 26.030489449335036,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 86,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.7955765458194697,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_U1_to_P1": {
+      "original_path_id": "U1_to_P1",
+      "key_nodes": [
+        "endpoint_cluster_start_7",
+        "key_node_15",
+        "key_node_27",
+        "endpoint_cluster_end_3"
+      ],
+      "path_length": 25.85330128996367,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 86,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.883111855050028,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    },
+    "enhanced_U1_to_P2": {
+      "original_path_id": "U1_to_P2",
+      "key_nodes": [
+        "endpoint_cluster_start_7",
+        "key_node_15",
+        "key_node_27",
+        "endpoint_cluster_end_4"
+      ],
+      "path_length": 28.997304776868738,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 93,
+      "curve_fitting_method": "enhanced_complete_enhanced_hermite",
+      "curve_quality_score": 0.8500846529495704,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 0.8847809690219168,
+      "max_curvature": 1.071801559898748,
+      "avg_curvature": 1.071801559898748,
+      "turning_radius_compliance": true,
+      "grade_compliance": false
+    },
+    "enhanced_U1_to_P3": {
+      "original_path_id": "U1_to_P3",
+      "key_nodes": [
+        "endpoint_cluster_start_7",
+        "key_node_15",
+        "key_node_14",
+        "key_node_24",
+        "key_node_23",
+        "endpoint_cluster_end_5"
+      ],
+      "path_length": 39.55768828876157,
+      "road_class": "primary",
+      "reconstruction_success": true,
+      "node_count": 131,
+      "curve_fitting_method": "traditional_curve_fitting",
+      "curve_quality_score": 0.8382841057906394,
+      "dynamics_compliance_rate": 1.0,
+      "smoothness_score": 1.0,
+      "max_curvature": 0.0,
+      "avg_curvature": 0.0,
+      "turning_radius_compliance": true,
+      "grade_compliance": true
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "experiment": {
+    "name": "magec_optimized",
+    "description": "Optimized MAGEC implementation",
+    "version": "2.0"
+  },
+  "environment": {
+    "graph_name": "milwaukee",
+    "num_agents": 4,
+    "observation_radius": 400.0,
+    "max_cycles": 200,
+    "agent_speed": 40.0,
+    "action_method": "neighbors"
+  },
+  "network": {
+    "node_features": 4,
+    "edge_features": 2,
+    "gnn_hidden_size": 128,
+    "gnn_layers": 10,
+    "gnn_dropout": 0.1,
+    "gnn_skip_connections": true,
+    "critic_hidden_size": 512,
+    "max_neighbors": 15
+  },
+  "training": {
+    "num_episodes": 200,
+    "episode_length": 200,
+    "lr": 0.0003,
+    "critic_lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_param": 0.2,
+    "value_loss_coef": 1.0,
+    "entropy_coef": 0.01,
+    "max_grad_norm": 0.5,
+    "ppo_epochs": 10,
+    "batch_size": 32,
+    "weight_decay": 0.0001,
+    "optimizer_eps": 1e-05
+  },
+  "memory": {
+    "buffer_size": 10000,
+    "max_memory_mb": 8000,
+    "gc_frequency": 50
+  },
+  "monitoring": {
+    "log_interval": 10,
+    "save_interval": 50,
+    "plot_interval": 100,
+    "early_stopping_patience": 50,
+    "early_stopping_delta": 0.001,
+    "metric_window_size": 20
+  },
+  "system": {
+    "cuda": true,
+    "seed": 42,
+    "num_workers": 4,
+    "device": "cuda"
+  }
+}

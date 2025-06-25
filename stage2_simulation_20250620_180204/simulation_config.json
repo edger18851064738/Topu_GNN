@@ -1,0 +1,13 @@
+{
+  "topology_path": "complete_topology_ez.json",
+  "num_vehicles": 10,
+  "simulation_steps": 1000,
+  "task_generation_rate": 0.1,
+  "gnn_hidden_dim": 128,
+  "gnn_num_layers": 3,
+  "output_dir": "stage2_simulation_20250620_180204",
+  "save_plots": true,
+  "save_report": true,
+  "show_progress": true,
+  "execution_time": "2025-06-20 18:02:10"
+}

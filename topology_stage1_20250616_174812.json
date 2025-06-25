@@ -1,0 +1,63 @@
+{
+  "system": "基于拓扑感知GNN架构的露天矿智能调度系统",
+  "stage": "第一阶段：智能拓扑构建",
+  "export_time": "2025-06-16 17:48:14",
+  "ready_for_stage2": true,
+  "gnn_input_ready": true,
+  "stage1_progress": {
+    "current_step": 5,
+    "total_steps": 5,
+    "step_names": [
+      "双向路径智能规划",
+      "动态节点密度控制",
+      "关键节点聚类提取",
+      "车辆动力学约束拟合",
+      "图拓扑标准化输出"
+    ],
+    "completed_steps": [
+      "双向路径智能规划",
+      "动态节点密度控制",
+      "关键节点聚类提取",
+      "车辆动力学约束拟合",
+      "图拓扑标准化输出"
+    ],
+    "step_details": {
+      "双向路径智能规划": {
+        "description": "双向路径智能规划",
+        "timestamp": 1750067239.3116677,
+        "status": "executing"
+      },
+      "动态节点密度控制": {
+        "description": "动态节点密度控制",
+        "timestamp": 1750067246.8295758,
+        "status": "executing"
+      },
+      "关键节点聚类提取": {
+        "description": "关键节点聚类提取",
+        "timestamp": 1750067246.8305848,
+        "status": "executing"
+      },
+      "车辆动力学约束拟合": {
+        "description": "车辆动力学约束拟合",
+        "timestamp": 1750067246.8305848,
+        "status": "executing"
+      },
+      "图拓扑标准化输出": {
+        "description": "图拓扑标准化输出",
+        "timestamp": 1750067247.5663784,
+        "status": "executing"
+      }
+    }
+  },
+  "construction_stats": {
+    "paths_generated": 14,
+    "total_nodes": 867,
+    "avg_quality": 0.8499999999999998,
+    "interfaces_count": 65
+  },
+  "consolidation_stats": {
+    "key_nodes_count": 60,
+    "node_reduction_ratio": 0.9307958477508651,
+    "reconstruction_success_rate": 1.0
+  }
+}

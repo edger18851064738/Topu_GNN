@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 2: GNN Multi-Vehicle Coordination</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .simulation-area {
+            flex: 1;
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.1);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 50, 100, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+        }
+
+        .control-panel {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .panel-title {
+            color: #00ffff;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.running {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .btn.gnn-enabled {
+            background: linear-gradient(45deg, #2ed573, #20bf6b);
+            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 11px;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .status-label {
+            color: #aaa;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+
+        .status-value {
+            color: #00ffff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .legend {
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            margin-right: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .vehicle-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .vehicle-item {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid;
+            font-size: 10px;
+        }
+
+        .title-bar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .title {
+            color: #00ffff;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* Loading animation */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ffff;
+            font-size: 16px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 255, 0.5);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="simulation-area">
+            <div class="title-bar">
+                <div class="title">Stage 2: GNN Multi-Vehicle Coordination</div>
+                <div class="subtitle">Complete Parking → Loading → Unloading → Parking Cycle</div>
+            </div>
+            <canvas id="canvas"></canvas>
+            <div class="loading pulse" id="loading">Initializing Simulation...</div>
+        </div>
+
+        <div class="control-panel">
+            <div class="panel-section">
+                <div class="panel-title">📁 Topology</div>
+                <div class="controls">
+                    <button class="btn" id="loadTopologyBtn">📂 Load File</button>
+                    <button class="btn" id="generateBtn">🔧 Generate</button>
+                </div>
+                <div class="controls">
+                    <button class="btn" id="debugBtn">🐛 Debug</button>
+                    <button class="btn" id="validateBtn">✅ Validate</button>
+                </div>
+                <input type="file" id="topologyFile" accept=".json" style="display: none;">
+                <div id="topologyStatus" style="font-size: 10px; margin-top: 10px; color: #aaa;">
+                    Using fallback topology
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">🎮 Controls</div>
+                <div class="controls">
+                    <button class="btn" id="playPauseBtn">▶ Start</button>
+                    <button class="btn" id="resetBtn">🔄 Reset</button>
+                    <button class="btn" id="gnnBtn">🧠 GNN Mode</button>
+                    <button class="btn" id="speedBtn">⚡ Speed x1</button>
+                </div>
+                <div class="controls">
+                    <button class="btn" id="addVehicleBtn">➕ Vehicle</button>
+                    <button class="btn" id="removeVehicleBtn">➖ Vehicle</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">📊 System Status</div>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">Time</div>
+                        <div class="status-value" id="timeValue">0.0s</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Vehicles</div>
+                        <div class="status-value" id="vehicleCount">0</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Cycles</div>
+                        <div class="status-value" id="cycleCount">0</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Distance</div>
+                        <div class="status-value" id="distanceValue">0.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">🚛 Vehicle States</div>
+                <div class="status-grid" id="vehicleStates">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">🏭 Special Points</div>
+                <div class="status-grid" id="specialPoints">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">🎨 Legend</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #2ecc71;"></div>
+                        <span>Loading Points (L0, L1...)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span>Unloading Points (U0, U1...)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #95a5a6;"></div>
+                        <span>Parking Points (P0, P1...)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e74c3c;"></div>
+                        <span>Reserved Edges/Nodes</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span>Vehicle Paths</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">🚗 Active Vehicles</div>
+                <div class="vehicle-list" id="vehicleList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enums and Constants
+        const VehicleState = {
+            IDLE: 'idle',
+            PLANNING: 'planning',
+            WAITING: 'waiting',
+            CONFIRMED: 'confirmed',
+            MOVING: 'moving',
+            BLOCKED: 'blocked',
+            LOADING: 'loading',
+            UNLOADING: 'unloading'
+        };
+
+        const VehicleMode = {
+            PARKED: 'parked',
+            EMPTY: 'empty',
+            LOADED: 'loaded',
+            RETURNING: 'returning'
+        };
+
+        const PointType = {
+            LOADING: 'loading',
+            UNLOADING: 'unloading',
+            PARKING: 'parking'
+        };
+
+        // Vehicle colors
+        const VEHICLE_COLORS = [
+            '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#e67e22', '#34495e', '#f1c40f', '#e91e63',
+            '#8e44ad', '#16a085', '#d35400', '#2c3e50', '#27ae60'
+        ];
+
+        // Simulation state
+        let canvas, ctx;
+        let simulation = null;
+        let isRunning = false;
+        let useGNN = true;
+        let speed = 1;
+        let animationId = null;
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('🎯 Stage 2 GNN Multi-Vehicle Coordination System');
+            console.log('🔧 系统特性:');
+            console.log('  • 支持从第一阶段导出的拓扑文件加载');
+            console.log('  • 自动解析增强版拓扑格式');
+            console.log('  • 智能特殊点识别和车辆初始化');
+            console.log('  • 自适应视图缩放和渲染');
+            console.log('  • 完整的P→L→U→P作业循环');
+            console.log('');
+            console.log('🎮 操作说明:');
+            console.log('  • 📂 Load File: 加载第一阶段导出的拓扑JSON文件');
+            console.log('  • 🔧 Generate: 生成回退拓扑（如果没有文件）');
+            console.log('  • 🐛 Debug: 查看详细的系统状态信息');
+            console.log('  • ✅ Validate: 验证系统完整性');
+            console.log('  • ▶ Start: 开始仿真');
+            console.log('  • +/- : 增减车辆');
+            console.log('');
+            
+            initCanvas();
+            initControls();
+            initSimulation();
+            hideLoading();
+            startRenderLoop();
+            
+            console.log('✅ 系统初始化完成，请加载拓扑文件或生成回退拓扑');
+        });
+
+        function initCanvas() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * window.devicePixelRatio;
+                canvas.height = rect.height * window.devicePixelRatio;
+                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function initControls() {
+            document.getElementById('playPauseBtn').addEventListener('click', toggleSimulation);
+            document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+            document.getElementById('gnnBtn').addEventListener('click', toggleGNN);
+            document.getElementById('speedBtn').addEventListener('click', cycleSpeed);
+            document.getElementById('addVehicleBtn').addEventListener('click', addVehicle);
+            document.getElementById('removeVehicleBtn').addEventListener('click', removeVehicle);
+            document.getElementById('loadTopologyBtn').addEventListener('click', () => {
+                document.getElementById('topologyFile').click();
+            });
+            document.getElementById('generateBtn').addEventListener('click', generateFallbackTopology);
+            document.getElementById('debugBtn').addEventListener('click', showDebugInfo);
+            document.getElementById('validateBtn').addEventListener('click', validateSystem);
+            
+            document.getElementById('topologyFile').addEventListener('change', handleTopologyFile);
+
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case ' ': e.preventDefault(); toggleSimulation(); break;
+                    case 'g': toggleGNN(); break;
+                    case 'r': resetSimulation(); break;
+                    case '=': case '+': addVehicle(); break;
+                    case '-': removeVehicle(); break;
+                }
+            });
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Simple Graph class
+        class Graph {
+            constructor() {
+                this.nodes = new Map();
+                this.edges = new Map();
+                this.adjacency = new Map();
+            }
+
+            addNode(id, x, y) {
+                this.nodes.set(id, { id, x, y });
+                this.adjacency.set(id, new Set());
+            }
+
+            addEdge(from, to, weight = 1) {
+                const edgeKey = [from, to].sort().join('-');
+                this.edges.set(edgeKey, { from, to, weight });
+                this.adjacency.get(from).add(to);
+                this.adjacency.get(to).add(from);
+            }
+
+            getNeighbors(nodeId) {
+                return Array.from(this.adjacency.get(nodeId) || []);
+            }
+
+            getDistance(nodeA, nodeB) {
+                const a = this.nodes.get(nodeA);
+                const b = this.nodes.get(nodeB);
+                return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+            }
+
+            // A* pathfinding
+            findPath(start, end) {
+                if (start === end) return [start];
+
+                const openSet = new Set([start]);
+                const cameFrom = new Map();
+                const gScore = new Map();
+                const fScore = new Map();
+
+                this.nodes.forEach((_, nodeId) => {
+                    gScore.set(nodeId, Infinity);
+                    fScore.set(nodeId, Infinity);
+                });
+
+                gScore.set(start, 0);
+                fScore.set(start, this.getDistance(start, end));
+
+                while (openSet.size > 0) {
+                    // Find node with lowest fScore
+                    let current = Array.from(openSet).reduce((min, node) =>
+                        fScore.get(node) < fScore.get(min) ? node : min
+                    );
+
+                    if (current === end) {
+                        // Reconstruct path
+                        const path = [current];
+                        while (cameFrom.has(current)) {
+                            current = cameFrom.get(current);
+                            path.unshift(current);
+                        }
+                        return path;
+                    }
+
+                    openSet.delete(current);
+
+                    for (const neighbor of this.getNeighbors(current)) {
+                        const tentativeGScore = gScore.get(current) + this.getDistance(current, neighbor);
+
+                        if (tentativeGScore < gScore.get(neighbor)) {
+                            cameFrom.set(neighbor, current);
+                            gScore.set(neighbor, tentativeGScore);
+                            fScore.set(neighbor, tentativeGScore + this.getDistance(neighbor, end));
+                            openSet.add(neighbor);
+                        }
+                    }
+                }
+
+                return []; // No path found
+            }
+        }
+
+        // Special Point class
+        class SpecialPoint {
+            constructor(id, nodeId, type, x, y) {
+                this.id = id;
+                this.nodeId = nodeId;
+                this.type = type;
+                this.x = x;
+                this.y = y;
+                this.occupied = false;
+                this.reservedBy = null;
+            }
+
+            isAvailable() {
+                return !this.occupied && this.reservedBy === null;
+            }
+
+            reserve(vehicleId) {
+                if (this.isAvailable()) {
+                    this.reservedBy = vehicleId;
+                    return true;
+                }
+                return false;
+            }
+
+            occupy(vehicleId) {
+                this.occupied = true;
+                this.reservedBy = vehicleId;
+            }
+
+            release() {
+                this.occupied = false;
+                this.reservedBy = null;
+            }
+        }
+
+        // Vehicle class
+        class Vehicle {
+            constructor(id, startParkingId, network) {
+                this.id = id;
+                this.network = network;
+                this.color = VEHICLE_COLORS[id % VEHICLE_COLORS.length];
+                
+                // State and mode
+                this.state = VehicleState.IDLE;
+                this.mode = VehicleMode.PARKED;
+                
+                // Targets
+                this.currentParkingPoint = startParkingId;
+                this.targetLoadingPoint = null;
+                this.targetUnloadingPoint = null;
+                this.targetParkingPoint = null;
+                
+                // 获取起始停车点并设置位置
+                const startPoint = network.getSpecialPoint(startParkingId);
+                if (!startPoint) {
+                    throw new Error(`停车点 ${startParkingId} 不存在`);
+                }
+                
+                this.currentNode = startPoint.nodeId;
+                
+                // 验证起始节点在图中存在
+                const startNode = network.graph.nodes.get(this.currentNode);
+                if (!startNode) {
+                    throw new Error(`起始节点 ${this.currentNode} 在图中不存在`);
+                }
+                
+                // Position and movement
+                this.position = { x: startPoint.x, y: startPoint.y };
+                this.targetPosition = { ...this.position };
+                
+                // Path planning
+                this.path = [];
+                this.pathIndex = 0;
+                this.pathProgress = 0;
+                
+                // Timing
+                this.moveStartTime = 0;
+                this.moveDuration = 0;
+                this.operationStartTime = 0;
+                this.waitUntil = 0;
+                this.retryCount = 0;
+                this.maxRetries = 3;
+                
+                // Stats
+                this.completedCycles = 0;
+                this.totalDistance = 0;
+                this.waitTime = 0;
+                
+                // Reserve starting parking point
+                network.occupySpecialPoint(startParkingId, this.id);
+                
+                console.log(`🚗 车辆 V${this.id} 初始化在 ${startParkingId} (${this.currentNode})`);
+            }
+
+            update(currentTime, dt) {
+                switch (this.state) {
+                    case VehicleState.IDLE:
+                        this.planNextTask(currentTime);
+                        break;
+                    case VehicleState.PLANNING:
+                        this.executePlanning(currentTime);
+                        break;
+                    case VehicleState.WAITING:
+                        if (currentTime >= this.waitUntil) {
+                            this.state = VehicleState.IDLE;
+                            this.retryCount++;
+                            if (this.retryCount > this.maxRetries) {
+                                this.resetCurrentTask();
+                            }
+                        } else {
+                            this.waitTime += dt;
+                        }
+                        break;
+                    case VehicleState.MOVING:
+                        this.updateMovement(currentTime, dt);
+                        break;
+                    case VehicleState.LOADING:
+                        this.updateLoading(currentTime);
+                        break;
+                    case VehicleState.UNLOADING:
+                        this.updateUnloading(currentTime);
+                        break;
+                }
+            }
+
+            planNextTask(currentTime) {
+                switch (this.mode) {
+                    case VehicleMode.PARKED:
+                        const availableLoading = this.network.getAvailableSpecialPoint(PointType.LOADING, this.id);
+                        if (availableLoading && this.network.reserveSpecialPoint(availableLoading.id, this.id)) {
+                            if (this.currentParkingPoint) {
+                                this.network.releaseSpecialPoint(this.currentParkingPoint);
+                                this.currentParkingPoint = null;
+                            }
+                            this.targetLoadingPoint = availableLoading.id;
+                            this.mode = VehicleMode.EMPTY;
+                            this.planPath(currentTime);
+                        } else {
+                            this.waitAndRetry(currentTime);
+                        }
+                        break;
+                        
+                    case VehicleMode.LOADED:
+                        const availableUnloading = this.network.getAvailableSpecialPoint(PointType.UNLOADING, this.id);
+                        if (availableUnloading && this.network.reserveSpecialPoint(availableUnloading.id, this.id)) {
+                            this.targetUnloadingPoint = availableUnloading.id;
+                            this.planPath(currentTime);
+                        } else {
+                            this.waitAndRetry(currentTime);
+                        }
+                        break;
+                        
+                    case VehicleMode.RETURNING:
+                        const availableParking = this.network.getAvailableSpecialPoint(PointType.PARKING, this.id);
+                        if (availableParking && this.network.reserveSpecialPoint(availableParking.id, this.id)) {
+                            this.targetParkingPoint = availableParking.id;
+                            this.planPath(currentTime);
+                        } else {
+                            this.waitAndRetry(currentTime);
+                        }
+                        break;
+                }
+            }
+
+            planPath(currentTime) {
+                const targetNodeId = this.getTargetNodeId();
+                if (!targetNodeId) {
+                    this.waitAndRetry(currentTime);
+                    return;
+                }
+
+                this.state = VehicleState.PLANNING;
+                this.path = this.network.graph.findPath(this.currentNode, targetNodeId);
+                
+                if (this.path.length > 1) {
+                    this.pathIndex = 0;
+                    this.state = VehicleState.MOVING;
+                    this.startNextMove(currentTime);
+                    this.retryCount = 0;
+                } else {
+                    this.waitAndRetry(currentTime);
+                }
+            }
+
+            executePlanning(currentTime) {
+                // Simplified planning - just move to moving state
+                this.state = VehicleState.MOVING;
+                this.startNextMove(currentTime);
+            }
+
+            startNextMove(currentTime) {
+                if (this.pathIndex + 1 >= this.path.length) {
+                    this.arriveAtTarget(currentTime);
+                    return;
+                }
+
+                const targetNode = this.network.graph.nodes.get(this.path[this.pathIndex + 1]);
+                this.targetPosition = { x: targetNode.x, y: targetNode.y };
+                
+                const distance = Math.sqrt(
+                    (this.targetPosition.x - this.position.x) ** 2 +
+                    (this.targetPosition.y - this.position.y) ** 2
+                );
+                
+                this.moveStartTime = currentTime;
+                this.moveDuration = Math.max(0.5, distance / 100); // Speed adjustment
+                this.pathProgress = 0;
+            }
+
+            updateMovement(currentTime, dt) {
+                const elapsed = currentTime - this.moveStartTime;
+                this.pathProgress = Math.min(elapsed / this.moveDuration, 1);
+
+                if (this.pathProgress > 0) {
+                    const startNode = this.network.graph.nodes.get(this.path[this.pathIndex]);
+                    const smoothProgress = this.smoothStep(this.pathProgress);
+                    
+                    this.position.x = startNode.x + (this.targetPosition.x - startNode.x) * smoothProgress;
+                    this.position.y = startNode.y + (this.targetPosition.y - startNode.y) * smoothProgress;
+                    
+                    // Update distance
+                    const distance = Math.sqrt(
+                        (this.targetPosition.x - startNode.x) ** 2 +
+                        (this.targetPosition.y - startNode.y) ** 2
+                    ) * (this.pathProgress * dt / this.moveDuration);
+                    this.totalDistance += Math.abs(distance) * 0.01;
+                }
+
+                if (this.pathProgress >= 1) {
+                    this.arriveAtNode(currentTime);
+                }
+            }
+
+            arriveAtNode(currentTime) {
+                this.pathIndex++;
+                this.currentNode = this.path[this.pathIndex];
+                this.position = { ...this.targetPosition };
+
+                if (this.pathIndex + 1 >= this.path.length) {
+                    this.arriveAtTarget(currentTime);
+                } else {
+                    this.startNextMove(currentTime);
+                }
+            }
+
+            arriveAtTarget(currentTime) {
+                const targetPoint = this.getTargetPoint();
+                if (!targetPoint || this.currentNode !== targetPoint.nodeId) {
+                    this.state = VehicleState.IDLE;
+                    return;
+                }
+
+                switch (this.mode) {
+                    case VehicleMode.EMPTY:
+                        this.startLoading(currentTime);
+                        break;
+                    case VehicleMode.LOADED:
+                        this.startUnloading(currentTime);
+                        break;
+                    case VehicleMode.RETURNING:
+                        this.startParking(currentTime);
+                        break;
+                }
+            }
+
+            startLoading(currentTime) {
+                this.network.occupySpecialPoint(this.targetLoadingPoint, this.id);
+                this.state = VehicleState.LOADING;
+                this.operationStartTime = currentTime;
+            }
+
+            startUnloading(currentTime) {
+                this.network.occupySpecialPoint(this.targetUnloadingPoint, this.id);
+                this.state = VehicleState.UNLOADING;
+                this.operationStartTime = currentTime;
+            }
+
+            startParking(currentTime) {
+                this.network.occupySpecialPoint(this.targetParkingPoint, this.id);
+                this.currentParkingPoint = this.targetParkingPoint;
+                this.targetParkingPoint = null;
+                this.mode = VehicleMode.PARKED;
+                this.state = VehicleState.IDLE;
+                this.completedCycles++;
+            }
+
+            updateLoading(currentTime) {
+                if (currentTime - this.operationStartTime >= 2.0) { // 2 second loading time
+                    this.network.releaseSpecialPoint(this.targetLoadingPoint);
+                    this.mode = VehicleMode.LOADED;
+                    this.targetLoadingPoint = null;
+                    this.state = VehicleState.IDLE;
+                }
+            }
+
+            updateUnloading(currentTime) {
+                if (currentTime - this.operationStartTime >= 1.5) { // 1.5 second unloading time
+                    this.network.releaseSpecialPoint(this.targetUnloadingPoint);
+                    this.mode = VehicleMode.RETURNING;
+                    this.targetUnloadingPoint = null;
+                    this.state = VehicleState.IDLE;
+                }
+            }
+
+            getTargetPoint() {
+                switch (this.mode) {
+                    case VehicleMode.EMPTY:
+                        return this.network.getSpecialPoint(this.targetLoadingPoint);
+                    case VehicleMode.LOADED:
+                        return this.network.getSpecialPoint(this.targetUnloadingPoint);
+                    case VehicleMode.RETURNING:
+                        return this.network.getSpecialPoint(this.targetParkingPoint);
+                }
+                return null;
+            }
+
+            getTargetNodeId() {
+                const targetPoint = this.getTargetPoint();
+                return targetPoint ? targetPoint.nodeId : null;
+            }
+
+            waitAndRetry(currentTime) {
+                this.waitUntil = currentTime + 1.0 + Math.random();
+                this.state = VehicleState.WAITING;
+            }
+
+            resetCurrentTask() {
+                this.targetLoadingPoint = null;
+                this.targetUnloadingPoint = null;
+                this.targetParkingPoint = null;
+                this.retryCount = 0;
+            }
+
+            smoothStep(t) {
+                return t * t * (3 - 2 * t);
+            }
+        }
+
+        // Topology Loader class
+        class TopologyLoader {
+            constructor() {
+                this.topologyData = null;
+                this.graph = new Graph();
+                this.specialPoints = new Map();
+            }
+
+            async loadFromFile(file) {
+                try {
+                    const text = await file.text();
+                    this.topologyData = JSON.parse(text);
+                    
+                    if (!this.validateTopologyData()) {
+                        throw new Error('Invalid topology data - Stage 1 not completed');
+                    }
+
+                    this.buildGraphFromData();
+                    this.parseSpecialPoints();
+                    
+                    return {
+                        success: true,
+                        graph: this.graph,
+                        specialPoints: this.specialPoints,
+                        info: this.getTopologyInfo()
+                    };
+                } catch (error) {
+                    console.error('Topology loading failed:', error);
+                    return {
+                        success: false,
+                        error: error.message
+                    };
+                }
+            }
+
+            validateTopologyData() {
+                return this.topologyData && 
+                       this.topologyData.ready_for_stage2 === true;
+            }
+
+            buildGraphFromData() {
+                // Try enhanced data first
+                if (this.tryBuildFromEnhancedData()) {
+                    console.log('✅ Built from enhanced topology data');
+                    return;
+                }
+                
+                // Fallback to basic graph structure
+                if (this.tryBuildFromBasicData()) {
+                    console.log('✅ Built from basic graph data');
+                    return;
+                }
+                
+                throw new Error('Could not build graph from topology data');
+            }
+
+            tryBuildFromEnhancedData() {
+                if (!this.topologyData.enhanced_consolidation_applied) {
+                    return false;
+                }
+
+                const keyNodesInfo = this.topologyData.key_nodes_info || {};
+                if (Object.keys(keyNodesInfo).length === 0) {
+                    return false;
+                }
+
+                console.log(`🔧 构建增强版拓扑: ${Object.keys(keyNodesInfo).length} 关键节点`);
+
+                // Add key nodes
+                for (const [nodeId, nodeInfo] of Object.entries(keyNodesInfo)) {
+                    const pos = nodeInfo.position;
+                    this.graph.addNode(nodeId, pos[0], pos[1]);
+                }
+
+                // Add edges from consolidated paths
+                const consolidatedPaths = this.topologyData.consolidated_paths_info || {};
+                console.log(`🔧 处理整合路径: ${Object.keys(consolidatedPaths).length} 条`);
+                
+                for (const [pathId, pathInfo] of Object.entries(consolidatedPaths)) {
+                    const keyNodes = pathInfo.key_nodes || [];
+                    
+                    // 连接相邻的关键节点
+                    for (let i = 0; i < keyNodes.length - 1; i++) {
+                        const node1 = keyNodes[i];
+                        const node2 = keyNodes[i + 1];
+                        
+                        if (this.graph.nodes.has(node1) && this.graph.nodes.has(node2)) {
+                            const weight = this.graph.getDistance(node1, node2) / 100.0; // 调整权重缩放
+                            this.graph.addEdge(node1, node2, Math.max(0.5, Math.min(weight, 3.0)));
+                        }
+                    }
+                }
+
+                // 如果没有足够的边，使用position_mapping和graph_edges
+                if (this.graph.edges.size === 0) {
+                    console.log("🔧 使用备用边信息");
+                    this.tryAddEdgesFromGraphData();
+                }
+
+                this.ensureConnectivity();
+                console.log(`✅ 增强版图构建完成: ${this.graph.nodes.size} 节点, ${this.graph.edges.size} 边`);
+                return this.graph.nodes.size > 0;
+            }
+
+            tryAddEdgesFromGraphData() {
+                const graphEdges = this.topologyData.graph_edges || [];
+                const positionMapping = this.topologyData.position_mapping || {};
+                
+                // 如果有图边数据，添加边
+                for (const edge of graphEdges) {
+                    const node1 = String(edge[0]);
+                    const node2 = String(edge[1]);
+                    
+                    if (this.graph.nodes.has(node1) && this.graph.nodes.has(node2)) {
+                        const weight = this.graph.getDistance(node1, node2) / 100.0;
+                        this.graph.addEdge(node1, node2, Math.max(0.5, Math.min(weight, 3.0)));
+                    }
+                }
+                
+                // 如果还是没有边，在关键节点之间创建最小生成树式的连接
+                if (this.graph.edges.size === 0) {
+                    this.createMinimalConnections();
+                }
+            }
+
+            createMinimalConnections() {
+                const nodes = Array.from(this.graph.nodes.keys());
+                if (nodes.length < 2) return;
+
+                // 为每个节点连接到最近的几个节点
+                for (const nodeId of nodes) {
+                    const nodePos = this.graph.nodes.get(nodeId);
+                    const distances = [];
+                    
+                    for (const otherNodeId of nodes) {
+                        if (nodeId !== otherNodeId) {
+                            const otherPos = this.graph.nodes.get(otherNodeId);
+                            const dist = Math.sqrt(
+                                (nodePos.x - otherPos.x) ** 2 + 
+                                (nodePos.y - otherPos.y) ** 2
+                            );
+                            distances.push({ nodeId: otherNodeId, distance: dist });
+                        }
+                    }
+                    
+                    // 连接到最近的2-3个节点
+                    distances.sort((a, b) => a.distance - b.distance);
+                    const connectCount = Math.min(3, distances.length);
+                    
+                    for (let i = 0; i < connectCount; i++) {
+                        const target = distances[i];
+                        const weight = Math.max(0.5, Math.min(target.distance / 100.0, 3.0));
+                        this.graph.addEdge(nodeId, target.nodeId, weight);
+                    }
+                }
+            }
+
+            tryBuildFromBasicData() {
+                const graphNodes = this.topologyData.graph_nodes || [];
+                const graphEdges = this.topologyData.graph_edges || [];
+                const positionMapping = this.topologyData.position_mapping || {};
+
+                if (graphNodes.length === 0) {
+                    return false;
+                }
+
+                // Add nodes
+                for (const node of graphNodes) {
+                    const nodeStr = String(node);
+                    let x, y;
+                    
+                    if (positionMapping[nodeStr]) {
+                        [x, y] = positionMapping[nodeStr];
+                    } else {
+                        // Generate random position
+                        x = Math.random() * 800;
+                        y = Math.random() * 600;
+                    }
+                    
+                    this.graph.addNode(nodeStr, x, y);
+                }
+
+                // Add edges
+                for (const edge of graphEdges) {
+                    const node1 = String(edge[0]);
+                    const node2 = String(edge[1]);
+                    
+                    if (this.graph.nodes.has(node1) && this.graph.nodes.has(node2)) {
+                        const weight = this.graph.getDistance(node1, node2) / 10.0;
+                        this.graph.addEdge(node1, node2, Math.max(0.5, Math.min(weight, 3.0)));
+                    }
+                }
+
+                return this.graph.nodes.size > 0;
+            }
+
+            ensureConnectivity() {
+                // Simple connectivity check and repair
+                const visited = new Set();
+                const stack = [Array.from(this.graph.nodes.keys())[0]];
+                
+                while (stack.length > 0) {
+                    const current = stack.pop();
+                    if (visited.has(current)) continue;
+                    
+                    visited.add(current);
+                    for (const neighbor of this.graph.getNeighbors(current)) {
+                        if (!visited.has(neighbor)) {
+                            stack.push(neighbor);
+                        }
+                    }
+                }
+
+                // If not all nodes are visited, connect components
+                const unvisited = Array.from(this.graph.nodes.keys()).filter(n => !visited.has(n));
+                
+                if (unvisited.length > 0) {
+                    console.log(`🔧 Connecting ${unvisited.length} isolated nodes`);
+                    
+                    for (const isolatedNode of unvisited) {
+                        // Find closest connected node
+                        let minDist = Infinity;
+                        let closestNode = null;
+                        
+                        for (const connectedNode of visited) {
+                            const dist = this.graph.getDistance(isolatedNode, connectedNode);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closestNode = connectedNode;
+                            }
+                        }
+                        
+                        if (closestNode) {
+                            const weight = Math.max(0.5, Math.min(minDist / 10.0, 3.0));
+                            this.graph.addEdge(isolatedNode, closestNode, weight);
+                            visited.add(isolatedNode);
+                        }
+                    }
+                }
+            }
+
+            parseSpecialPoints() {
+                // 处理增强版格式的特殊点
+                if (this.topologyData.enhanced_consolidation_applied) {
+                    this.parseEnhancedSpecialPoints();
+                    return;
+                }
+                
+                // 处理传统格式
+                const keyNodesInfo = this.topologyData.key_nodes_info || {};
+                
+                for (const [nodeId, nodeInfo] of Object.entries(keyNodesInfo)) {
+                    const position = nodeInfo.position || [0, 0, 0];
+                    let pointType, pointId;
+                    
+                    // Parse loading points (L0, L1, ...)
+                    if (nodeId.includes('L') && nodeId.includes('_to_')) {
+                        pointType = PointType.LOADING;
+                        const match = nodeId.match(/L(\d+)/);
+                        pointId = match ? `L${match[1]}` : nodeId;
+                    }
+                    // Parse unloading points (U0, U1, ...)
+                    else if (nodeId.includes('U') && nodeId.includes('_to_')) {
+                        pointType = PointType.UNLOADING;
+                        const match = nodeId.match(/U(\d+)/);
+                        pointId = match ? `U${match[1]}` : nodeId;
+                    }
+                    // Parse parking points (P0, P1, ...)
+                    else if (nodeId.includes('P')) {
+                        pointType = PointType.PARKING;
+                        const match = nodeId.match(/P(\d+)/);
+                        pointId = match ? `P${match[1]}` : nodeId;
+                    }
+                    else {
+                        continue; // Skip non-special points
+                    }
+                    
+                    const specialPoint = new SpecialPoint(pointId, nodeId, pointType, position[0], position[1]);
+                    this.specialPoints.set(pointId, specialPoint);
+                }
+            }
+
+            parseEnhancedSpecialPoints() {
+                console.log("🎯 解析增强版特殊点");
+                const keyNodesInfo = this.topologyData.key_nodes_info || {};
+                let loadingCount = 0, unloadingCount = 0, parkingCount = 0;
+                
+                for (const [nodeId, nodeInfo] of Object.entries(keyNodesInfo)) {
+                    const position = nodeInfo.position || [0, 0, 0];
+                    
+                    // 识别端点集群中的特殊点类型
+                    if (nodeInfo.is_endpoint && nodeInfo.cluster_info) {
+                        const mergedPaths = nodeInfo.cluster_info.merged_path_ids || [];
+                        
+                        // 分析合并路径来确定点类型
+                        const pathAnalysis = this.analyzePathTypes(mergedPaths);
+                        
+                        if (pathAnalysis.hasLoading) {
+                            const pointId = `L${loadingCount}`;
+                            const specialPoint = new SpecialPoint(pointId, nodeId, PointType.LOADING, position[0], position[1]);
+                            this.specialPoints.set(pointId, specialPoint);
+                            loadingCount++;
+                            console.log(`📍 装载点: ${pointId} at (${position[0].toFixed(1)}, ${position[1].toFixed(1)})`);
+                        }
+                        
+                        if (pathAnalysis.hasUnloading) {
+                            const pointId = `U${unloadingCount}`;
+                            const specialPoint = new SpecialPoint(pointId, nodeId, PointType.UNLOADING, position[0], position[1]);
+                            this.specialPoints.set(pointId, specialPoint);
+                            unloadingCount++;
+                            console.log(`📍 卸载点: ${pointId} at (${position[0].toFixed(1)}, ${position[1].toFixed(1)})`);
+                        }
+                        
+                        if (pathAnalysis.hasParking) {
+                            const pointId = `P${parkingCount}`;
+                            const specialPoint = new SpecialPoint(pointId, nodeId, PointType.PARKING, position[0], position[1]);
+                            this.specialPoints.set(pointId, specialPoint);
+                            parkingCount++;
+                            console.log(`📍 停车点: ${pointId} at (${position[0].toFixed(1)}, ${position[1].toFixed(1)})`);
+                        }
+                    }
+                }
+                
+                // 如果没有足够的特殊点，创建一些基本的特殊点
+                if (this.specialPoints.size < 6) {
+                    console.log("🔧 特殊点不足，创建补充特殊点");
+                    this.createSupplementarySpecialPoints(keyNodesInfo);
+                }
+                
+                console.log(`✅ 特殊点解析完成: L${loadingCount} U${unloadingCount} P${parkingCount}`);
+            }
+
+            analyzePathTypes(pathIds) {
+                const analysis = {
+                    hasLoading: false,
+                    hasUnloading: false,
+                    hasParking: false
+                };
+                
+                for (const pathId of pathIds) {
+                    if (pathId.includes('L') && pathId.includes('_to_')) {
+                        analysis.hasLoading = true;
+                    }
+                    if (pathId.includes('U') && pathId.includes('_to_')) {
+                        analysis.hasUnloading = true;
+                    }
+                    if (pathId.includes('P') && pathId.includes('_to_')) {
+                        analysis.hasParking = true;
+                    }
+                }
+                
+                return analysis;
+            }
+
+            createSupplementarySpecialPoints(keyNodesInfo) {
+                const nodes = Object.entries(keyNodesInfo);
+                if (nodes.length === 0) return;
+
+                const existingTypes = new Set();
+                for (const point of this.specialPoints.values()) {
+                    existingTypes.add(point.type);
+                }
+
+                // 确保每种类型至少有2个点
+                const neededTypes = [];
+                if (!existingTypes.has(PointType.LOADING) || 
+                    Array.from(this.specialPoints.values()).filter(p => p.type === PointType.LOADING).length < 2) {
+                    neededTypes.push(PointType.LOADING);
+                }
+                if (!existingTypes.has(PointType.UNLOADING) || 
+                    Array.from(this.specialPoints.values()).filter(p => p.type === PointType.UNLOADING).length < 2) {
+                    neededTypes.push(PointType.UNLOADING);
+                }
+                if (!existingTypes.has(PointType.PARKING) || 
+                    Array.from(this.specialPoints.values()).filter(p => p.type === PointType.PARKING).length < 2) {
+                    neededTypes.push(PointType.PARKING);
+                }
+
+                let nodeIndex = 0;
+                for (const pointType of neededTypes) {
+                    const currentCount = Array.from(this.specialPoints.values()).filter(p => p.type === pointType).length;
+                    const needed = Math.max(0, 2 - currentCount);
+                    
+                    for (let i = 0; i < needed && nodeIndex < nodes.length; i++) {
+                        const [nodeId, nodeInfo] = nodes[nodeIndex++];
+                        const position = nodeInfo.position || [0, 0, 0];
+                        
+                        let pointId;
+                        if (pointType === PointType.LOADING) {
+                            pointId = `L${currentCount + i}`;
+                        } else if (pointType === PointType.UNLOADING) {
+                            pointId = `U${currentCount + i}`;
+                        } else {
+                            pointId = `P${currentCount + i}`;
+                        }
+                        
+                        const specialPoint = new SpecialPoint(pointId, nodeId, pointType, position[0], position[1]);
+                        this.specialPoints.set(pointId, specialPoint);
+                        console.log(`🔧 补充特殊点: ${pointId} (${pointType})`);
+                    }
+                }
+            }
+
+            getTopologyInfo() {
+                const loadingPoints = Array.from(this.specialPoints.values())
+                    .filter(p => p.type === PointType.LOADING).map(p => p.id);
+                const unloadingPoints = Array.from(this.specialPoints.values())
+                    .filter(p => p.type === PointType.UNLOADING).map(p => p.id);
+                const parkingPoints = Array.from(this.specialPoints.values())
+                    .filter(p => p.type === PointType.PARKING).map(p => p.id);
+
+                return {
+                    nodes: this.graph.nodes.size,
+                    edges: this.graph.edges.size,
+                    loadingPoints: loadingPoints.length,
+                    unloadingPoints: unloadingPoints.length,
+                    parkingPoints: parkingPoints.length,
+                    details: {
+                        loading: loadingPoints.sort(),
+                        unloading: unloadingPoints.sort(),
+                        parking: parkingPoints.sort()
+                    }
+                };
+            }
+        }
+
+        // Network class
+        class Network {
+            constructor() {
+                this.graph = new Graph();
+                this.specialPoints = new Map();
+                this.vehicles = [];
+                this.time = 0;
+                this.topologySource = 'fallback';
+                
+                this.generateFallbackNetwork();
+            }
+
+            async loadFromTopology(file) {
+                const loader = new TopologyLoader();
+                const result = await loader.loadFromFile(file);
+                
+                if (result.success) {
+                    console.log("🎯 拓扑加载成功，开始应用到网络");
+                    
+                    this.graph = result.graph;
+                    this.specialPoints = result.specialPoints;
+                    this.topologySource = 'file';
+                    
+                    // 清空现有车辆
+                    this.vehicles = [];
+                    
+                    // 确保至少有足够的特殊点
+                    this.ensureMinimumSpecialPoints();
+                    
+                    // 初始化车辆
+                    this.initializeVehiclesFromSpecialPoints();
+                    
+                    console.log(`✅ 网络初始化完成: ${this.graph.nodes.size} 节点, ${this.specialPoints.size} 特殊点, ${this.vehicles.length} 车辆`);
+                    
+                    return {
+                        success: true,
+                        info: result.info
+                    };
+                } else {
+                    console.error("❌ 拓扑加载失败:", result.error);
+                    return {
+                        success: false,
+                        error: result.error
+                    };
+                }
+            }
+
+            ensureMinimumSpecialPoints() {
+                const loadingPoints = Array.from(this.specialPoints.values()).filter(p => p.type === PointType.LOADING);
+                const unloadingPoints = Array.from(this.specialPoints.values()).filter(p => p.type === PointType.UNLOADING);
+                const parkingPoints = Array.from(this.specialPoints.values()).filter(p => p.type === PointType.PARKING);
+                
+                console.log(`特殊点统计: L${loadingPoints.length} U${unloadingPoints.length} P${parkingPoints.length}`);
+                
+                // 如果特殊点太少，从现有节点中随机选择一些作为特殊点
+                if (loadingPoints.length === 0 || unloadingPoints.length === 0 || parkingPoints.length === 0) {
+                    console.log("🔧 特殊点不足，从图节点中选择补充");
+                    this.createSpecialPointsFromGraphNodes();
+                }
+            }
+
+            createSpecialPointsFromGraphNodes() {
+                const availableNodes = Array.from(this.graph.nodes.entries()).filter(([nodeId, _]) => {
+                    return !Array.from(this.specialPoints.values()).some(p => p.nodeId === nodeId);
+                });
+
+                if (availableNodes.length < 6) {
+                    console.warn("⚠️ 可用节点不足，无法创建足够的特殊点");
+                    return;
+                }
+
+                // 随机选择节点作为特殊点
+                const shuffled = availableNodes.sort(() => Math.random() - 0.5);
+                
+                // 确保每种类型至少有2个
+                const pointsPerType = 2;
+                let index = 0;
+
+                // 装载点
+                for (let i = 0; i < pointsPerType && index < shuffled.length; i++) {
+                    const [nodeId, node] = shuffled[index++];
+                    const pointId = `L${i}`;
+                    const point = new SpecialPoint(pointId, nodeId, PointType.LOADING, node.x, node.y);
+                    this.specialPoints.set(pointId, point);
+                    console.log(`🔧 创建装载点: ${pointId}`);
+                }
+
+                // 卸载点
+                for (let i = 0; i < pointsPerType && index < shuffled.length; i++) {
+                    const [nodeId, node] = shuffled[index++];
+                    const pointId = `U${i}`;
+                    const point = new SpecialPoint(pointId, nodeId, PointType.UNLOADING, node.x, node.y);
+                    this.specialPoints.set(pointId, point);
+                    console.log(`🔧 创建卸载点: ${pointId}`);
+                }
+
+                // 停车点
+                for (let i = 0; i < pointsPerType && index < shuffled.length; i++) {
+                    const [nodeId, node] = shuffled[index++];
+                    const pointId = `P${i}`;
+                    const point = new SpecialPoint(pointId, nodeId, PointType.PARKING, node.x, node.y);
+                    this.specialPoints.set(pointId, point);
+                    console.log(`🔧 创建停车点: ${pointId}`);
+                }
+            }
+
+            initializeVehiclesFromSpecialPoints() {
+                const parkingPoints = Array.from(this.specialPoints.values()).filter(p => p.type === PointType.PARKING);
+                
+                if (parkingPoints.length === 0) {
+                    console.error("❌ 没有停车点，无法初始化车辆");
+                    return;
+                }
+
+                // 为每个停车点创建一辆车（最多4辆）
+                const maxVehicles = Math.min(4, parkingPoints.length);
+                
+                for (let i = 0; i < maxVehicles; i++) {
+                    const parkingPoint = parkingPoints[i];
+                    try {
+                        const vehicle = new Vehicle(i, parkingPoint.id, this);
+                        this.vehicles.push(vehicle);
+                        console.log(`🚗 初始化车辆 V${i} 在停车点 ${parkingPoint.id}`);
+                    } catch (error) {
+                        console.error(`❌ 车辆 V${i} 初始化失败:`, error);
+                    }
+                }
+
+                console.log(`✅ 车辆初始化完成: ${this.vehicles.length} 辆车`);
+            }
+
+            generateFallbackNetwork() {
+                this.graph = new Graph();
+                this.specialPoints = new Map();
+                
+                // Create a grid-like network with some randomness
+                const width = 800;
+                const height = 600;
+                const cols = 8;
+                const rows = 6;
+                const spacing = width / (cols + 1);
+                const vSpacing = height / (rows + 1);
+
+                // Generate nodes
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const nodeId = `node_${row}_${col}`;
+                        const x = spacing * (col + 1) + (Math.random() - 0.5) * 40;
+                        const y = vSpacing * (row + 1) + (Math.random() - 0.5) * 30;
+                        
+                        this.graph.addNode(nodeId, x, y);
+                    }
+                }
+
+                // Generate edges
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const nodeId = `node_${row}_${col}`;
+                        
+                        // Connect to right neighbor
+                        if (col < cols - 1) {
+                            const rightId = `node_${row}_${col + 1}`;
+                            this.graph.addEdge(nodeId, rightId);
+                        }
+                        
+                        // Connect to bottom neighbor
+                        if (row < rows - 1) {
+                            const bottomId = `node_${row + 1}_${col}`;
+                            this.graph.addEdge(nodeId, bottomId);
+                        }
+                        
+                        // Some diagonal connections for more interesting paths
+                        if (row < rows - 1 && col < cols - 1 && Math.random() < 0.3) {
+                            const diagId = `node_${row + 1}_${col + 1}`;
+                            this.graph.addEdge(nodeId, diagId);
+                        }
+                    }
+                }
+
+                this.generateFallbackSpecialPoints();
+                this.topologySource = 'fallback';
+            }
+
+            generateFallbackSpecialPoints() {
+                this.specialPoints.clear();
+                const numPoints = 3;
+
+                // Create loading points (left side)
+                for (let i = 0; i < numPoints; i++) {
+                    const nodeId = `node_${i * 2}_0`;
+                    const node = this.graph.nodes.get(nodeId);
+                    if (node) {
+                        const point = new SpecialPoint(`L${i}`, nodeId, PointType.LOADING, node.x, node.y);
+                        this.specialPoints.set(point.id, point);
+                    }
+                }
+
+                // Create unloading points (right side)
+                for (let i = 0; i < numPoints; i++) {
+                    const nodeId = `node_${i * 2}_7`;
+                    const node = this.graph.nodes.get(nodeId);
+                    if (node) {
+                        const point = new SpecialPoint(`U${i}`, nodeId, PointType.UNLOADING, node.x, node.y);
+                        this.specialPoints.set(point.id, point);
+                    }
+                }
+
+                // Create parking points (middle)
+                for (let i = 0; i < numPoints; i++) {
+                    const nodeId = `node_${1 + i}_3`;
+                    const node = this.graph.nodes.get(nodeId);
+                    if (node) {
+                        const point = new SpecialPoint(`P${i}`, nodeId, PointType.PARKING, node.x, node.y);
+                        this.specialPoints.set(point.id, point);
+                    }
+                }
+            }
+
+            getAvailableSpecialPoint(type, excludeVehicle = -1) {
+                for (const point of this.specialPoints.values()) {
+                    if (point.type === type && (point.isAvailable() || point.reservedBy === excludeVehicle)) {
+                        return point;
+                    }
+                }
+                return null;
+            }
+
+            getSpecialPoint(pointId) {
+                return this.specialPoints.get(pointId);
+            }
+
+            reserveSpecialPoint(pointId, vehicleId) {
+                const point = this.specialPoints.get(pointId);
+                return point ? point.reserve(vehicleId) : false;
+            }
+
+            occupySpecialPoint(pointId, vehicleId) {
+                const point = this.specialPoints.get(pointId);
+                if (point) {
+                    point.occupy(vehicleId);
+                }
+            }
+
+            releaseSpecialPoint(pointId) {
+                const point = this.specialPoints.get(pointId);
+                if (point) {
+                    point.release();
+                }
+            }
+
+            addVehicle() {
+                const parkingPoint = this.getAvailableSpecialPoint(PointType.PARKING);
+                if (!parkingPoint) return false;
+
+                const vehicle = new Vehicle(this.vehicles.length, parkingPoint.id, this);
+                this.vehicles.push(vehicle);
+                return true;
+            }
+
+            removeVehicle() {
+                if (this.vehicles.length <= 1) return false;
+
+                const vehicle = this.vehicles.pop();
+                if (vehicle.currentParkingPoint) {
+                    this.releaseSpecialPoint(vehicle.currentParkingPoint);
+                }
+                return true;
+            }
+
+            update(dt) {
+                this.time += dt;
+                
+                for (const vehicle of this.vehicles) {
+                    vehicle.update(this.time, dt);
+                }
+            }
+
+            reset() {
+                this.time = 0;
+                this.vehicles = [];
+                
+                // Reset all special points
+                for (const point of this.specialPoints.values()) {
+                    point.release();
+                }
+                
+                // If using fallback, regenerate to get variety
+                if (this.topologySource === 'fallback') {
+                    this.generateFallbackNetwork();
+                }
+            }
+        }
+
+        // Simulation class
+        class Simulation {
+            constructor() {
+                this.network = new Network();
+                this.lastTime = 0;
+                
+                // Add initial vehicles
+                for (let i = 0; i < 4; i++) {
+                    this.network.addVehicle();
+                }
+            }
+
+            update() {
+                const currentTime = performance.now() / 1000;
+                const dt = Math.min(currentTime - this.lastTime, 0.1) * speed;
+                this.lastTime = currentTime;
+
+                if (isRunning) {
+                    this.network.update(dt);
+                }
+            }
+
+            reset() {
+                this.network.reset();
+                this.lastTime = performance.now() / 1000;
+                
+                // Add initial vehicles
+                for (let i = 0; i < 4; i++) {
+                    this.network.addVehicle();
+                }
+            }
+        }
+
+        // Renderer class
+        class Renderer {
+            constructor(canvas, ctx) {
+                this.canvas = canvas;
+                this.ctx = ctx;
+                this.viewBounds = null;
+            }
+
+            clear() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.ctx.clearRect(0, 0, rect.width, rect.height);
+                
+                // 设置背景
+                this.ctx.fillStyle = 'rgba(15, 25, 35, 0.95)';
+                this.ctx.fillRect(0, 0, rect.width, rect.height);
+            }
+
+            render(simulation) {
+                this.clear();
+                
+                const network = simulation.network;
+                
+                // 计算视图边界
+                this.calculateViewBounds(network);
+                
+                // 应用视图变换
+                this.ctx.save();
+                this.applyViewTransform();
+                
+                // 绘制网络
+                this.drawNetwork(network);
+                
+                this.ctx.restore();
+            }
+
+            calculateViewBounds(network) {
+                let minX = Infinity, minY = Infinity;
+                let maxX = -Infinity, maxY = -Infinity;
+                
+                // 计算所有节点的边界
+                for (const node of network.graph.nodes.values()) {
+                    minX = Math.min(minX, node.x);
+                    minY = Math.min(minY, node.y);
+                    maxX = Math.max(maxX, node.x);
+                    maxY = Math.max(maxY, node.y);
+                }
+                
+                // 添加边距
+                const margin = 50;
+                this.viewBounds = {
+                    minX: minX - margin,
+                    minY: minY - margin,
+                    maxX: maxX + margin,
+                    maxY: maxY + margin,
+                    width: maxX - minX + 2 * margin,
+                    height: maxY - minY + 2 * margin
+                };
+            }
+
+            applyViewTransform() {
+                if (!this.viewBounds) return;
+
+                const rect = this.canvas.getBoundingClientRect();
+                const canvasWidth = rect.width;
+                const canvasHeight = rect.height;
+                
+                // 计算缩放比例，保持宽高比
+                const scaleX = canvasWidth / this.viewBounds.width;
+                const scaleY = canvasHeight / this.viewBounds.height;
+                const scale = Math.min(scaleX, scaleY) * 0.9; // 留点边距
+                
+                // 计算居中偏移
+                const offsetX = (canvasWidth - this.viewBounds.width * scale) / 2;
+                const offsetY = (canvasHeight - this.viewBounds.height * scale) / 2;
+                
+                // 应用变换
+                this.ctx.translate(offsetX, offsetY);
+                this.ctx.scale(scale, scale);
+                this.ctx.translate(-this.viewBounds.minX, -this.viewBounds.minY);
+            }
+
+            drawNetwork(network) {
+                // 绘制边
+                this.ctx.strokeStyle = 'rgba(100, 149, 237, 0.4)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                
+                for (const edge of network.graph.edges.values()) {
+                    const fromNode = network.graph.nodes.get(edge.from);
+                    const toNode = network.graph.nodes.get(edge.to);
+                    
+                    this.ctx.moveTo(fromNode.x, fromNode.y);
+                    this.ctx.lineTo(toNode.x, toNode.y);
+                }
+                this.ctx.stroke();
+
+                // 绘制普通节点
+                for (const node of network.graph.nodes.values()) {
+                    // 检查是否是特殊点
+                    const isSpecial = Array.from(network.specialPoints.values())
+                        .some(point => point.nodeId === node.id);
+                    
+                    if (!isSpecial) {
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                        this.ctx.beginPath();
+                        this.ctx.arc(node.x, node.y, 3, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                }
+
+                // 绘制特殊点
+                for (const point of network.specialPoints.values()) {
+                    this.drawSpecialPoint(point);
+                }
+
+                // 绘制车辆路径
+                for (const vehicle of network.vehicles) {
+                    if (vehicle.path.length > 1 && 
+                        (vehicle.state === VehicleState.MOVING || vehicle.state === VehicleState.CONFIRMED)) {
+                        this.drawVehiclePath(vehicle);
+                    }
+                }
+
+                // 绘制车辆
+                for (const vehicle of network.vehicles) {
+                    this.drawVehicle(vehicle);
+                }
+            }
+
+            drawSpecialPoint(point) {
+                let color, size, symbol;
+                
+                switch (point.type) {
+                    case PointType.LOADING:
+                        color = point.occupied ? '#27ae60' : (point.reservedBy ? '#f39c12' : '#2ecc71');
+                        size = 15;
+                        symbol = '🏭';
+                        break;
+                    case PointType.UNLOADING:
+                        color = point.occupied ? '#2980b9' : (point.reservedBy ? '#f39c12' : '#3498db');
+                        size = 15;
+                        symbol = '🏪';
+                        break;
+                    case PointType.PARKING:
+                        color = point.occupied ? '#7f8c8d' : (point.reservedBy ? '#f39c12' : '#95a5a6');
+                        size = 12;
+                        symbol = '🅿️';
+                        break;
+                }
+                
+                // 绘制点圆圈
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // 绘制边框
+                this.ctx.strokeStyle = '#ffffff';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // 绘制标签
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = 'bold 12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(point.id, point.x, point.y + 4);
+            }
+
+            drawVehiclePath(vehicle) {
+                this.ctx.strokeStyle = vehicle.color + '60';
+                this.ctx.lineWidth = 4;
+                this.ctx.beginPath();
+                
+                for (let i = 0; i < vehicle.path.length; i++) {
+                    const node = vehicle.network.graph.nodes.get(vehicle.path[i]);
+                    if (i === 0) {
+                        this.ctx.moveTo(node.x, node.y);
+                    } else {
+                        this.ctx.lineTo(node.x, node.y);
+                    }
+                }
+                this.ctx.stroke();
+            }
+
+            drawVehicle(vehicle) {
+                const { x, y } = vehicle.position;
+                let size, alpha;
+
+                // 根据状态确定外观
+                switch (vehicle.state) {
+                    case VehicleState.LOADING:
+                        size = 16;
+                        alpha = 1.0;
+                        break;
+                    case VehicleState.UNLOADING:
+                        size = 16;
+                        alpha = 1.0;
+                        break;
+                    case VehicleState.MOVING:
+                        size = vehicle.mode === VehicleMode.LOADED ? 14 : 12;
+                        alpha = 1.0;
+                        break;
+                    case VehicleState.WAITING:
+                        size = 10;
+                        alpha = 0.6;
+                        break;
+                    default:
+                        size = 12;
+                        alpha = 0.8;
+                }
+
+                // 绘制车辆主体
+                this.ctx.globalAlpha = alpha;
+                this.ctx.fillStyle = vehicle.color;
+                
+                if (vehicle.mode === VehicleMode.LOADED) {
+                    // 重载车辆 - 方形
+                    this.ctx.fillRect(x - size, y - size, size * 2, size * 2);
+                } else {
+                    // 其他车辆 - 圆形
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+
+                // 绘制边框
+                this.ctx.strokeStyle = '#ffffff';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+
+                // 绘制车辆ID
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(`V${vehicle.id}`, x, y + 3);
+
+                // 绘制目标线
+                const targetPoint = vehicle.getTargetPoint();
+                if (targetPoint) {
+                    this.ctx.globalAlpha = 0.5;
+                    this.ctx.strokeStyle = vehicle.color;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.setLineDash([5, 5]);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, y);
+                    this.ctx.lineTo(targetPoint.x, targetPoint.y);
+                    this.ctx.stroke();
+                    this.ctx.setLineDash([]);
+                }
+
+                this.ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // Control functions
+        function initSimulation() {
+            simulation = new Simulation();
+            updateUI();
+        }
+
+        function startRenderLoop() {
+            const renderer = new Renderer(canvas, ctx);
+            
+            function render() {
+                if (simulation) {
+                    simulation.update();
+                    renderer.render(simulation);
+                    updateUI();
+                }
+                
+                animationId = requestAnimationFrame(render);
+            }
+            
+            render();
+        }
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            const btn = document.getElementById('playPauseBtn');
+            btn.textContent = isRunning ? '⏸ Pause' : '▶ Start';
+            btn.className = isRunning ? 'btn running' : 'btn';
+        }
+
+        function resetSimulation() {
+            isRunning = false;
+            simulation.reset();
+            updateUI();
+            
+            const btn = document.getElementById('playPauseBtn');
+            btn.textContent = '▶ Start';
+            btn.className = 'btn';
+        }
+
+        function toggleGNN() {
+            useGNN = !useGNN;
+            const btn = document.getElementById('gnnBtn');
+            btn.textContent = useGNN ? '🧠 GNN On' : '🔧 Simple';
+            btn.className = useGNN ? 'btn gnn-enabled' : 'btn';
+        }
+
+        function cycleSpeed() {
+            const speeds = [0.5, 1, 2, 4];
+            const currentIndex = speeds.indexOf(speed);
+            speed = speeds[(currentIndex + 1) % speeds.length];
+            
+            const btn = document.getElementById('speedBtn');
+            btn.textContent = `⚡ Speed x${speed}`;
+        }
+
+        function addVehicle() {
+            if (simulation && simulation.network.addVehicle()) {
+                updateUI();
+            }
+        }
+
+        function removeVehicle() {
+            if (simulation && simulation.network.removeVehicle()) {
+                updateUI();
+            }
+        }
+
+        function updateUI() {
+            if (!simulation) return;
+
+            const network = simulation.network;
+            
+            // Update basic stats
+            document.getElementById('timeValue').textContent = network.time.toFixed(1) + 's';
+            document.getElementById('vehicleCount').textContent = network.vehicles.length;
+            document.getElementById('cycleCount').textContent = network.vehicles.reduce((sum, v) => sum + v.completedCycles, 0);
+            document.getElementById('distanceValue').textContent = network.vehicles.reduce((sum, v) => sum + v.totalDistance, 0).toFixed(1);
+
+            // Update vehicle states
+            const stateCount = {};
+            const modeCount = {};
+            
+            for (const state of Object.values(VehicleState)) {
+                stateCount[state] = 0;
+            }
+            for (const mode of Object.values(VehicleMode)) {
+                modeCount[mode] = 0;
+            }
+
+            for (const vehicle of network.vehicles) {
+                stateCount[vehicle.state]++;
+                modeCount[vehicle.mode]++;
+            }
+
+            const statesContainer = document.getElementById('vehicleStates');
+            statesContainer.innerHTML = '';
+            
+            for (const [state, count] of Object.entries(stateCount)) {
+                if (count > 0) {
+                    const item = document.createElement('div');
+                    item.className = 'status-item';
+                    item.innerHTML = `
+                        <div class="status-label">${state}</div>
+                        <div class="status-value">${count}</div>
+                    `;
+                    statesContainer.appendChild(item);
+                }
+            }
+
+            // Update special points status
+            const pointsContainer = document.getElementById('specialPoints');
+            pointsContainer.innerHTML = '';
+
+            const pointStats = {};
+            for (const type of Object.values(PointType)) {
+                pointStats[type] = { total: 0, occupied: 0, reserved: 0 };
+            }
+
+            for (const point of network.specialPoints.values()) {
+                pointStats[point.type].total++;
+                if (point.occupied) {
+                    pointStats[point.type].occupied++;
+                } else if (point.reservedBy !== null) {
+                    pointStats[point.type].reserved++;
+                }
+            }
+
+            for (const [type, stats] of Object.entries(pointStats)) {
+                if (stats.total > 0) {
+                    const item = document.createElement('div');
+                    item.className = 'status-item';
+                    const available = stats.total - stats.occupied - stats.reserved;
+                    item.innerHTML = `
+                        <div class="status-label">${type}</div>
+                        <div class="status-value">${available}/${stats.total}</div>
+                    `;
+                    pointsContainer.appendChild(item);
+                }
+            }
+
+            // Update vehicle list
+            const vehicleList = document.getElementById('vehicleList');
+            vehicleList.innerHTML = '';
+
+            for (const vehicle of network.vehicles) {
+                const item = document.createElement('div');
+                item.className = 'vehicle-item';
+                item.style.borderLeftColor = vehicle.color;
+                
+                const targetInfo = vehicle.getTargetPoint() ? 
+                    ` → ${vehicle.getTargetPoint().id}` : '';
+                
+                item.innerHTML = `
+                    <strong>V${vehicle.id}</strong> | ${vehicle.state}${targetInfo}<br>
+                    <small>Mode: ${vehicle.mode} | Cycles: ${vehicle.completedCycles}</small>
+                `;
+                vehicleList.appendChild(item);
+            }
+        }
+
+        // Topology file handling
+        async function handleTopologyFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusElement = document.getElementById('topologyStatus');
+            statusElement.innerHTML = '<span style="color: #f39c12;">🔄 Loading topology...</span>';
+
+            try {
+                console.log(`📁 开始加载拓扑文件: ${file.name}`);
+                const result = await simulation.network.loadFromTopology(file);
+                
+                if (result.success) {
+                    const info = result.info;
+                    statusElement.innerHTML = `
+                        <span style="color: #2ecc71;">✅ Loaded: ${file.name}</span><br>
+                        <small>Nodes: ${info.nodes} | Edges: ${info.edges}</small><br>
+                        <small>L:${info.loadingPoints} U:${info.unloadingPoints} P:${info.parkingPoints}</small>
+                    `;
+                    
+                    // 重置仿真状态
+                    isRunning = false;
+                    simulation.reset();
+                    
+                    // 不需要手动添加车辆，loadFromTopology已经处理了
+                    console.log(`🚗 车辆已自动初始化: ${simulation.network.vehicles.length} 辆`);
+                    
+                    // 更新界面
+                    updateUI();
+                    
+                    // 重置播放按钮
+                    const btn = document.getElementById('playPauseBtn');
+                    btn.textContent = '▶ Start';
+                    btn.className = 'btn';
+                    
+                    // 显示成功消息
+                    setTimeout(() => {
+                        statusElement.innerHTML = statusElement.innerHTML + '<br><span style="color: #27ae60;">✅ Ready to start simulation</span>';
+                    }, 500);
+                    
+                    console.log('🎯 拓扑加载完成，准备开始仿真');
+                } else {
+                    statusElement.innerHTML = `<span style="color: #e74c3c;">❌ Failed: ${result.error}</span>`;
+                    console.error('❌ 拓扑加载失败:', result.error);
+                    
+                    // 显示详细错误信息
+                    setTimeout(() => {
+                        statusElement.innerHTML = statusElement.innerHTML + '<br><small>Please check console for details</small>';
+                    }, 1000);
+                }
+            } catch (error) {
+                statusElement.innerHTML = `<span style="color: #e74c3c;">❌ Error: ${error.message}</span>`;
+                console.error('❌ 拓扑文件处理错误:', error);
+            }
+            
+            // 清空文件输入
+            event.target.value = '';
+        }
+
+        function generateFallbackTopology() {
+            const statusElement = document.getElementById('topologyStatus');
+            statusElement.innerHTML = '<span style="color: #f39c12;">🔄 Generating fallback...</span>';
+            
+            console.log('🔧 生成回退拓扑');
+            
+            // 停止当前仿真
+            isRunning = false;
+            
+            // 重置到回退拓扑
+            simulation.network.generateFallbackNetwork();
+            simulation.reset();
+            
+            // 添加初始车辆
+            for (let i = 0; i < 4; i++) {
+                if (!simulation.network.addVehicle()) {
+                    console.warn(`⚠️ 无法添加车辆 ${i}`);
+                    break;
+                }
+            }
+            
+            statusElement.innerHTML = '<span style="color: #95a5a6;">🔧 Using fallback topology</span>';
+            updateUI();
+            
+            // 重置播放按钮
+            const btn = document.getElementById('playPauseBtn');
+            btn.textContent = '▶ Start';
+            btn.className = 'btn';
+            
+            console.log(`✅ 回退拓扑生成完成: ${simulation.network.vehicles.length} 辆车`);
+        }
+
+        function showDebugInfo() {
+            if (!simulation || !simulation.network) {
+                alert('仿真系统未初始化');
+                return;
+            }
+
+            const network = simulation.network;
+            const debugInfo = [];
+
+            debugInfo.push('=== 系统调试信息 ===');
+            debugInfo.push(`时间: ${network.time.toFixed(1)}s`);
+            debugInfo.push(`拓扑来源: ${network.topologySource}`);
+            debugInfo.push(`运行状态: ${isRunning ? '运行中' : '停止'}`);
+            
+            debugInfo.push('\n=== 图结构 ===');
+            debugInfo.push(`节点数: ${network.graph.nodes.size}`);
+            debugInfo.push(`边数: ${network.graph.edges.size}`);
+            
+            debugInfo.push('\n=== 特殊点状态 ===');
+            const specialStats = {};
+            for (const point of network.specialPoints.values()) {
+                if (!specialStats[point.type]) {
+                    specialStats[point.type] = { total: 0, occupied: 0, reserved: 0 };
+                }
+                specialStats[point.type].total++;
+                if (point.occupied) {
+                    specialStats[point.type].occupied++;
+                } else if (point.reservedBy !== null) {
+                    specialStats[point.type].reserved++;
+                }
+            }
+            
+            for (const [type, stats] of Object.entries(specialStats)) {
+                const available = stats.total - stats.occupied - stats.reserved;
+                debugInfo.push(`${type}: ${stats.total}总 ${stats.occupied}占用 ${stats.reserved}预留 ${available}可用`);
+            }
+            
+            debugInfo.push('\n=== 车辆状态 ===');
+            debugInfo.push(`车辆总数: ${network.vehicles.length}`);
+            
+            for (const vehicle of network.vehicles) {
+                const target = vehicle.getTargetPoint();
+                const targetInfo = target ? ` → ${target.id}` : '';
+                debugInfo.push(`V${vehicle.id}: ${vehicle.state} (${vehicle.mode})${targetInfo}`);
+                debugInfo.push(`  位置: (${vehicle.position.x.toFixed(1)}, ${vehicle.position.y.toFixed(1)})`);
+                debugInfo.push(`  节点: ${vehicle.currentNode}`);
+                debugInfo.push(`  循环: ${vehicle.completedCycles} 距离: ${vehicle.totalDistance.toFixed(1)}`);
+            }
+            
+            const debugText = debugInfo.join('\n');
+            
+            // 创建调试窗口
+            const debugWindow = window.open('', '_blank', 'width=600,height=400');
+            debugWindow.document.write(`
+                <html>
+                <head><title>系统调试信息</title></head>
+                <body style="font-family: monospace; white-space: pre-wrap; padding: 20px;">
+                ${debugText}
+                </body>
+                </html>
+            `);
+        }
+
+        function validateSystem() {
+            if (!simulation || !simulation.network) {
+                alert('仿真系统未初始化');
+                return;
+            }
+
+            const network = simulation.network;
+            const issues = [];
+            
+            // 验证图结构
+            if (network.graph.nodes.size === 0) {
+                issues.push('❌ 图中没有节点');
+            }
+            if (network.graph.edges.size === 0) {
+                issues.push('❌ 图中没有边');
+            }
+            
+            // 验证特殊点
+            const loadingPoints = Array.from(network.specialPoints.values()).filter(p => p.type === PointType.LOADING);
+            const unloadingPoints = Array.from(network.specialPoints.values()).filter(p => p.type === PointType.UNLOADING);
+            const parkingPoints = Array.from(network.specialPoints.values()).filter(p => p.type === PointType.PARKING);
+            
+            if (loadingPoints.length === 0) {
+                issues.push('❌ 没有装载点');
+            }
+            if (unloadingPoints.length === 0) {
+                issues.push('❌ 没有卸载点');
+            }
+            if (parkingPoints.length === 0) {
+                issues.push('❌ 没有停车点');
+            }
+            
+            // 验证车辆
+            if (network.vehicles.length === 0) {
+                issues.push('❌ 没有车辆');
+            }
+            
+            // 验证特殊点节点是否在图中
+            for (const point of network.specialPoints.values()) {
+                if (!network.graph.nodes.has(point.nodeId)) {
+                    issues.push(`❌ 特殊点 ${point.id} 的节点 ${point.nodeId} 不在图中`);
+                }
+            }
+            
+            // 验证车辆节点是否在图中
+            for (const vehicle of network.vehicles) {
+                if (!network.graph.nodes.has(vehicle.currentNode)) {
+                    issues.push(`❌ 车辆 V${vehicle.id} 的节点 ${vehicle.currentNode} 不在图中`);
+                }
+            }
+            
+            const results = [];
+            results.push('=== 系统验证结果 ===');
+            
+            if (issues.length === 0) {
+                results.push('✅ 系统验证通过，没有发现问题');
+                results.push('\n=== 系统状态良好 ===');
+                results.push(`✅ 图结构: ${network.graph.nodes.size} 节点, ${network.graph.edges.size} 边`);
+                results.push(`✅ 特殊点: L${loadingPoints.length} U${unloadingPoints.length} P${parkingPoints.length}`);
+                results.push(`✅ 车辆: ${network.vehicles.length} 辆`);
+                results.push('\n系统可以正常运行仿真');
+            } else {
+                results.push(`❌ 发现 ${issues.length} 个问题:`);
+                results.push('');
+                results.push(...issues);
+                results.push('\n建议:');
+                results.push('1. 检查拓扑文件格式是否正确');
+                results.push('2. 尝试重新加载拓扑文件');
+                results.push('3. 或者使用"Generate"按钮生成回退拓扑');
+            }
+            
+            alert(results.join('\n'));
+        }
+    </script>
+</body>
+</html>

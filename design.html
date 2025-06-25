@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于拓扑感知GNN架构的露天矿多车智能协同调度系统</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', 'SimSun', serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #333;
+            padding: 30px;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 19px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+        
+        .research-focus {
+            background: #f5f5f5;
+            border: 2px solid #000;
+            padding: 18px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .focus-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .focus-desc {
+            font-size: 12px;
+            color: #444;
+            line-height: 1.5;
+        }
+        
+        .scenario-overview {
+            margin: 20px 0;
+            border: 1px solid #666;
+            position: relative;
+        }
+        
+        .scenario-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .scenario-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 20px;
+        }
+        
+        .primary-scenario {
+            border: 2px solid #333;
+            padding: 15px;
+            background: #f8f8f8;
+        }
+        
+        .scenario-name {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .scenario-features {
+            font-size: 10px;
+            line-height: 1.4;
+        }
+        
+        .scenario-features li {
+            margin: 3px 0;
+        }
+        
+        .extensible-scenarios {
+            border: 1px dashed #666;
+            padding: 15px;
+            background: #fafafa;
+        }
+        
+        .ext-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .ext-list {
+            font-size: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        
+        .ext-item {
+            padding: 4px;
+            background: white;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        
+        .core-innovation {
+            margin: 20px 0;
+            background: #fafafa;
+            border: 2px solid #333;
+            padding: 20px;
+        }
+        
+        .innovation-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .innovation-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .flow-box {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #333;
+            margin: 0 8px;
+        }
+        
+        .flow-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .flow-desc {
+            font-size: 10px;
+            color: #666;
+            line-height: 1.3;
+        }
+        
+        .unstructured {
+            background: #e8e8e8;
+        }
+        
+        .topology {
+            background: #f0f0f0;
+        }
+        
+        .gnn-integration {
+            background: #f5f5f5;
+        }
+        
+        .transform-arrow {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 10px;
+        }
+        
+        .system-architecture {
+            border: 1px solid #666;
+            margin: 25px 0;
+            position: relative;
+        }
+        
+        .arch-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .main-phases {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border: none;
+        }
+        
+        .phase {
+            border: 1px solid #333;
+            padding: 18px;
+            margin: 10px;
+            position: relative;
+        }
+        
+        .phase.phase-1 {
+            background: #f8f8f8;
+        }
+        
+        .phase.phase-2 {
+            background: #f0f0f0;
+        }
+        
+        .phase-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #666;
+            padding-bottom: 5px;
+        }
+        
+        .phase-subtitle {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        
+        .phase-core {
+            background: white;
+            border: 2px dashed #999;
+            padding: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .core-tech {
+            font-weight: bold;
+            font-size: 11px;
+            color: #000;
+        }
+        
+        .core-detail {
+            font-size: 9px;
+            color: #555;
+            margin-top: 3px;
+        }
+        
+        .module-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+        
+        .module {
+            border: 1px solid #999;
+            padding: 6px;
+            background: white;
+            font-size: 10px;
+        }
+        
+        .module-title {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .module-desc {
+            color: #666;
+            font-size: 9px;
+        }
+        
+        .gnn-topology-integration {
+            margin: 20px 0;
+            border: 2px solid #333;
+            position: relative;
+            background: #f9f9f9;
+        }
+        
+        .integration-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .integration-content {
+            padding: 20px;
+        }
+        
+        .integration-overview {
+            background: white;
+            border: 1px solid #666;
+            padding: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .overview-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .overview-desc {
+            font-size: 10px;
+            color: #555;
+            line-height: 1.4;
+        }
+        
+        .integration-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .detail-box {
+            border: 1px solid #666;
+            padding: 12px;
+            background: white;
+        }
+        
+        .detail-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .detail-list li {
+            padding: 3px 0;
+            font-size: 10px;
+            padding-left: 12px;
+            position: relative;
+        }
+        
+        .detail-list li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #333;
+        }
+        
+        .multi-agent-coordination {
+            margin: 20px 0;
+            border: 2px solid #333;
+            position: relative;
+            background: #f9f9f9;
+        }
+        
+        .coord-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .coord-content {
+            padding: 20px;
+        }
+        
+        .coord-mechanism {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .mechanism-box {
+            border: 1px solid #666;
+            padding: 10px;
+            background: white;
+            text-align: center;
+        }
+        
+        .mechanism-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        
+        .mechanism-desc {
+            font-size: 9px;
+            color: #555;
+            line-height: 1.3;
+        }
+        
+        .coordination-flow {
+            background: #f5f5f5;
+            border: 1px dashed #666;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        
+        .flow-step-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .flow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            font-size: 9px;
+            padding: 5px;
+            background: white;
+            border: 1px solid #999;
+            margin: 0 2px;
+        }
+        
+        .step-arrow {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .technical-innovations {
+            margin: 20px 0;
+            border: 1px solid #666;
+            position: relative;
+        }
+        
+        .tech-title {
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: white;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .tech-content {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .tech-section {
+            border: 1px dashed #999;
+            padding: 10px;
+        }
+        
+        .tech-section-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .tech-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .tech-list li {
+            padding: 3px 0;
+            font-size: 10px;
+            padding-left: 12px;
+            position: relative;
+        }
+        
+        .tech-list li::before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #333;
+        }
+        
+        .performance-section {
+            margin: 20px 0;
+            border: 1px solid #666;
+            position: relative;
+        }
+        
+        .perf-title {
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: white;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .perf-content {
+            padding: 15px;
+        }
+        
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .performance-table th,
+        .performance-table td {
+            border: 1px solid #666;
+            padding: 5px;
+            text-align: center;
+        }
+        
+        .performance-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .implementation-section {
+            margin: 20px 0;
+            border: 1px solid #666;
+            position: relative;
+        }
+        
+        .impl-title {
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: white;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .impl-content {
+            padding: 15px;
+        }
+        
+        .impl-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .impl-box {
+            border: 1px dashed #999;
+            padding: 10px;
+            background: #fafafa;
+        }
+        
+        .impl-box-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .algo-section {
+            margin: 20px 0;
+            border: 1px solid #666;
+            position: relative;
+        }
+        
+        .algo-title {
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: white;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .algo-content {
+            padding: 15px;
+        }
+        
+        .algo-phase {
+            border: 1px solid #999;
+            padding: 12px;
+            margin: 10px 0;
+            background: #f8f8f8;
+        }
+        
+        .algo-phase-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+        
+        .algo-steps {
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .clustering-strategy {
+            margin: 20px 0;
+            border: 2px solid #333;
+            position: relative;
+            background: #f9f9f9;
+        }
+
+        .clustering-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .clustering-content {
+            padding: 20px;
+        }
+
+        .clustering-overview {
+            background: white;
+            border: 1px solid #666;
+            padding: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .clustering-phases {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .clustering-phase-box {
+            border: 1px solid #666;
+            padding: 10px;
+            background: white;
+            text-align: center;
+        }
+
+        .phase-box-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .phase-box-desc {
+            font-size: 9px;
+            color: #555;
+            line-height: 1.3;
+        }
+
+        .clustering-modes {
+            background: #f5f5f5;
+            border: 1px dashed #666;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .modes-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .modes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .mode-box {
+            background: white;
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .mode-name {
+            font-weight: bold;
+            font-size: 10px;
+            margin-bottom: 3px;
+        }
+
+        .mode-params {
+            font-size: 8px;
+            color: #666;
+        }
+        
+        .experiment-section {
+            margin: 20px 0;
+            border: 1px solid #666;
+            position: relative;
+        }
+        
+        .exp-title {
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: white;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .exp-content {
+            padding: 15px;
+        }
+        
+        .exp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .exp-box {
+            border: 1px solid #999;
+            padding: 10px;
+            background: white;
+        }
+        
+        .exp-box-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+        
+        .contribution-section {
+            margin: 20px 0;
+            border: 2px solid #333;
+            position: relative;
+            background: #f9f9f9;
+        }
+        
+        .contrib-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .contrib-content {
+            padding: 20px;
+        }
+        
+        .contrib-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .contrib-box {
+            border: 1px solid #666;
+            padding: 12px;
+            background: white;
+        }
+        
+        .contrib-box-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            基于拓扑感知GNN架构的露天矿多车智能协同调度系统
+        </div>
+        <div class="subtitle">
+            Mining Intelligent Scheduling System: Topology-Aware GNN and Distributed Multi-Agent Coordination
+        </div>
+        
+        <div class="research-focus">
+            <div class="focus-title">研究焦点：道路网络拓扑与GNN深度融合的多智能体协同机制</div>
+            <div class="focus-desc">
+                以露天矿为主要应用场景，通过<strong>拓扑结构嵌入式GNN架构</strong>和<strong>结构化图消息传递机制</strong>，<br>
+                实现大规模车辆的智能分布式协同调度，技术方案可扩展至其他非结构化交通环境
+            </div>
+        </div>
+        
+        <div class="scenario-overview">
+            <div class="scenario-title">应用场景与扩展性</div>
+            <div class="scenario-content">
+                <div class="primary-scenario">
+                    <div class="scenario-name">🚛 主要场景：露天矿智能调度</div>
+                    <ul class="scenario-features">
+                        <li><strong>复杂地形：</strong> 不规则开采区域、动态坡道、临时道路</li>
+                        <li><strong>重载运输：</strong> 大型矿车协同作业、装卸点协调</li>
+                        <li><strong>动态环境：</strong> 爆破区域、施工变化、天气影响</li>
+                        <li><strong>安全要求：</strong> 避碰约束、载重限制、速度控制</li>
+                        <li><strong>效率优化：</strong> 最短路径、负载均衡、任务优先级</li>
+                    </ul>
+                </div>
+                
+                <div class="extensible-scenarios">
+                    <div class="ext-title">可扩展的非结构化交通场景</div>
+                    <div class="ext-list">
+                        <div class="ext-item">建筑工地</div>
+                        <div class="ext-item">港口码头</div>
+                        <div class="ext-item">物流园区</div>
+                        <div class="ext-item">灾后救援</div>
+                        <div class="ext-item">军事物流</div>
+                        <div class="ext-item">农业机械</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="core-innovation">
+            <div class="innovation-title">核心技术路线：非结构化→拓扑结构→GNN嵌入→多智能体协同</div>
+            <div class="innovation-flow">
+                <div class="flow-box unstructured">
+                    <div class="flow-title">露天矿复杂环境</div>
+                    <div class="flow-desc">
+                        无固定道路网络<br>
+                        任意空间路径<br>
+                        动态障碍分布<br>
+                        传统图算法失效
+                    </div>
+                </div>
+                <div class="transform-arrow">⟹</div>
+                <div class="flow-box topology">
+                    <div class="flow-title">结构化道路拓扑</div>
+                    <div class="flow-desc">
+                        标准图G=(V,E)<br>
+                        节点容量约束<br>
+                        边权重信息<br>
+                        邻接关系矩阵
+                    </div>
+                </div>
+                <div class="transform-arrow">⟹</div>
+                <div class="flow-box gnn-integration">
+                    <div class="flow-title">拓扑感知GNN</div>
+                    <div class="flow-desc">
+                        结构嵌入编码<br>
+                        图消息传递<br>
+                        拓扑约束学习<br>
+                        分布式决策输出
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="system-architecture">
+            <div class="arch-title">双阶段系统架构</div>
+            <div class="main-phases">
+                <div class="phase phase-1">
+                    <div class="phase-header">阶段一：智能拓扑构建</div>
+                    <div class="phase-subtitle">Intelligent Topology Construction</div>
+                    
+                    <div class="phase-core">
+                        <div class="core-tech">核心：非结构化环境的图结构化</div>
+                        <div class="core-detail">为GNN提供标准化的拓扑输入</div>
+                    </div>
+                    
+                    <div class="module-grid">
+                        <div class="module">
+                            <div class="module-title">1. 双向路径智能规划</div>
+                            <div class="module-desc">混合A*算法，自适应双向分离/共享策略</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">2. 动态节点密度控制</div>
+                            <div class="module-desc">基于曲率和路径特征的自适应节点生成</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">3. 关键节点聚类提取</div>
+                            <div class="module-desc">多轮聚类算法识别拓扑关键节点</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">4. 车辆动力学约束拟合</div>
+                            <div class="module-desc">Clothoid-Cubic曲线拟合，关键节点信息继承与工程级路径优化</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">5. 图拓扑标准化输出</div>
+                            <div class="module-desc">生成符合GNN输入要求的图结构G=(V,E)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="phase phase-2">
+                    <div class="phase-header">阶段二：拓扑感知多智能体协同</div>
+                    <div class="phase-subtitle">Topology-Aware Multi-Agent Coordination</div>
+                    
+                    <div class="phase-core">
+                        <div class="core-tech">核心：拓扑结构深度融入GNN架构</div>
+                        <div class="core-detail">图结构指导消息传递和决策过程</div>
+                    </div>
+                    
+                    <div class="module-grid">
+                        <div class="module">
+                            <div class="module-title">1. 拓扑嵌入GNN编码</div>
+                            <div class="module-desc">将道路网络结构作为GNN的先验知识</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">2. 结构化消息传递</div>
+                            <div class="module-desc">基于图邻接关系的智能体通信机制</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">3. 分布式协同决策</div>
+                            <div class="module-desc">每个智能体基于局部拓扑进行独立决策</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">4. 轻量级冲突消解</div>
+                            <div class="module-desc">利用拓扑结构的关键节点预留机制</div>
+                        </div>
+                        <div class="module">
+                            <div class="module-title">5. 持续高效率运行的多车协同调度</div>
+                            <div class="module-desc">基于拓扑感知GNN的实时动态调度与优化执行</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="gnn-topology-integration">
+            <div class="integration-title">核心技术：道路网络拓扑与GNN的深度融合机制</div>
+            <div class="integration-content">
+                <div class="integration-overview">
+                    <div class="overview-title">拓扑感知GNN架构设计原理</div>
+                    <div class="overview-desc">
+                        将构建的道路网络拓扑G=(V,E)作为GNN的结构先验，通过拓扑嵌入层、结构化注意力机制和图约束损失函数，
+                        使神经网络充分利用道路网络的空间关系和连通性信息，指导多智能体的协同决策过程。
+                        传统GNN的O(N²)复杂度降至O(k)，其中k为拓扑邻居数量。
+                    </div>
+                </div>
+                
+                <div class="integration-details">
+                    <div class="detail-box">
+                        <div class="detail-title">拓扑结构嵌入到GNN的具体方式</div>
+                        <ul class="detail-list">
+                            <li><strong>节点特征增强：</strong>道路节点的容量、类型、连通度作为初始特征</li>
+                            <li><strong>边权重编码：</strong>路径长度、通行能力、坡度等信息嵌入边特征</li>
+                            <li><strong>邻接矩阵约束：</strong>限制消息传递仅在物理连通的节点间进行</li>
+                            <li><strong>层次化表示：</strong>关键节点、普通节点的分层编码机制</li>
+                            <li><strong>动态拓扑更新：</strong>支持道路网络的实时变化和重构</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="detail-box">
+                        <div class="detail-title">GNN消息传递的拓扑约束机制</div>
+                        <ul class="detail-list">
+                            <li><strong>空间局部性：</strong>消息传递仅限于拓扑邻居节点</li>
+                            <li><strong>路径感知注意力：</strong>基于最短路径距离的注意力权重</li>
+                            <li><strong>容量约束聚合：</strong>考虑节点容量的消息聚合函数</li>
+                            <li><strong>方向性传播：</strong>区分上行、下行路径的不同传播方式</li>
+                            <li><strong>多跳信息融合：</strong>集成k跳邻居的拓扑信息</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="multi-agent-coordination">
+            <div class="coord-title">GNN与多智能体协同的关键契合点</div>
+            <div class="coord-content">
+                <div class="coord-mechanism">
+                    <div class="mechanism-box">
+                        <div class="mechanism-title">结构化信息共享</div>
+                        <div class="mechanism-desc">
+                            GNN利用道路拓扑结构，使智能体只与拓扑邻居交换信息，避免全局通信开销，实现高效的局部协调
+                        </div>
+                    </div>
+                    
+                    <div class="mechanism-box">
+                        <div class="mechanism-title">分布式决策一致性</div>
+                        <div class="mechanism-desc">
+                            通过拓扑约束的消息传递，确保分布式决策与全局拓扑结构一致，避免局部最优导致的冲突
+                        </div>
+                    </div>
+                    
+                    <div class="mechanism-box">
+                        <div class="mechanism-title">可扩展性保证</div>
+                        <div class="mechanism-desc">
+                            GNN的图结构天然支持大规模节点，结合拓扑局部性，实现O(N)复杂度的多智能体协调
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="coordination-flow">
+                    <div class="flow-step-title">拓扑感知多智能体协调执行流程</div>
+                    <div class="flow-steps">
+                        <div class="step">
+                            <strong>拓扑感知</strong><br>
+                            读取局部<br>
+                            网络结构
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step">
+                            <strong>邻居发现</strong><br>
+                            基于图结构<br>
+                            识别通信对象
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step">
+                            <strong>消息传递</strong><br>
+                            结构化信息<br>
+                            交换与聚合
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step">
+                            <strong>协同决策</strong><br>
+                            GNN输出<br>
+                            最优动作
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step">
+                            <strong>冲突检测</strong><br>
+                            拓扑约束<br>
+                            冲突预测
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step">
+                            <strong>协商执行</strong><br>
+                            优先级协商<br>
+                            路径调整
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="algo-section">
+            <div class="algo-title">关键算法设计与优化策略</div>
+            <div class="algo-content">
+                <div class="algo-phase">
+                    <div class="algo-phase-title">双向路径智能规划算法</div>
+                    <div class="algo-steps">
+                        使用改进混合A*算法生成参考路径，在参考路径两侧设置安全约束区域，分别规划双向路径。
+                        当双向路径可行时采用分离策略，否则退化为双向共用单一路径，确保系统的鲁棒性。
+                    </div>
+                </div>
+                
+                <div class="algo-phase">
+                    <div class="algo-phase-title">动态节点密度控制</div>
+                    <div class="algo-steps">
+                        根据路径曲率和长度动态调整节点密度，曲率大的区域增加节点密度以提高控制精度，
+                        直线段减少节点数量以降低计算开销，实现计算精度与效率的平衡。
+                    </div>
+                </div>
+                
+                <div class="algo-phase">
+                    <div class="algo-phase-title">关键节点聚类提取</div>
+                    <div class="algo-steps">
+                        使用多轮聚类算法对生成的节点进行空间聚类，识别出拓扑关键节点作为交通控制点。
+                        关键节点承担时空预留功能，是轻量级冲突消解的基础。
+                    </div>
+                </div>
+                
+                <div class="algo-phase">
+                    <div class="algo-phase-title">车辆动力学约束拟合</div>
+                    <div class="algo-steps">
+                        关键节点继承聚类前节点的完整信息（坐标、容量、约束等），对起点-关键节点序列-终点构成的路径进行
+                        Clothoid-Cubic样条曲线拟合，确保路径满足重载矿车的转弯半径、最大坡度、加减速约束，
+                        使生成的道路网络达到资深工程师手工设计的专业水准。
+                    </div>
+                </div>
+                
+                <div class="algo-phase">
+                    <div class="algo-phase-title">拓扑约束GNN消息传递</div>
+                    <div class="algo-steps">
+                        设计拓扑约束掩码限制消息传递仅在物理连通的节点间进行，结合节点特征和边特征
+                        生成结构化消息，通过多层图卷积实现拓扑感知的特征学习。
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="technical-innovations">
+            <div class="tech-title">关键技术创新与理论贡献</div>
+            <div class="tech-content">
+                <div class="tech-section">
+                    <div class="tech-section-title">拓扑感知GNN架构创新</div>
+                    <ul class="tech-list">
+                        <li>首次提出道路网络拓扑深度嵌入GNN的架构范式</li>
+                        <li>设计拓扑约束的消息传递和注意力机制</li>
+                        <li>建立图结构指导的多智能体学习框架</li>
+                        <li>实现结构化先验知识与学习算法的有机融合</li>
+                        <li>从O(N²)复杂度降至O(k)的算法突破</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-section">
+                    <div class="tech-section-title">分布式多智能体协同理论</div>
+                    <ul class="tech-list">
+                        <li>基于拓扑局部性的大规模实时协调理论</li>
+                        <li>图结构约束下的分布式强化学习算法</li>
+                        <li>轻量级时空预留的理论基础与实现</li>
+                        <li>拓扑感知的冲突检测与消解机制</li>
+                        <li>非结构化交通环境的通用调度框架</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="implementation-section">
+            <div class="impl-title">技术实现架构与性能优化</div>
+            <div class="impl-content">
+                <div class="impl-grid">
+                    <div class="impl-box">
+                        <div class="impl-box-title">系统架构组件</div>
+                        <ul class="detail-list">
+                            <li><strong>topology/</strong> 拓扑构建模块：路径规划、节点生成、拓扑构建</li>
+                            <li><strong>gnn/</strong> GNN模块：拓扑感知GNN、消息传递层、特征编码</li>
+                            <li><strong>scheduling/</strong> 调度模块：分布式调度器、冲突解决器</li>
+                            <li><strong>simulation/</strong> 仿真环境：露天矿环境、车辆模型</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="impl-box">
+                        <div class="impl-box-title">性能优化策略</div>
+                        <ul class="detail-list">
+                            <li><strong>局部性原理：</strong>仅处理k跳邻居信息，k通常为2-3</li>
+                            <li><strong>增量更新：</strong>仅更新发生变化的拓扑区域</li>
+                            <li><strong>并行计算：</strong>利用拓扑分区实现天然并行</li>
+                            <li><strong>缓存机制：</strong>缓存稳定的拓扑特征</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="experiment-section">
+            <div class="exp-title">实验设计与评估体系</div>
+            <div class="exp-content">
+                <div class="exp-grid">
+                    <div class="exp-box">
+                        <div class="exp-box-title">仿真环境设置</div>
+                        <ul class="detail-list">
+                            <li><strong>地图规模：</strong>5km × 5km露天矿区域</li>
+                            <li><strong>车辆数量：</strong>50-300辆重载卡车</li>
+                            <li><strong>任务密度：</strong>每小时100-500个运输任务</li>
+                            <li><strong>动态事件：</strong>设备故障、道路封闭、天气变化</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="exp-box">
+                        <div class="exp-box-title">基准对比方法</div>
+                        <ul class="detail-list">
+                            <li><strong>传统中心化调度：</strong>基于整数规划的中央调度器</li>
+                            <li><strong>标准GNN方法：</strong>不使用拓扑约束的标准图神经网络</li>
+                            <li><strong>CBS类方法：</strong>冲突搜索的多智能体路径规划</li>
+                            <li><strong>启发式方法：</strong>遗传算法、粒子群优化等</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="performance-section">
+            <div class="perf-title">系统性能指标与技术优势</div>
+            <div class="perf-content">
+                <table class="performance-table">
+                    <thead>
+                        <tr>
+                            <th>性能指标</th>
+                            <th>本系统(拓扑感知GNN)</th>
+                            <th>传统GNN方法</th>
+                            <th>中心化调度</th>
+                            <th>改进倍数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>车辆协调规模</td>
+                            <td>数百辆</td>
+                            <td>数十辆</td>
+                            <td>数十辆</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>响应时间</td>
+                            <td>&lt; 100ms</td>
+                            <td>&lt; 500ms</td>
+                            <td>&gt; 1s</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>通信开销</td>
+                            <td>O(k) 局部邻居</td>
+                            <td>O(N) 全局通信</td>
+                            <td>O(N²) 中心化</td>
+                            <td>N/k倍</td>
+                        </tr>
+                        <tr>
+                            <td>计算复杂度</td>
+                            <td>O(N) 线性扩展</td>
+                            <td>O(N²) 平方增长</td>
+                            <td>O(N³) 立方增长</td>
+                            <td>理论N²倍</td>
+                        </tr>
+                        <tr>
+                            <td>系统鲁棒性</td>
+                            <td>分布式无单点故障</td>
+                            <td>部分分布式</td>
+                            <td>中心化脆弱</td>
+                            <td>质的提升</td>
+                        </tr>
+                        <tr>
+                            <td>节点减少效率</td>
+                            <td>70-90% (多轮聚类)</td>
+                            <td>40-60% (单轮聚类)</td>
+                            <td>不适用</td>
+                            <td>2-3倍</td>
+                        </tr>
+                        <tr>
+                            <td>端点保护准确率</td>
+                            <td>100% (专用保护)</td>
+                            <td>80-90% (启发式)</td>
+                            <td>不适用</td>
+                            <td>质的提升</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="contribution-section">
+            <div class="contrib-title">学术贡献与产业价值</div>
+            <div class="contrib-content">
+                <div class="contrib-grid">
+                    <div class="contrib-box">
+                        <div class="contrib-box-title">学术贡献</div>
+                        <ul class="detail-list">
+                            <li><strong>架构创新：</strong>提出道路网络拓扑深度嵌入GNN的架构范式</li>
+                            <li><strong>理论突破：</strong>建立拓扑约束下的分布式多智能体学习理论框架</li>
+                            <li><strong>算法优化：</strong>实现从O(N²)到O(k)的复杂度降级</li>
+                            <li><strong>应用扩展：</strong>为非结构化交通环境提供通用解决方案</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="contrib-box">
+                        <div class="contrib-box-title">工程价值与产业影响</div>
+                        <ul class="detail-list">
+                            <li><strong>系统性解决方案：</strong>从路网构建到车辆调度的端到端系统</li>
+                            <li><strong>工业级性能：</strong>满足实际生产环境的严格要求</li>
+                            <li><strong>高可扩展性：</strong>支持大规模车辆的同时调度</li>
+                            <li><strong>强鲁棒性：</strong>分布式架构消除单点故障风险</li>
+                            <li><strong>产业推动：</strong>推动智能矿山技术的产业化应用</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="integration-overview" style="margin-top: 15px;">
+                    <div class="overview-title">潜在影响与未来展望</div>
+                    <div class="overview-desc">
+                        本研究不仅为智能矿山提供了核心技术支撑，更为图神经网络在物理约束环境中的应用
+                        开辟了新的研究方向。技术方案具有良好的可扩展性，可推广至建筑工地、港口码头、
+                        物流园区等多种非结构化交通场景，具有广阔的应用前景和重要的社会价值。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

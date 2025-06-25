@@ -1,0 +1,46 @@
+{
+  "experiment": {
+    "name": "magec_official",
+    "version": "1.0"
+  },
+  "environment": {
+    "graph_name": "milwaukee",
+    "num_agents": 4,
+    "observation_radius": 400.0,
+    "max_cycles": 200,
+    "agent_speed": 40.0,
+    "action_method": "neighbors",
+    "allow_collisions": false
+  },
+  "network": {
+    "node_features": 4,
+    "edge_features": 2,
+    "gnn_hidden_size": 128,
+    "gnn_layers": 10,
+    "gnn_dropout": 0.1,
+    "gnn_skip_connections": true,
+    "critic_hidden_size": 512,
+    "max_neighbors": 15
+  },
+  "training": {
+    "num_episodes": 350,
+    "episode_length": 200,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_param": 0.2,
+    "value_loss_coef": 1.0,
+    "entropy_coef": 0.01,
+    "max_grad_norm": 0.5,
+    "ppo_epochs": 4,
+    "batch_size": 64,
+    "alpha": 1.0,
+    "beta": 0.5,
+    "collision_penalty": -0.5
+  },
+  "system": {
+    "device": "cuda",
+    "seed": 42,
+    "save_interval": 50
+  }
+}
