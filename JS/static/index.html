@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced GNN Multi-Vehicle Coordination System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-glass: rgba(10, 10, 30, 0.9);
+            --light-glass: rgba(255, 255, 255, 0.1);
+            --accent-blue: #00d4ff;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #1e3c72 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            height: 100vh;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .main-panel {
+            background: var(--dark-glass);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .main-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            min-height: 0;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            display: block;
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 8px 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 10px;
+            color: white;
+            font-family: monospace;
+            max-width: 180px;
+        }
+
+        .time-display {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 8px 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            position: relative;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--primary-gradient);
+            color: white;
+            min-width: 80px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.active {
+            background: var(--secondary-gradient);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-icon {
+            margin-right: 6px;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100vh;
+            overflow: hidden;
+            padding-right: 4px;
+        }
+
+        .card {
+            background: var(--dark-glass);
+            border-radius: 16px;
+            padding: 16px;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .card.flex-card {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-title i {
+            color: var(--accent-blue);
+        }
+
+        .status-card {
+            text-align: center;
+            padding: 12px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-connected { background: #10b981; }
+        .status-disconnected { background: #ef4444; }
+        .status-connecting { background: #f59e0b; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed var(--border-glass);
+            border-radius: 8px;
+            background: var(--light-glass);
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 11px;
+        }
+
+        .file-input:hover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .file-input.success {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .file-input.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        #topologyFile {
+            display: none;
+        }
+
+        .visualization-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-btn {
+            padding: 6px 10px;
+            border: 1px solid var(--border-glass);
+            border-radius: 6px;
+            background: var(--light-glass);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .vehicle-list {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            max-height: none;
+        }
+
+        .vehicle-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            margin: 3px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            font-size: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .vehicle-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(2px);
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vehicle-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .vehicle-status {
+            font-size: 8px;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-idle { background: #6b7280; color: white; }
+        .status-planning { background: #f97316; color: white; }
+        .status-confirmed { background: #eab308; color: black; }
+        .status-moving { background: #10b981; color: white; }
+        .status-loading { background: #059669; color: white; }
+        .status-unloading { background: #3b82f6; color: white; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend-enhanced {
+            font-size: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .legend-category {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            border-left: 2px solid var(--accent-blue);
+        }
+
+        .legend-category-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            font-size: 11px;
+        }
+
+        .legend-item-enhanced {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            font-size: 9px;
+            color: var(--text-secondary);
+        }
+
+        .legend-visual {
+            width: 20px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .legend-dashed {
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 2px,
+                #fff 2px,
+                #fff 4px
+            );
+        }
+
+        .reservation-timeline {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 9px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            font-size: 9px;
+            color: var(--text-secondary);
+        }
+
+        .timeline-vehicle {
+            width: 16px;
+            height: 8px;
+            border-radius: 2px;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr 350px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .side-panel {
+                flex-direction: row;
+                overflow-x: auto;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .card {
+                min-width: 250px;
+                flex-shrink: 0;
+            }
+
+            .main-title {
+                font-size: 20px;
+            }
+        }
+
+        /* 滚动条样式 */
+        .side-panel::-webkit-scrollbar,
+        .vehicle-list::-webkit-scrollbar,
+        .legend-enhanced::-webkit-scrollbar,
+        .reservation-timeline::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .side-panel::-webkit-scrollbar-track,
+        .vehicle-list::-webkit-scrollbar-track,
+        .legend-enhanced::-webkit-scrollbar-track,
+        .reservation-timeline::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .side-panel::-webkit-scrollbar-thumb,
+        .vehicle-list::-webkit-scrollbar-thumb,
+        .legend-enhanced::-webkit-scrollbar-thumb,
+        .reservation-timeline::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            font-size: 12px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-gradient);
+        }
+
+        .notification.error {
+            background: var(--secondary-gradient);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-panel">
+            <div class="title-section">
+                <h1 class="main-title">
+                    <i class="fas fa-robot"></i>
+                    Enhanced GNN Multi-Vehicle Coordination
+                </h1>
+                <p class="subtitle">
+                    Advanced Visualization: Predictive Trajectories & Reservations
+                </p>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+                <div class="canvas-overlay" id="canvasOverlay">
+                    <div>Mouse: Pan & Zoom</div>
+                    <div>Click: Select Vehicle</div>
+                    <div>T/P/E: Toggle Views</div>
+                </div>
+                <div class="time-display" id="timeDisplay">
+                    Time: 0.0s
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="startBtn">
+                    <i class="fas fa-play btn-icon"></i>Start
+                </button>
+                <button class="btn" id="pauseBtn">
+                    <i class="fas fa-pause btn-icon"></i>Pause
+                </button>
+                <button class="btn" id="resetBtn">
+                    <i class="fas fa-redo btn-icon"></i>Reset
+                </button>
+                <button class="btn active" id="gnnBtn">
+                    <i class="fas fa-brain btn-icon"></i>GNN Mode
+                </button>
+                <button class="btn" id="addBtn">
+                    <i class="fas fa-plus btn-icon"></i>Add Vehicle
+                </button>
+                <button class="btn" id="removeBtn">
+                    <i class="fas fa-minus btn-icon"></i>Remove Vehicle
+                </button>
+                <button class="btn" id="speedBtn">
+                    <i class="fas fa-tachometer-alt btn-icon"></i>Speed: 1x
+                </button>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <!-- 连接状态卡片 -->
+            <div class="card status-card">
+                <div id="status" class="status-indicator">
+                    <div class="status-dot status-connecting"></div>
+                    Connecting to server...
+                </div>
+            </div>
+
+            <!-- 文件上传卡片 -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-upload"></i>
+                    Load Topology
+                </div>
+                <div class="file-input-wrapper">
+                    <div class="file-input" id="fileInputLabel" onclick="document.getElementById('topologyFile').click()">
+                        📁 Click to upload Stage 1 topology (.json)
+                    </div>
+                    <input type="file" id="topologyFile" accept=".json">
+                </div>
+                <div id="uploadMessage" style="font-size: 10px; margin-top: 8px;"></div>
+            </div>
+
+            <!-- 可视化控制卡片 -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-eye"></i>
+                    Visualization Controls
+                </div>
+                <div class="visualization-controls">
+                    <div class="toggle-btn active" id="showTrajectories">
+                        <i class="fas fa-route"></i> Trajectories
+                    </div>
+                    <div class="toggle-btn active" id="showReservations">
+                        <i class="fas fa-lock"></i> Reservations
+                    </div>
+                    <div class="toggle-btn active" id="showPaths">
+                        <i class="fas fa-arrows-alt"></i> Paths
+                    </div>
+                    <div class="toggle-btn" id="showTimeline">
+                        <i class="fas fa-clock"></i> Timeline
+                    </div>
+                    <div class="toggle-btn active" id="showFuture">
+                        <i class="fas fa-fast-forward"></i> Future
+                    </div>
+                    <div class="toggle-btn" id="showDebug">
+                        <i class="fas fa-bug"></i> Debug
+                    </div>
+                </div>
+                
+                <div class="reservation-timeline" id="reservationTimeline" style="display: none;">
+                    <div style="text-align: center; color: var(--text-secondary); margin-bottom: 6px;">
+                        Active Reservations
+                    </div>
+                </div>
+            </div>
+
+            <!-- 车辆状态卡片 -->
+            <div class="card flex-card">
+                <div class="card-title">
+                    <i class="fas fa-cars"></i>
+                    Vehicle Status
+                </div>
+                <div class="vehicle-list" id="vehicleList">
+                    <!-- Vehicle items will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-chart-bar"></i>
+                    System Statistics
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statVehicles">0</div>
+                        <div class="stat-label">Vehicles</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statCycles">0</div>
+                        <div class="stat-label">Cycles</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statDistance">0.0</div>
+                        <div class="stat-label">Distance</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statEfficiency">0%</div>
+                        <div class="stat-label">Efficiency</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图例卡片 -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-map-signs"></i>
+                    Enhanced Legend
+                </div>
+                
+                <div class="legend-enhanced">
+                    <div class="legend-category">
+                        <div class="legend-category-title">Vehicle Trajectories</div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: linear-gradient(90deg, #4facfe, #00f2fe);"></div>
+                            Confirmed Path
+                        </div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual legend-dashed" style="background-color: #f59e0b;"></div>
+                            Planned Route
+                        </div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: #ec4899; animation: legendPulse 2s infinite;"></div>
+                            Current Target
+                        </div>
+                    </div>
+
+                    <div class="legend-category">
+                        <div class="legend-category-title">Node Reservations</div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: #10b981; border: 2px solid #047857;"></div>
+                            Currently Occupied
+                        </div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: #f59e0b; border: 2px solid #d97706;"></div>
+                            Reserved (Future)
+                        </div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: #e5e7eb; border: 2px solid #9ca3af;"></div>
+                            Available
+                        </div>
+                    </div>
+
+                    <div class="legend-category">
+                        <div class="legend-category-title">Special Points</div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: #10b981;"></div>
+                            Loading Zones (L0-L5)
+                        </div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: #3b82f6; border-radius: 50%;"></div>
+                            Unloading Zones (U0-U5)
+                        </div>
+                        <div class="legend-item-enhanced">
+                            <div class="legend-visual" style="background: #6b7280;"></div>
+                            Parking Areas (P0-P5)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EnhancedVehicleVisualization {
+            constructor() {
+                this.ws = null;
+                this.canvas = null;
+                this.ctx = null;
+                
+                // 状态数据
+                this.currentState = null;
+                this.networkData = null;
+                this.config = null;
+                
+                // 可视化参数
+                this.scale = 1.0;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                this.devicePixelRatio = window.devicePixelRatio || 1;
+                
+                // 可视化选项
+                this.showTrajectories = true;
+                this.showReservations = true;
+                this.showPaths = true;
+                this.showTimeline = false;
+                this.showFuture = true;
+                this.showDebug = false;
+                
+                // 交互状态
+                this.isDragging = false;
+                this.lastMousePos = { x: 0, y: 0 };
+                this.hoveredVehicle = null;
+                this.selectedVehicle = null;
+                
+                // 动画
+                this.animationFrame = null;
+                this.lastFrameTime = 0;
+                this.animationTime = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupCanvas();
+                this.setupWebSocket();
+                this.setupEventListeners();
+                this.startAnimationLoop();
+            }
+            
+            setupCanvas() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                const container = this.canvas.parentElement;
+                const rect = container.getBoundingClientRect();
+                
+                this.canvas.width = rect.width * this.devicePixelRatio;
+                this.canvas.height = rect.height * this.devicePixelRatio;
+                this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
+                
+                this.canvas.style.width = rect.width + 'px';
+                this.canvas.style.height = rect.height + 'px';
+                
+                this.setupTransform();
+            }
+            
+            setupTransform() {
+                if (!this.networkData) return;
+                
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                for (const [nodeId, nodeData] of Object.entries(this.networkData.nodes)) {
+                    const [x, y] = nodeData.position;
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x);
+                    maxY = Math.max(maxY, y);
+                }
+                
+                const margin = 50;
+                const canvasWidth = this.canvas.width / this.devicePixelRatio;
+                const canvasHeight = this.canvas.height / this.devicePixelRatio;
+                
+                const networkWidth = maxX - minX;
+                const networkHeight = maxY - minY;
+                
+                this.scale = Math.min(
+                    (canvasWidth - 2 * margin) / networkWidth,
+                    (canvasHeight - 2 * margin) / networkHeight
+                ) * 0.8;
+                
+                this.offsetX = margin - minX * this.scale + (canvasWidth - networkWidth * this.scale) / 2;
+                this.offsetY = margin - minY * this.scale + (canvasHeight - networkHeight * this.scale) / 2;
+            }
+            
+            transformPoint(x, y) {
+                return [
+                    x * this.scale + this.offsetX,
+                    y * this.scale + this.offsetY
+                ];
+            }
+            
+            setupWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                
+                this.ws = new WebSocket(wsUrl);
+                
+                this.ws.onopen = () => {
+                    this.updateStatus('🟢 Connected', 'connected');
+                    this.sendCommand('get_full_state');
+                };
+                
+                this.ws.onmessage = (event) => {
+                    this.handleWebSocketMessage(event);
+                };
+                
+                this.ws.onclose = () => {
+                    this.updateStatus('🔴 Disconnected', 'disconnected');
+                    setTimeout(() => this.setupWebSocket(), 3000);
+                };
+                
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.updateStatus('❌ Connection Error', 'disconnected');
+                };
+            }
+            
+            handleWebSocketMessage(event) {
+                try {
+                    const message = JSON.parse(event.data);
+                    
+                    switch (message.type) {
+                        case 'full_state':
+                            this.currentState = message.data.simulation;
+                            this.networkData = message.data.network;
+                            this.config = message.data.config;
+                            this.setupTransform();
+                            this.updateUI();
+                            break;
+                            
+                        case 'state_update':
+                            this.currentState = message.data;
+                            this.updateUI();
+                            break;
+                            
+                        case 'command_result':
+                            this.handleCommandResult(message);
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
+                }
+            }
+            
+            handleCommandResult(message) {
+                const { command, success } = message;
+                
+                if (command === 'add_vehicle' && !success) {
+                    this.showNotification('Cannot add more vehicles. Maximum reached or no parking available.', 'error');
+                } else if (command === 'remove_vehicle' && !success) {
+                    this.showNotification('Cannot remove vehicle. Minimum vehicle count required.', 'error');
+                }
+            }
+            
+            setupEventListeners() {
+                // 控制按钮
+                document.getElementById('startBtn')?.addEventListener('click', () => this.sendCommand('start'));
+                document.getElementById('pauseBtn')?.addEventListener('click', () => this.sendCommand('pause'));
+                document.getElementById('resetBtn')?.addEventListener('click', () => this.sendCommand('reset'));
+                document.getElementById('gnnBtn')?.addEventListener('click', () => this.sendCommand('toggle_gnn'));
+                document.getElementById('addBtn')?.addEventListener('click', () => this.sendCommand('add_vehicle'));
+                document.getElementById('removeBtn')?.addEventListener('click', () => this.sendCommand('remove_vehicle'));
+                document.getElementById('speedBtn')?.addEventListener('click', () => this.cycleSpeed());
+                
+                // 可视化控制
+                this.setupVisualizationToggles();
+                
+                // 文件上传
+                this.setupFileUpload();
+                
+                // 画布交互
+                this.setupCanvasInteraction();
+                
+                // 键盘快捷键
+                document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                
+                // 窗口大小变化
+                window.addEventListener('resize', () => {
+                    setTimeout(() => {
+                        this.setupCanvas();
+                        this.setupTransform();
+                    }, 100);
+                });
+            }
+            
+            setupVisualizationToggles() {
+                const toggles = [
+                    'showTrajectories', 'showReservations', 'showPaths', 
+                    'showTimeline', 'showFuture', 'showDebug'
+                ];
+                
+                toggles.forEach(toggle => {
+                    const element = document.getElementById(toggle);
+                    if (element) {
+                        element.addEventListener('click', () => {
+                            this[toggle] = !this[toggle];
+                            element.classList.toggle('active', this[toggle]);
+                            
+                            // 显示/隐藏时间轴
+                            if (toggle === 'showTimeline') {
+                                const timeline = document.getElementById('reservationTimeline');
+                                timeline.style.display = this.showTimeline ? 'block' : 'none';
+                            }
+                        });
+                    }
+                });
+            }
+            
+            setupFileUpload() {
+                const fileInput = document.getElementById('topologyFile');
+                const fileLabel = document.getElementById('fileInputLabel');
+                
+                fileInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    await this.uploadFile(file);
+                });
+            }
+            
+            async uploadFile(file) {
+                const fileLabel = document.getElementById('fileInputLabel');
+                const messageDiv = document.getElementById('uploadMessage');
+                
+                try {
+                    fileLabel.className = 'file-input';
+                    fileLabel.textContent = '📤 Uploading...';
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch('/upload_topology', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        fileLabel.className = 'file-input success';
+                        fileLabel.textContent = '✅ ' + result.filename;
+                        messageDiv.innerHTML = '<span style="color: #10b981;">Topology loaded successfully!</span>';
+                        this.sendCommand('get_full_state');
+                        this.showNotification(`Topology "${result.filename}" loaded successfully!`, 'success');
+                    } else {
+                        fileLabel.className = 'file-input error';
+                        fileLabel.textContent = '❌ Failed to load';
+                        messageDiv.innerHTML = '<span style="color: #ef4444;">' + result.message + '</span>';
+                        this.showNotification(`Failed to load topology: ${result.message}`, 'error');
+                    }
+                } catch (error) {
+                    fileLabel.className = 'file-input error';
+                    fileLabel.textContent = '❌ Upload error';
+                    messageDiv.innerHTML = '<span style="color: #ef4444;">Error: ' + error.message + '</span>';
+                    this.showNotification(`Error uploading file: ${error.message}`, 'error');
+                }
+                
+                // 重置文件输入
+                document.getElementById('topologyFile').value = '';
+                
+                // 5秒后恢复默认状态
+                setTimeout(() => {
+                    fileLabel.className = 'file-input';
+                    fileLabel.textContent = '📁 Click to upload Stage 1 topology (.json)';
+                    messageDiv.innerHTML = '';
+                }, 5000);
+            }
+            
+            setupCanvasInteraction() {
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+                this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+                this.canvas.addEventListener('click', (e) => this.handleClick(e));
+            }
+            
+            handleMouseDown(e) {
+                this.isDragging = true;
+                const rect = this.canvas.getBoundingClientRect();
+                this.lastMousePos = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+            
+            handleMouseMove(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const currentPos = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+                
+                if (this.isDragging) {
+                    const dx = currentPos.x - this.lastMousePos.x;
+                    const dy = currentPos.y - this.lastMousePos.y;
+                    
+                    this.offsetX += dx;
+                    this.offsetY += dy;
+                    
+                    this.lastMousePos = currentPos;
+                } else {
+                    this.checkHoveredVehicle(currentPos.x, currentPos.y);
+                }
+            }
+            
+            handleMouseUp(e) {
+                this.isDragging = false;
+            }
+            
+            handleWheel(e) {
+                e.preventDefault();
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const scaleFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = this.scale * scaleFactor;
+                
+                if (newScale < 0.1 || newScale > 5.0) return;
+                
+                this.offsetX = mouseX - (mouseX - this.offsetX) * scaleFactor;
+                this.offsetY = mouseY - (mouseY - this.offsetY) * scaleFactor;
+                this.scale = newScale;
+            }
+            
+            handleClick(e) {
+                if (this.hoveredVehicle) {
+                    this.selectedVehicle = this.selectedVehicle === this.hoveredVehicle ? null : this.hoveredVehicle;
+                    this.updateVehicleList();
+                }
+            }
+            
+            handleKeyDown(e) {
+                switch (e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        if (this.currentState?.is_running) {
+                            this.sendCommand('pause');
+                        } else {
+                            this.sendCommand('start');
+                        }
+                        break;
+                    case 'g':
+                        this.sendCommand('toggle_gnn');
+                        break;
+                    case '+':
+                    case '=':
+                        this.sendCommand('add_vehicle');
+                        break;
+                    case '-':
+                        this.sendCommand('remove_vehicle');
+                        break;
+                    case 'r':
+                        this.sendCommand('reset');
+                        break;
+                    case 't':
+                        this.showTrajectories = !this.showTrajectories;
+                        document.getElementById('showTrajectories').classList.toggle('active', this.showTrajectories);
+                        break;
+                    case 'p':
+                        this.showPaths = !this.showPaths;
+                        document.getElementById('showPaths').classList.toggle('active', this.showPaths);
+                        break;
+                    case 'e':
+                        this.showReservations = !this.showReservations;
+                        document.getElementById('showReservations').classList.toggle('active', this.showReservations);
+                        break;
+                }
+            }
+            
+            checkHoveredVehicle(mouseX, mouseY) {
+                if (!this.currentState?.vehicles) {
+                    this.hoveredVehicle = null;
+                    return;
+                }
+                
+                for (const vehicle of this.currentState.vehicles) {
+                    const [vx, vy] = this.transformPoint(vehicle.position[0], vehicle.position[1]);
+                    
+                    const dx = Math.abs(mouseX - vx);
+                    const dy = Math.abs(mouseY - vy);
+                    
+                    if (dx < 20 && dy < 20) {
+                        this.hoveredVehicle = vehicle;
+                        this.canvas.style.cursor = 'pointer';
+                        return;
+                    }
+                }
+                
+                this.hoveredVehicle = null;
+                this.canvas.style.cursor = 'crosshair';
+            }
+            
+            cycleSpeed() {
+                const speeds = [0.5, 1, 2, 4];
+                const currentSpeed = this.config?.speed_multiplier || 1;
+                const currentIndex = speeds.indexOf(currentSpeed);
+                const newSpeed = speeds[(currentIndex + 1) % speeds.length];
+                
+                this.sendCommand('set_speed', { speed: newSpeed });
+                
+                const speedBtn = document.getElementById('speedBtn');
+                if (speedBtn) {
+                    speedBtn.innerHTML = `<i class="fas fa-tachometer-alt btn-icon"></i>Speed: ${newSpeed}x`;
+                }
+            }
+            
+            sendCommand(command, params = {}) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({ command, ...params }));
+                }
+            }
+            
+            updateStatus(status, type) {
+                const statusElement = document.getElementById('status');
+                if (statusElement) {
+                    const dotClass = `status-${type}`;
+                    statusElement.innerHTML = `
+                        <div class="status-dot ${dotClass}"></div>
+                        ${status}
+                    `;
+                }
+            }
+            
+            updateUI() {
+                this.updateTimeDisplay();
+                this.updateControlStates();
+                this.updateVehicleList();
+                this.updateStats();
+                if (this.showTimeline) {
+                    this.updateReservationTimeline();
+                }
+            }
+            
+            updateTimeDisplay() {
+                const timeDisplay = document.getElementById('timeDisplay');
+                if (timeDisplay && this.currentState) {
+                    timeDisplay.textContent = `Time: ${this.currentState.current_time.toFixed(1)}s`;
+                }
+            }
+            
+            updateControlStates() {
+                const isRunning = this.currentState?.is_running || false;
+                
+                const startBtn = document.getElementById('startBtn');
+                const pauseBtn = document.getElementById('pauseBtn');
+                
+                if (startBtn) startBtn.disabled = isRunning;
+                if (pauseBtn) pauseBtn.disabled = !isRunning;
+                
+                const gnnBtn = document.getElementById('gnnBtn');
+                if (gnnBtn) {
+                    gnnBtn.innerHTML = `<i class="fas fa-brain btn-icon"></i>${this.config?.use_gnn ? 'GNN Mode' : 'Simple Mode'}`;
+                    gnnBtn.classList.toggle('active', this.config?.use_gnn);
+                }
+            }
+            
+            updateVehicleList() {
+                const vehicleList = document.getElementById('vehicleList');
+                if (!vehicleList || !this.currentState?.vehicles) return;
+                
+                vehicleList.innerHTML = '';
+                
+                this.currentState.vehicles.forEach(vehicle => {
+                    const item = document.createElement('div');
+                    item.className = 'vehicle-item';
+                    if (this.selectedVehicle?.id === vehicle.id) {
+                        item.style.borderLeftColor = vehicle.color;
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="vehicle-info">
+                            <div class="vehicle-color" style="background-color: ${vehicle.color}"></div>
+                            <div>V${vehicle.id}</div>
+                            <div class="vehicle-status status-${vehicle.state}">${vehicle.state}</div>
+                        </div>
+                        <div style="font-size: 8px; color: var(--text-secondary);">
+                            ${vehicle.mode} | ${vehicle.stats.completed_cycles} cycles
+                        </div>
+                    `;
+                    
+                    item.addEventListener('click', () => {
+                        this.selectedVehicle = this.selectedVehicle?.id === vehicle.id ? null : vehicle;
+                        this.updateVehicleList();
+                    });
+                    
+                    vehicleList.appendChild(item);
+                });
+            }
+            
+            updateStats() {
+                if (!this.currentState) return;
+                
+                const stats = this.currentState.statistics;
+                
+                document.getElementById('statVehicles').textContent = stats.total_vehicles;
+                document.getElementById('statCycles').textContent = stats.total_cycles;
+                document.getElementById('statDistance').textContent = stats.total_distance.toFixed(1);
+                
+                const efficiency = stats.total_cycles > 0 ? 
+                    Math.round((stats.total_cycles / (stats.total_time || 1)) * 100) : 0;
+                document.getElementById('statEfficiency').textContent = efficiency + '%';
+            }
+            
+            updateReservationTimeline() {
+                const timeline = document.getElementById('reservationTimeline');
+                if (!timeline || !this.currentState) return;
+                
+                const reservations = this.currentState.network_reservations || {};
+                const currentTime = this.currentState.current_time;
+                
+                let timelineHtml = '<div style="text-align: center; color: var(--text-secondary); margin-bottom: 6px;">Active Reservations</div>';
+                
+                // 边预订
+                for (const [edgeKey, edgeReservations] of Object.entries(reservations.edge_reservations || {})) {
+                    edgeReservations.forEach(reservation => {
+                        if (reservation.end_time > currentTime) {
+                            const vehicle = this.currentState.vehicles?.find(v => v.id === reservation.vehicle_id);
+                            if (vehicle) {
+                                const timeLeft = reservation.end_time - currentTime;
+                                timelineHtml += `
+                                    <div class="timeline-item">
+                                        <div class="timeline-vehicle" style="background-color: ${vehicle.color}"></div>
+                                        <div class="timeline-info">V${vehicle.id} → ${edgeKey} (${timeLeft.toFixed(1)}s)</div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    });
+                }
+                
+                timeline.innerHTML = timelineHtml;
+            }
+            
+            showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    ${message}
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 100);
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+            
+            startAnimationLoop() {
+                const animate = (currentTime) => {
+                    const deltaTime = currentTime - this.lastFrameTime;
+                    this.lastFrameTime = currentTime;
+                    this.animationTime = currentTime;
+                    
+                    this.draw();
+                    
+                    this.animationFrame = requestAnimationFrame(animate);
+                };
+                
+                this.animationFrame = requestAnimationFrame(animate);
+            }
+            
+            draw() {
+                if (!this.networkData) return;
+                
+                const canvasWidth = this.canvas.width / this.devicePixelRatio;
+                const canvasHeight = this.canvas.height / this.devicePixelRatio;
+                
+                this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                
+                // 绘制顺序很重要 - 从背景到前景
+                this.drawNetwork();
+                if (this.showReservations) {
+                    this.drawReservations();
+                }
+                this.drawSpecialPoints();
+                if (this.showPaths) {
+                    this.drawVehiclePaths();
+                }
+                if (this.showTrajectories) {
+                    this.drawPredictiveTrajectories();
+                }
+                this.drawVehicles();
+                this.drawHoverInfo();
+                if (this.selectedVehicle) {
+                    this.drawSelectedVehicleInfo();
+                }
+            }
+            
+            drawNetwork() {
+                // 绘制边
+                this.ctx.strokeStyle = '#e5e7eb';
+                this.ctx.lineWidth = 2;
+                this.ctx.lineCap = 'round';
+                
+                const drawnEdges = new Set();
+                
+                for (const [nodeId, nodeData] of Object.entries(this.networkData.nodes)) {
+                    const [x1, y1] = this.transformPoint(...nodeData.position);
+                    
+                    for (const neighborId of nodeData.neighbors) {
+                        const edgeKey = [nodeId, neighborId].sort().join('-');
+                        if (drawnEdges.has(edgeKey)) continue;
+                        drawnEdges.add(edgeKey);
+                        
+                        const neighborData = this.networkData.nodes[neighborId];
+                        if (!neighborData) continue;
+                        
+                        const [x2, y2] = this.transformPoint(...neighborData.position);
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x1, y1);
+                        this.ctx.lineTo(x2, y2);
+                        this.ctx.stroke();
+                    }
+                }
+                
+                // 绘制普通节点
+                for (const [nodeId, nodeData] of Object.entries(this.networkData.nodes)) {
+                    if (this.isSpecialPoint(nodeId)) continue;
+                    
+                    const [x, y] = this.transformPoint(...nodeData.position);
+                    
+                    // 节点状态
+                    let fillColor = '#f8fafc';
+                    let strokeColor = '#3b82f6';
+                    let strokeWidth = 2;
+                    
+                    // 检查预订状态
+                    const reservations = nodeData.reservations || [];
+                    const currentTime = this.currentState?.current_time || 0;
+                    
+                    const hasActiveReservation = reservations.some(r =>
+                        r.start_time <= currentTime && r.end_time >= currentTime
+                    );
+                    const hasFutureReservation = reservations.some(r =>
+                        r.start_time > currentTime
+                    );
+                    
+                    if (hasActiveReservation) {
+                        fillColor = '#10b981';
+                        strokeColor = '#047857';
+                        strokeWidth = 3;
+                    } else if (hasFutureReservation) {
+                        fillColor = '#f59e0b';
+                        strokeColor = '#d97706';
+                        strokeWidth = 3;
+                    } else if (nodeData.occupancy > 0) {
+                        fillColor = '#fef3c7';
+                        strokeColor = '#f59e0b';
+                        strokeWidth = 2;
+                    }
+                    
+                    const radius = 8;
+                    
+                    this.ctx.fillStyle = fillColor;
+                    this.ctx.strokeStyle = strokeColor;
+                    this.ctx.lineWidth = strokeWidth;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                    
+                    // 调试信息
+                    if (this.showDebug) {
+                        this.ctx.fillStyle = '#1f2937';
+                        this.ctx.font = '8px monospace';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'bottom';
+                        this.ctx.fillText(nodeId, x, y - radius - 2);
+                    }
+                }
+            }
+            
+            drawReservations() {
+                if (!this.currentState?.network_reservations) return;
+                
+                const currentTime = this.currentState.current_time;
+                
+                // 绘制边预订
+                for (const [edgeKey, reservations] of Object.entries(
+                    this.currentState.network_reservations.edge_reservations || {})) {
+                    
+                    const [node1, node2] = edgeKey.split('-');
+                    const node1Data = this.networkData.nodes[node1];
+                    const node2Data = this.networkData.nodes[node2];
+                    
+                    if (!node1Data || !node2Data) continue;
+                    
+                    const [x1, y1] = this.transformPoint(...node1Data.position);
+                    const [x2, y2] = this.transformPoint(...node2Data.position);
+                    
+                    // 活跃预订
+                    const activeReservations = reservations.filter(r => r.end_time > currentTime);
+                    
+                    for (let i = 0; i < activeReservations.length; i++) {
+                        const reservation = activeReservations[i];
+                        const vehicle = this.currentState.vehicles?.find(v => v.id === reservation.vehicle_id);
+                        if (!vehicle) continue;
+                        
+                        // 计算偏移避免重叠
+                        const offsetFactor = (i - activeReservations.length / 2 + 0.5) * 0.1;
+                        const perpX = -(node2Data.position[1] - node1Data.position[1]);
+                        const perpY = node2Data.position[0] - node1Data.position[0];
+                        const perpLen = Math.sqrt(perpX * perpX + perpY * perpY);
+                        const offsetX = (perpX / perpLen) * offsetFactor * 25;
+                        const offsetY = (perpY / perpLen) * offsetFactor * 25;
+                        
+                        const ox1 = x1 + offsetX;
+                        const oy1 = y1 + offsetY;
+                        const ox2 = x2 + offsetX;
+                        const oy2 = y2 + offsetY;
+                        
+                        // 不同样式表示当前vs未来预订
+                        if (reservation.start_time <= currentTime) {
+                            // 当前活跃预订
+                            this.ctx.strokeStyle = vehicle.color;
+                            this.ctx.lineWidth = 5;
+                            this.ctx.globalAlpha = 0.8;
+                            this.ctx.setLineDash([]);
+                        } else {
+                            // 未来预订
+                            this.ctx.strokeStyle = vehicle.color;
+                            this.ctx.lineWidth = 3;
+                            this.ctx.globalAlpha = 0.5;
+                            this.ctx.setLineDash([6, 3]);
+                        }
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(ox1, oy1);
+                        this.ctx.lineTo(ox2, oy2);
+                        this.ctx.stroke();
+                        
+                        // 绘制方向箭头
+                        const angle = Math.atan2(oy2 - oy1, ox2 - ox1);
+                        const midX = (ox1 + ox2) / 2;
+                        const midY = (oy1 + oy2) / 2;
+                        
+                        this.ctx.save();
+                        this.ctx.translate(midX, midY);
+                        this.ctx.rotate(angle);
+                        
+                        this.ctx.fillStyle = vehicle.color;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(6, 0);
+                        this.ctx.lineTo(-3, -3);
+                        this.ctx.lineTo(-3, 3);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        
+                        this.ctx.restore();
+                    }
+                }
+                
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+            }
+            
+            drawPredictiveTrajectories() {
+                if (!this.currentState?.vehicles) return;
+                
+                this.currentState.vehicles.forEach(vehicle => {
+                    if (vehicle.path && vehicle.path.length > 1) {
+                        this.drawVehicleTrajectory(vehicle);
+                    }
+                });
+            }
+            
+            drawVehicleTrajectory(vehicle) {
+                if (!vehicle.path || vehicle.path.length < 2) return;
+                
+                const isSelected = this.selectedVehicle?.id === vehicle.id;
+                
+                // 确认路径 - 实线
+                if (vehicle.path_confirmed) {
+                    this.ctx.strokeStyle = vehicle.color;
+                    this.ctx.lineWidth = isSelected ? 6 : 4;
+                    this.ctx.globalAlpha = isSelected ? 0.8 : 0.6;
+                    this.ctx.setLineDash([]);
+                    
+                    this.ctx.beginPath();
+                    for (let i = 0; i < vehicle.path.length; i++) {
+                        const nodeId = vehicle.path[i];
+                        const nodeData = this.networkData.nodes[nodeId];
+                        if (nodeData) {
+                            const [px, py] = this.transformPoint(...nodeData.position);
+                            if (i === 0) {
+                                this.ctx.moveTo(px, py);
+                            } else {
+                                this.ctx.lineTo(px, py);
+                            }
+                        }
+                    }
+                    this.ctx.stroke();
+                    
+                    // 路径点标记
+                    if (isSelected) {
+                        this.ctx.fillStyle = vehicle.color;
+                        this.ctx.globalAlpha = 0.8;
+                        
+                        for (let i = 0; i < vehicle.path.length; i++) {
+                            const nodeId = vehicle.path[i];
+                            const nodeData = this.networkData.nodes[nodeId];
+                            if (nodeData) {
+                                const [px, py] = this.transformPoint(...nodeData.position);
+                                
+                                this.ctx.beginPath();
+                                this.ctx.arc(px, py, i === 0 ? 10 : 6, 0, 2 * Math.PI);
+                                this.ctx.fill();
+                                
+                                this.ctx.fillStyle = 'white';
+                                this.ctx.font = 'bold 8px Inter';
+                                this.ctx.textAlign = 'center';
+                                this.ctx.textBaseline = 'middle';
+                                this.ctx.fillText(i.toString(), px, py);
+                                this.ctx.fillStyle = vehicle.color;
+                            }
+                        }
+                    }
+                } else {
+                    // 计划路径 - 虚线
+                    this.ctx.strokeStyle = vehicle.color;
+                    this.ctx.lineWidth = isSelected ? 4 : 3;
+                    this.ctx.globalAlpha = isSelected ? 0.6 : 0.4;
+                    this.ctx.setLineDash([8, 4]);
+                    
+                    this.ctx.beginPath();
+                    for (let i = 0; i < vehicle.path.length; i++) {
+                        const nodeId = vehicle.path[i];
+                        const nodeData = this.networkData.nodes[nodeId];
+                        if (nodeData) {
+                            const [px, py] = this.transformPoint(...nodeData.position);
+                            if (i === 0) {
+                                this.ctx.moveTo(px, py);
+                            } else {
+                                this.ctx.lineTo(px, py);
+                            }
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+                
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+            }
+            
+            drawVehiclePaths() {
+                if (!this.currentState?.vehicles) return;
+                
+                this.currentState.vehicles.forEach(vehicle => {
+                    // 绘制目标线
+                    if (vehicle.target_node_id) {
+                        this.drawTargetLine(vehicle);
+                    }
+                });
+            }
+            
+            drawTargetLine(vehicle) {
+                const targetNodeData = this.networkData.nodes[vehicle.target_node_id];
+                if (!targetNodeData) return;
+                
+                const [x1, y1] = this.transformPoint(...vehicle.position);
+                const [x2, y2] = this.transformPoint(...targetNodeData.position);
+                
+                // 脉冲效果
+                const pulse = Math.sin(this.animationTime * 0.003) * 0.3 + 0.7;
+                
+                this.ctx.strokeStyle = vehicle.color;
+                this.ctx.lineWidth = 2;
+                this.ctx.globalAlpha = pulse * 0.5;
+                
+                if (vehicle.mode === 'empty') {
+                    this.ctx.setLineDash([6, 6]);
+                } else if (vehicle.mode === 'loaded') {
+                    this.ctx.setLineDash([10, 3]);
+                } else if (vehicle.mode === 'returning') {
+                    this.ctx.setLineDash([3, 3]);
+                }
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+                this.ctx.stroke();
+                
+                // 目标点高亮
+                this.ctx.fillStyle = vehicle.color;
+                this.ctx.globalAlpha = pulse * 0.6;
+                this.ctx.beginPath();
+                this.ctx.arc(x2, y2, 12, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+            }
+            
+            drawSpecialPoints() {
+                const types = [
+                    { key: 'loading', symbol: 'L', color: '#10b981', strokeColor: '#047857' },
+                    { key: 'unloading', symbol: 'U', color: '#3b82f6', strokeColor: '#1d4ed8' },
+                    { key: 'parking', symbol: 'P', color: '#6b7280', strokeColor: '#374151' }
+                ];
+                
+                for (const typeInfo of types) {
+                    const points = this.networkData.special_points[typeInfo.key];
+                    
+                    for (const [pointId, pointData] of Object.entries(points)) {
+                        const [x, y] = this.transformPoint(...pointData.position);
+                        
+                        let fillColor = typeInfo.color;
+                        let glowIntensity = 0;
+                        
+                        if (pointData.is_occupied) {
+                            fillColor = this.darkenColor(typeInfo.color, 0.3);
+                            glowIntensity = 0.4;
+                        } else if (pointData.reserved_by !== null) {
+                            fillColor = '#f59e0b';
+                            glowIntensity = 0.3;
+                        }
+                        
+                        // 辉光效果
+                        if (glowIntensity > 0) {
+                            const glowPulse = Math.sin(this.animationTime * 0.002) * 0.3 + 0.7;
+                            this.ctx.globalAlpha = glowIntensity * glowPulse;
+                            this.ctx.fillStyle = fillColor;
+                            this.ctx.beginPath();
+                            this.ctx.arc(x, y, 16, 0, 2 * Math.PI);
+                            this.ctx.fill();
+                            this.ctx.globalAlpha = 1.0;
+                        }
+                        
+                        this.ctx.fillStyle = fillColor;
+                        this.ctx.strokeStyle = typeInfo.strokeColor;
+                        this.ctx.lineWidth = 2;
+                        
+                        if (typeInfo.key === 'loading') {
+                            const size = 14;
+                            this.ctx.fillRect(x - size/2, y - size/2, size, size);
+                            this.ctx.strokeRect(x - size/2, y - size/2, size, size);
+                        } else if (typeInfo.key === 'unloading') {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(x, y - 10);
+                            this.ctx.lineTo(x - 8, y + 6);
+                            this.ctx.lineTo(x + 8, y + 6);
+                            this.ctx.closePath();
+                            this.ctx.fill();
+                            this.ctx.stroke();
+                        } else {
+                            this.ctx.beginPath();
+                            this.ctx.arc(x, y, 10, 0, 2 * Math.PI);
+                            this.ctx.fill();
+                            this.ctx.stroke();
+                        }
+                        
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.font = 'bold 12px Inter';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(typeInfo.symbol, x, y);
+                        
+                        this.ctx.fillStyle = '#1f2937';
+                        this.ctx.font = 'bold 9px Inter';
+                        this.ctx.fillText(pointId, x, y - 18);
+                        
+                        // 状态标识
+                        if (pointData.is_occupied || pointData.reserved_by !== null) {
+                            this.ctx.font = '8px Inter';
+                            this.ctx.fillStyle = '#ef4444';
+                            const status = pointData.is_occupied ? 
+                                `V${pointData.reserved_by}` : `Rsv:V${pointData.reserved_by}`;
+                            this.ctx.fillText(status, x, y + 18);
+                        }
+                    }
+                }
+            }
+            
+            drawVehicles() {
+                if (!this.currentState?.vehicles) return;
+                
+                // 先绘制未选中的车辆
+                this.currentState.vehicles.forEach(vehicle => {
+                    if (this.selectedVehicle?.id !== vehicle.id) {
+                        this.drawVehicle(vehicle);
+                    }
+                });
+                
+                // 最后绘制选中的车辆（在顶层）
+                if (this.selectedVehicle) {
+                    this.drawVehicle(this.selectedVehicle, true);
+                }
+            }
+            
+            drawVehicle(vehicle, isSelected = false) {
+                const [x, y] = this.transformPoint(...vehicle.position);
+                
+                let width = isSelected ? 20 : 18;
+                let height = isSelected ? 14 : 12;
+                
+                if (vehicle.mode === 'loaded') {
+                    width += 2;
+                    height += 2;
+                }
+                
+                let strokeColor = '#1f2937';
+                let strokeWidth = isSelected ? 3 : 2;
+                let alpha = 1.0;
+                let glowColor = null;
+                
+                switch (vehicle.state) {
+                    case 'loading':
+                        strokeColor = '#10b981';
+                        strokeWidth = isSelected ? 4 : 3;
+                        glowColor = '#10b981';
+                        break;
+                    case 'unloading':
+                        strokeColor = '#3b82f6';
+                        strokeWidth = isSelected ? 4 : 3;
+                        glowColor = '#3b82f6';
+                        break;
+                    case 'confirmed':
+                        strokeColor = '#f59e0b';
+                        strokeWidth = isSelected ? 3 : 2;
+                        const pulse = Math.sin(this.animationTime * 0.006) * 0.3 + 0.7;
+                        alpha = pulse;
+                        glowColor = '#f59e0b';
+                        break;
+                    case 'moving':
+                        strokeColor = '#ffffff';
+                        strokeWidth = isSelected ? 3 : 2;
+                        break;
+                    case 'waiting':
+                        alpha = 0.6;
+                        break;
+                    case 'planning':
+                        strokeColor = '#f97316';
+                        strokeWidth = isSelected ? 2 : 1;
+                        break;
+                }
+                
+                this.ctx.save();
+                this.ctx.translate(x, y);
+                this.ctx.rotate(vehicle.heading || 0);
+                this.ctx.globalAlpha = alpha;
+                
+                // 辉光效果
+                if (glowColor && (isSelected || vehicle.state === 'confirmed')) {
+                    const glowPulse = Math.sin(this.animationTime * 0.004) * 0.4 + 0.6;
+                    this.ctx.globalAlpha = glowPulse * 0.3;
+                    this.ctx.fillStyle = glowColor;
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, width * 0.7, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                    this.ctx.globalAlpha = alpha;
+                }
+                
+                // 绘制车辆主体
+                this.ctx.fillStyle = vehicle.color;
+                this.ctx.strokeStyle = strokeColor;
+                this.ctx.lineWidth = strokeWidth;
+                
+                this.ctx.fillRect(-width/2, -height/2, width, height);
+                this.ctx.strokeRect(-width/2, -height/2, width, height);
+                
+                // 前部指示器
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillRect(width/2 - 3, -height/3, 3, height*2/3);
+                
+                // 模式指示器
+                if (vehicle.mode === 'loaded') {
+                    this.ctx.fillStyle = '#fbbf24';
+                    this.ctx.fillRect(-width/2 + 2, -height/2 + 2, width - 4, height - 4);
+                    this.ctx.strokeStyle = '#f59e0b';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeRect(-width/2 + 2, -height/2 + 2, width - 4, height - 4);
+                }
+                
+                // 车辆ID
+                this.ctx.rotate(-(vehicle.heading || 0));
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = `bold ${isSelected ? 12 : 10}px Inter`;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(vehicle.id.toString(), 0, 0);
+                
+                this.ctx.restore();
+                this.ctx.globalAlpha = 1.0;
+                
+                // 选中车辆的额外标识
+                if (isSelected) {
+                    this.ctx.strokeStyle = vehicle.color;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.setLineDash([4, 4]);
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 28, 0, 2 * Math.PI);
+                    this.ctx.stroke();
+                    this.ctx.setLineDash([]);
+                }
+                
+                // 状态指示器
+                const stateText = vehicle.state.toUpperCase();
+                this.ctx.fillStyle = strokeColor;
+                this.ctx.font = '8px Inter';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'top';
+                this.ctx.fillText(stateText, x, y + height/2 + 6);
+                
+                // 进度条
+                if (vehicle.state === 'loading' && vehicle.loading_progress > 0) {
+                    this.drawProgressBar(x, y - 25, 30, 4, vehicle.loading_progress, '#10b981');
+                } else if (vehicle.state === 'unloading' && vehicle.unloading_progress > 0) {
+                    this.drawProgressBar(x, y - 25, 30, 4, vehicle.unloading_progress, '#3b82f6');
+                }
+            }
+            
+            drawProgressBar(x, y, width, height, progress, color) {
+                // 背景
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.fillRect(x - width/2, y, width, height);
+                
+                // 进度
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(x - width/2, y, width * progress, height);
+                
+                // 边框
+                this.ctx.strokeStyle = 'white';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(x - width/2, y, width, height);
+                
+                // 百分比文字
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '7px Inter';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(`${Math.round(progress * 100)}%`, x, y + height/2);
+            }
+            
+            drawHoverInfo() {
+                if (!this.hoveredVehicle) return;
+                
+                const vehicle = this.hoveredVehicle;
+                const [x, y] = this.transformPoint(...vehicle.position);
+                
+                const text = [
+                    `Vehicle ${vehicle.id}`,
+                    `State: ${vehicle.state}`,
+                    `Mode: ${vehicle.mode}`,
+                    `Target: ${vehicle.target_point_id || 'None'}`,
+                    `Cycles: ${vehicle.stats.completed_cycles}`,
+                    `Distance: ${vehicle.stats.total_distance.toFixed(1)}`
+                ];
+                
+                const lineHeight = 14;
+                const padding = 10;
+                
+                this.ctx.font = '11px Inter';
+                const maxWidth = Math.max(...text.map(t => this.ctx.measureText(t).width));
+                const tooltipWidth = maxWidth + padding * 2;
+                const tooltipHeight = text.length * lineHeight + padding * 2;
+                
+                let tooltipX = x + 20;
+                let tooltipY = y - tooltipHeight - 10;
+                
+                const canvasWidth = this.canvas.width / this.devicePixelRatio;
+                const canvasHeight = this.canvas.height / this.devicePixelRatio;
+                
+                if (tooltipX + tooltipWidth > canvasWidth) {
+                    tooltipX = x - tooltipWidth - 20;
+                }
+                if (tooltipY < 0) {
+                    tooltipY = y + 20;
+                }
+                
+                // 背景
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                this.ctx.fillRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+                
+                // 边框
+                this.ctx.strokeStyle = vehicle.color;
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+                
+                // 文字
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '11px Inter';
+                this.ctx.textAlign = 'left';
+                this.ctx.textBaseline = 'top';
+                
+                for (let i = 0; i < text.length; i++) {
+                    const isHeader = i === 0;
+                    this.ctx.fillStyle = isHeader ? vehicle.color : 'white';
+                    this.ctx.font = isHeader ? 'bold 11px Inter' : '11px Inter';
+                    this.ctx.fillText(text[i], tooltipX + padding, tooltipY + padding + i * lineHeight);
+                }
+            }
+            
+            drawSelectedVehicleInfo() {
+                const vehicle = this.selectedVehicle;
+                
+                // 在左上角绘制详细信息面板
+                const info = [
+                    `Vehicle ${vehicle.id} - ${vehicle.state.toUpperCase()}`,
+                    `Mode: ${vehicle.mode}`,
+                    `Position: (${vehicle.position[0].toFixed(1)}, ${vehicle.position[1].toFixed(1)})`,
+                    `Current Node: ${vehicle.current_node}`,
+                    `Target: ${vehicle.target_point_id || 'None'}`,
+                    `Path Confirmed: ${vehicle.path_confirmed ? 'Yes' : 'No'}`,
+                    `Path Length: ${vehicle.path ? vehicle.path.length : 0}`,
+                    `Progress: ${(vehicle.progress * 100).toFixed(1)}%`,
+                    `Cycles: ${vehicle.stats.completed_cycles}`,
+                    `Distance: ${vehicle.stats.total_distance.toFixed(1)}`,
+                    `Wait Time: ${vehicle.stats.wait_time.toFixed(1)}s`
+                ];
+                
+                const panelWidth = 280;
+                const panelHeight = info.length * 16 + 20;
+                const panelX = 15;
+                const panelY = 15;
+                
+                // 背景
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+                
+                // 边框
+                this.ctx.strokeStyle = vehicle.color;
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+                
+                // 标题栏
+                this.ctx.fillStyle = vehicle.color;
+                this.ctx.fillRect(panelX, panelY, panelWidth, 20);
+                
+                // 文字
+                this.ctx.textAlign = 'left';
+                this.ctx.textBaseline = 'top';
+                
+                for (let i = 0; i < info.length; i++) {
+                    if (i === 0) {
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.font = 'bold 12px Inter';
+                        this.ctx.fillText(info[i], panelX + 8, panelY + 4);
+                    } else {
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.font = '11px Inter';
+                        this.ctx.fillText(info[i], panelX + 8, panelY + 20 + (i - 1) * 16);
+                    }
+                }
+            }
+            
+            isSpecialPoint(nodeId) {
+                for (const points of Object.values(this.networkData.special_points)) {
+                    for (const pointData of Object.values(points)) {
+                        if (pointData.node_id === nodeId) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            
+            darkenColor(color, factor) {
+                const hex = color.replace('#', '');
+                const r = Math.round(parseInt(hex.substr(0, 2), 16) * (1 - factor));
+                const g = Math.round(parseInt(hex.substr(2, 2), 16) * (1 - factor));
+                const b = Math.round(parseInt(hex.substr(4, 2), 16) * (1 - factor));
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.visualization = new EnhancedVehicleVisualization();
+        });
+
+        // 添加脉冲动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes legendPulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

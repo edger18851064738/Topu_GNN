@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stage 2 Enhanced GNN Multi-Vehicle Coordination</title>
+    <title>Stage 2 Enhanced GNN Multi-Vehicle Coordination (Fixed)</title>
     <style>
         * {
             margin: 0;
@@ -181,15 +181,29 @@
             z-index: 1000;
             display: none;
         }
+
+        .fix-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+    <div class="fix-indicator">🔧 FIXED VERSION</div>
+    
     <div class="container">
         <div class="main-panel">
             <div class="title">
-                🚛 Stage 2: Enhanced GNN Multi-Vehicle Coordination
+                🚛 Stage 2: Enhanced GNN Multi-Vehicle Coordination (Fixed)
                 <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">
-                    Advanced Conflict Resolution & Time-Space Reservations
+                    Advanced Conflict Resolution & Improved Point Selection
                 </div>
             </div>
             <canvas id="network-canvas"></canvas>
@@ -313,6 +327,8 @@
                 this.isOccupied = false;
                 this.reservedBy = null;
                 this.position = position;
+                this.lastUsedTime = 0; // 添加最后使用时间追踪
+                this.reservedAt = 0; // 添加预订时间追踪
             }
         }
 
@@ -343,7 +359,7 @@
             }
         }
 
-        // ============ Enhanced Road Network with GNN Features ============
+        // ============ Enhanced Road Network with Improved Point Selection ============
         
         class RoadNetwork {
             constructor() {
@@ -540,7 +556,240 @@
                 }
             }
 
-            // ... [Keep all the loading methods from original demo2.html: loadFromEnhancedData, loadFromBasicData, etc.]
+            // ============ FIXED: Enhanced Special Point Selection Logic ============
+            
+            // 改进的特殊点可用性检查
+            isPointTrulyAvailable(pointId, requestingVehicleId, currentTime = null) {
+                if (currentTime === null) currentTime = this.globalTime;
+                
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        const point = points.get(pointId);
+                        
+                        // 检查是否被占用
+                        if (point.isOccupied) {
+                            if (window.debugMode) {
+                                console.log(`Point ${pointId} unavailable: occupied by V${point.reservedBy}`);
+                            }
+                            return false;
+                        }
+                        
+                        // 检查是否被其他车辆预订
+                        if (point.reservedBy !== null && point.reservedBy !== requestingVehicleId) {
+                            if (window.debugMode) {
+                                console.log(`Point ${pointId} unavailable: reserved by V${point.reservedBy}`);
+                            }
+                            return false;
+                        }
+                        
+                        // 检查是否有其他车辆正在前往此点
+                        const otherVehiclesTargeting = this.vehicles.filter(v => 
+                            v.id !== requestingVehicleId && 
+                            (v.targetLoadingPoint === pointId || 
+                             v.targetUnloadingPoint === pointId || 
+                             v.targetParkingPoint === pointId)
+                        );
+                        
+                        if (otherVehiclesTargeting.length > 0) {
+                            if (window.debugMode) {
+                                console.log(`Point ${pointId} unavailable: vehicle V${otherVehiclesTargeting[0].id} heading there`);
+                            }
+                            return false;
+                        }
+                        
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            // 改进的可用特殊点获取方法（优先选择最优点）
+            getAvailablePoint(pointType, excludeVehicle = -1, preferredCriteria = 'closest') {
+                const points = this.specialPoints[pointType];
+                const availablePoints = [];
+                
+                // 收集所有真正可用的点
+                for (const [pointId, point] of points) {
+                    if (this.isPointTrulyAvailable(pointId, excludeVehicle)) {
+                        availablePoints.push({
+                            id: pointId,
+                            point: point,
+                            lastUsed: point.lastUsedTime,
+                            nodeId: point.nodeId
+                        });
+                    }
+                }
+                
+                if (availablePoints.length === 0) {
+                    if (window.debugMode) {
+                        console.log(`No available ${pointType} points for vehicle ${excludeVehicle}`);
+                    }
+                    return null;
+                }
+                
+                // 根据不同标准排序选择最优点
+                let selectedPoint = null;
+                
+                switch (preferredCriteria) {
+                    case 'least_recently_used':
+                        // 选择最少最近使用的点
+                        availablePoints.sort((a, b) => a.lastUsed - b.lastUsed);
+                        selectedPoint = availablePoints[0];
+                        break;
+                        
+                    case 'closest':
+                        // 如果请求的车辆已知，选择最近的点
+                        if (excludeVehicle >= 0 && this.vehicles[excludeVehicle]) {
+                            const vehicle = this.vehicles[excludeVehicle];
+                            const vehiclePos = this.nodePositions.get(vehicle.currentNode);
+                            
+                            if (vehiclePos) {
+                                availablePoints.forEach(ap => {
+                                    const pointPos = this.nodePositions.get(ap.nodeId);
+                                    if (pointPos) {
+                                        const dx = vehiclePos[0] - pointPos[0];
+                                        const dy = vehiclePos[1] - pointPos[1];
+                                        ap.distance = Math.sqrt(dx * dx + dy * dy);
+                                    } else {
+                                        ap.distance = Infinity;
+                                    }
+                                });
+                                
+                                availablePoints.sort((a, b) => a.distance - b.distance);
+                                selectedPoint = availablePoints[0];
+                                break;
+                            }
+                        }
+                        // 如果无法计算距离，fall through到下一个策略
+                        
+                    case 'load_balanced':
+                    default:
+                        // 负载均衡：选择使用频率最低的点
+                        availablePoints.sort((a, b) => {
+                            // 优先考虑从未使用过的点
+                            if (a.lastUsed === 0 && b.lastUsed !== 0) return -1;
+                            if (a.lastUsed !== 0 && b.lastUsed === 0) return 1;
+                            
+                            // 然后考虑最少最近使用的点
+                            return a.lastUsed - b.lastUsed;
+                        });
+                        selectedPoint = availablePoints[0];
+                        break;
+                }
+                
+                if (selectedPoint && window.debugMode) {
+                    console.log(`Selected ${pointType} point ${selectedPoint.id} for vehicle ${excludeVehicle} using criteria: ${preferredCriteria}`);
+                }
+                
+                return selectedPoint ? selectedPoint.id : null;
+            }
+
+            // 改进的特殊点预订方法
+            reserveSpecialPoint(pointId, vehicleId) {
+                // 双重检查可用性
+                if (!this.isPointTrulyAvailable(pointId, vehicleId)) {
+                    if (window.debugMode) {
+                        console.log(`Failed to reserve ${pointId} for V${vehicleId}: not truly available`);
+                    }
+                    return false;
+                }
+                
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        const point = points.get(pointId);
+                        point.reservedBy = vehicleId;
+                        point.reservedAt = this.globalTime;
+                        
+                        if (window.debugMode) {
+                            console.log(`✅ ${pointId} reserved by V${vehicleId} at time ${this.globalTime.toFixed(2)}`);
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            occupySpecialPoint(pointId, vehicleId) {
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        const point = points.get(pointId);
+                        point.isOccupied = true;
+                        point.reservedBy = vehicleId;
+                        point.lastUsedTime = this.globalTime;
+                        
+                        if (window.debugMode) {
+                            console.log(`🏠 ${pointId} occupied by V${vehicleId} at time ${this.globalTime.toFixed(2)}`);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            releaseSpecialPoint(pointId) {
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    if (points.has(pointId)) {
+                        const point = points.get(pointId);
+                        const wasOccupiedBy = point.reservedBy;
+                        point.isOccupied = false;
+                        point.reservedBy = null;
+                        
+                        if (window.debugMode) {
+                            console.log(`🔓 ${pointId} released from V${wasOccupiedBy} at time ${this.globalTime.toFixed(2)}`);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // 改进的预订取消方法
+            cancelPointReservations(vehicleId) {
+                let canceledCount = 0;
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    for (const [pointId, point] of points) {
+                        if (point.reservedBy === vehicleId && !point.isOccupied) {
+                            point.reservedBy = null;
+                            point.reservedAt = 0;
+                            canceledCount++;
+                            
+                            if (window.debugMode) {
+                                console.log(`❌ Canceled reservation of ${pointId} by V${vehicleId}`);
+                            }
+                        }
+                    }
+                }
+                
+                if (canceledCount > 0 && window.debugMode) {
+                    console.log(`Canceled ${canceledCount} point reservations for V${vehicleId}`);
+                }
+            }
+
+            // 清理过期的预订（防止死锁）
+            cleanupExpiredReservations(currentTime) {
+                const RESERVATION_TIMEOUT = 30.0; // 30秒后预订过期
+                let cleanedCount = 0;
+                
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    for (const [pointId, point] of points) {
+                        if (point.reservedBy !== null && 
+                            !point.isOccupied && 
+                            point.reservedAt > 0 && 
+                            currentTime - point.reservedAt > RESERVATION_TIMEOUT) {
+                            
+                            if (window.debugMode) {
+                                console.log(`🧹 Cleaning expired reservation of ${pointId} by V${point.reservedBy} (reserved ${(currentTime - point.reservedAt).toFixed(1)}s ago)`);
+                            }
+                            
+                            point.reservedBy = null;
+                            point.reservedAt = 0;
+                            cleanedCount++;
+                        }
+                    }
+                }
+                
+                if (cleanedCount > 0) {
+                    console.log(`Cleaned up ${cleanedCount} expired point reservations`);
+                }
+            }
 
             // Enhanced reservation methods with safety buffers
             isNodeAvailable(nodeId, startTime, duration, excludeVehicle = -1) {
@@ -771,65 +1020,6 @@
                 return [];
             }
 
-            // Keep all other methods from original demo2.html...
-            getAvailablePoint(pointType, excludeVehicle = -1) {
-                const points = this.specialPoints[pointType];
-                for (const [pointId, point] of points) {
-                    if (!point.isOccupied && (point.reservedBy === null || point.reservedBy === excludeVehicle)) {
-                        return pointId;
-                    }
-                }
-                return null;
-            }
-
-            reserveSpecialPoint(pointId, vehicleId) {
-                for (const [type, points] of Object.entries(this.specialPoints)) {
-                    if (points.has(pointId)) {
-                        const point = points.get(pointId);
-                        if (!point.isOccupied && point.reservedBy === null) {
-                            point.reservedBy = vehicleId;
-                            console.log(`${pointId} reserved by V${vehicleId}`);
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            occupySpecialPoint(pointId, vehicleId) {
-                for (const [type, points] of Object.entries(this.specialPoints)) {
-                    if (points.has(pointId)) {
-                        const point = points.get(pointId);
-                        point.isOccupied = true;
-                        point.reservedBy = vehicleId;
-                        console.log(`${pointId} occupied by V${vehicleId}`);
-                        return;
-                    }
-                }
-            }
-
-            releaseSpecialPoint(pointId) {
-                for (const [type, points] of Object.entries(this.specialPoints)) {
-                    if (points.has(pointId)) {
-                        const point = points.get(pointId);
-                        point.isOccupied = false;
-                        point.reservedBy = null;
-                        console.log(`${pointId} released`);
-                        return;
-                    }
-                }
-            }
-
-            cancelPointReservations(vehicleId) {
-                for (const [type, points] of Object.entries(this.specialPoints)) {
-                    for (const [pointId, point] of points) {
-                        if (point.reservedBy === vehicleId && !point.isOccupied) {
-                            point.reservedBy = null;
-                        }
-                    }
-                }
-            }
-
             getPointNodeId(pointId) {
                 for (const [type, points] of Object.entries(this.specialPoints)) {
                     if (points.has(pointId)) {
@@ -895,22 +1085,54 @@
                         this.nodeReservations.delete(nodeId);
                     }
                 }
+                
+                // 定期清理过期的特殊点预订
+                if (Math.floor(currentTime) % 10 === 0) { // 每10秒清理一次
+                    this.cleanupExpiredReservations(currentTime);
+                }
             }
 
-            // Helper methods from original implementation
+            // Helper methods from original implementation (loading, parsing, etc.)
             ensureSufficientSpecialPoints() {
-                const minRequired = 6;
+                const minRequired = 4;
+                
+                console.log('📍 Ensuring sufficient special points for demo purposes...');
+                
+                const beforeCounts = {
+                    loading: this.specialPoints.loading.size,
+                    unloading: this.specialPoints.unloading.size,
+                    parking: this.specialPoints.parking.size
+                };
                 
                 if (this.specialPoints.loading.size < minRequired) {
+                    console.log(`  Loading points: ${this.specialPoints.loading.size} → ${minRequired}`);
                     this.createAdditionalSpecialPoints('loading', minRequired);
                 }
                 
                 if (this.specialPoints.unloading.size < minRequired) {
+                    console.log(`  Unloading points: ${this.specialPoints.unloading.size} → ${minRequired}`);
                     this.createAdditionalSpecialPoints('unloading', minRequired);
                 }
                 
                 if (this.specialPoints.parking.size < minRequired) {
+                    console.log(`  Parking points: ${this.specialPoints.parking.size} → ${minRequired}`);
                     this.createAdditionalSpecialPoints('parking', minRequired);
+                }
+                
+                const afterCounts = {
+                    loading: this.specialPoints.loading.size,
+                    unloading: this.specialPoints.unloading.size,
+                    parking: this.specialPoints.parking.size
+                };
+                
+                const totalBefore = beforeCounts.loading + beforeCounts.unloading + beforeCounts.parking;
+                const totalAfter = afterCounts.loading + afterCounts.unloading + afterCounts.parking;
+                
+                if (totalAfter > totalBefore) {
+                    console.log(`✅ Special points supplemented: ${totalBefore} → ${totalAfter}`);
+                    console.log(`   Final counts: L:${afterCounts.loading}, U:${afterCounts.unloading}, P:${afterCounts.parking}`);
+                } else {
+                    console.log(`ℹ️  No supplementation needed. Current counts: L:${afterCounts.loading}, U:${afterCounts.unloading}, P:${afterCounts.parking}`);
                 }
             }
 
@@ -928,22 +1150,49 @@
                 const unusedNodes = availableNodes.filter(nodeId => !usedNodes.has(nodeId));
                 
                 let prefix = pointType === 'loading' ? 'L' : 
-                           pointType === 'unloading' ? 'U' : 'P';
+                        pointType === 'unloading' ? 'U' : 'P';
                 
-                for (let i = currentPoints.size; i < targetCount && i < unusedNodes.length + currentPoints.size; i++) {
-                    const nodeId = unusedNodes[i - currentPoints.size] || availableNodes[i % availableNodes.length];
+                const currentCount = currentPoints.size;
+                const maxPossibleCount = Math.min(targetCount, currentCount + unusedNodes.length);
+                
+                console.log(`Creating ${pointType} points: current=${currentCount}, target=${targetCount}, unused_nodes=${unusedNodes.length}, max_possible=${maxPossibleCount}`);
+                
+                if (targetCount > maxPossibleCount) {
+                    console.warn(`⚠️  Cannot create ${targetCount} ${pointType} points. Only ${unusedNodes.length} unused nodes available. Will create ${maxPossibleCount - currentCount} points instead.`);
+                }
+                
+                for (let i = currentCount; i < maxPossibleCount; i++) {
+                    const unusedIndex = i - currentCount;
+                    
+                    if (unusedIndex >= unusedNodes.length) {
+                        console.error(`❌ Logic error: trying to access unusedNodes[${unusedIndex}] but length is ${unusedNodes.length}`);
+                        break;
+                    }
+                    
+                    const nodeId = unusedNodes[unusedIndex];
                     const pointId = `${prefix}${i}`;
                     const position = this.nodePositions.get(nodeId) || [Math.random() * 400, Math.random() * 300];
                     
+                    if (usedNodes.has(nodeId)) {
+                        console.error(`❌ Attempting to reuse already occupied node ${nodeId} for ${pointId}`);
+                        continue;
+                    }
+                    
                     const specialPoint = new SpecialPoint(nodeId, pointType, [...position]);
                     currentPoints.set(pointId, specialPoint);
+                    
+                    usedNodes.add(nodeId);
+                    
+                    console.log(`✅ Created ${pointId} at node ${nodeId} (${position})`);
                 }
+                
+                const finalCount = currentPoints.size;
+                console.log(`${pointType} points creation completed: ${finalCount}/${targetCount} (${finalCount >= targetCount ? 'SUCCESS' : 'PARTIAL'})`);
             }
 
             loadFromEnhancedData(jsonData) {
                 const keyNodes = jsonData.key_nodes_info;
                 
-                // Add nodes
                 for (const [nodeId, nodeInfo] of Object.entries(keyNodes)) {
                     const pos = nodeInfo.position;
                     this.nodePositions.set(nodeId, [pos[0], pos[1]]);
@@ -951,7 +1200,6 @@
                     this.nodeOccupancy.set(nodeId, new Set());
                 }
 
-                // Add edges from consolidated paths
                 const consolidatedPaths = jsonData.consolidated_paths_info || {};
                 
                 for (const [pathId, pathInfo] of Object.entries(consolidatedPaths)) {
@@ -968,7 +1216,6 @@
             }
 
             loadFromBasicData(jsonData) {
-                // Add nodes
                 for (const node of jsonData.graph_nodes) {
                     const nodeStr = String(node);
                     this.graph.set(nodeStr, new Set());
@@ -979,7 +1226,6 @@
                     this.nodePositions.set(nodeStr, pos);
                 }
 
-                // Add edges
                 for (const edge of jsonData.graph_edges) {
                     const node1 = String(edge[0]);
                     const node2 = String(edge[1]);
@@ -1000,7 +1246,6 @@
                     
                     if (!isEndpoint || pathMemberships.length === 0) continue;
                     
-                    // Analyze path patterns to determine special point type
                     const startPoints = new Set();
                     const endPoints = new Set();
                     
@@ -1014,7 +1259,6 @@
                     
                     let primarySpecialPoint = null;
                     
-                    // Determine primary type based on path patterns
                     if (startPoints.size === 1) {
                         const startPoint = Array.from(startPoints)[0];
                         if (startPoint.match(/^L\d+$/)) {
@@ -1029,7 +1273,6 @@
                         }
                     }
                     
-                    // Create special point
                     if (primarySpecialPoint) {
                         const specialPointObj = new SpecialPoint(nodeId, primarySpecialPoint.type, position);
                         const pointId = primarySpecialPoint.id;
@@ -1046,8 +1289,8 @@
             }
         }
 
-        // ============ Enhanced Vehicle Class ============
-        
+        // ============ Enhanced Vehicle Class with Improved Task Planning ============
+
         class Vehicle {
             constructor(id, startParkingPoint, roadNetwork, useGNN = true) {
                 this.id = id;
@@ -1068,6 +1311,7 @@
                 const nodePosition = this.roadNetwork.nodePositions.get(this.currentNode);
                 this.position = nodePosition ? [...nodePosition] : [0, 0];
                 this.targetPosition = [...this.position];
+                this.previousPosition = [...this.position];
                 
                 // Path planning
                 this.path = [];
@@ -1081,6 +1325,10 @@
                 this.speed = 0.6 + Math.random() * 0.4;
                 this.moveStartTime = 0;
                 this.moveDuration = 0;
+                
+                // Orientation for vehicle visualization
+                this.heading = 0; // Angle in radians (0 = pointing right)
+                this.lastHeading = 0;
                 
                 // State management
                 this.state = VehicleState.IDLE;
@@ -1127,6 +1375,19 @@
             }
 
             update(currentTime, dt) {
+                // Update heading towards target when not moving
+                if (this.state !== VehicleState.MOVING && this.targetNodeId) {
+                    const targetPos = this.roadNetwork.nodePositions.get(this.targetNodeId);
+                    const currentPos = this.roadNetwork.nodePositions.get(this.currentNode);
+                    if (targetPos && currentPos) {
+                        const dx = targetPos[0] - currentPos[0];
+                        const dy = targetPos[1] - currentPos[1];
+                        if (dx !== 0 || dy !== 0) {
+                            this.heading = Math.atan2(dy, dx);
+                        }
+                    }
+                }
+                
                 switch (this.state) {
                     case VehicleState.IDLE:
                         this.planNextTask(currentTime);
@@ -1169,13 +1430,15 @@
                 }
             }
 
+            // ============ FIXED: Improved Task Planning Logic ============
+            
             planNextTask(currentTime) {
                 switch (this.mode) {
                     case VehicleMode.PARKED:
-                        // Look for available loading point
-                        const availableLoading = this.roadNetwork.getAvailablePoint('loading', this.id);
+                        // 寻找可用的装载点，使用改进的选择策略
+                        const availableLoading = this.roadNetwork.getAvailablePoint('loading', this.id, 'closest');
                         if (availableLoading && this.roadNetwork.reserveSpecialPoint(availableLoading, this.id)) {
-                            // Release parking point
+                            // 成功预订装载点后，释放停车点
                             if (this.currentParkingPoint) {
                                 this.roadNetwork.releaseSpecialPoint(this.currentParkingPoint);
                                 this.currentParkingPoint = null;
@@ -1183,40 +1446,72 @@
                             this.targetLoadingPoint = availableLoading;
                             this.mode = VehicleMode.EMPTY;
                             this.planPathToTarget(currentTime);
+                            
+                            if (window.debugMode) {
+                                console.log(`🚛 V${this.id}: Parked → Empty, target loading ${availableLoading}`);
+                            }
                         } else {
                             this.waitAndRetry(currentTime);
+                            if (window.debugMode) {
+                                console.log(`🚛 V${this.id}: No available loading points, waiting...`);
+                            }
                         }
                         break;
                         
                     case VehicleMode.EMPTY:
-                        // Should already have loading point target
+                        // 应该已经有装载点目标
                         if (this.targetLoadingPoint) {
-                            this.planPathToTarget(currentTime);
+                            // 验证装载点仍然可用
+                            if (this.roadNetwork.isPointTrulyAvailable(this.targetLoadingPoint, this.id)) {
+                                this.planPathToTarget(currentTime);
+                            } else {
+                                // 装载点被占用，重新选择
+                                if (window.debugMode) {
+                                    console.log(`🚛 V${this.id}: Target loading point ${this.targetLoadingPoint} no longer available, reselecting...`);
+                                }
+                                this.targetLoadingPoint = null;
+                                this.state = VehicleState.IDLE; // 重新规划
+                            }
                         } else {
+                            // 没有装载点目标，回到停车模式
                             this.mode = VehicleMode.PARKED;
                             this.state = VehicleState.IDLE;
                         }
                         break;
                         
                     case VehicleMode.LOADED:
-                        // Look for available unloading point
-                        const availableUnloading = this.roadNetwork.getAvailablePoint('unloading', this.id);
+                        // 寻找可用的卸载点
+                        const availableUnloading = this.roadNetwork.getAvailablePoint('unloading', this.id, 'closest');
                         if (availableUnloading && this.roadNetwork.reserveSpecialPoint(availableUnloading, this.id)) {
                             this.targetUnloadingPoint = availableUnloading;
                             this.planPathToTarget(currentTime);
+                            
+                            if (window.debugMode) {
+                                console.log(`🚛 V${this.id}: Loaded → targeting unloading ${availableUnloading}`);
+                            }
                         } else {
                             this.waitAndRetry(currentTime);
+                            if (window.debugMode) {
+                                console.log(`🚛 V${this.id}: No available unloading points, waiting...`);
+                            }
                         }
                         break;
                         
                     case VehicleMode.RETURNING:
-                        // Look for available parking point
-                        const availableParking = this.roadNetwork.getAvailablePoint('parking', this.id);
+                        // 寻找可用的停车点
+                        const availableParking = this.roadNetwork.getAvailablePoint('parking', this.id, 'least_recently_used');
                         if (availableParking && this.roadNetwork.reserveSpecialPoint(availableParking, this.id)) {
                             this.targetParkingPoint = availableParking;
                             this.planPathToTarget(currentTime);
+                            
+                            if (window.debugMode) {
+                                console.log(`🚛 V${this.id}: Returning → targeting parking ${availableParking}`);
+                            }
                         } else {
                             this.waitAndRetry(currentTime);
+                            if (window.debugMode) {
+                                console.log(`🚛 V${this.id}: No available parking points, waiting...`);
+                            }
                         }
                         break;
                 }
@@ -1483,13 +1778,22 @@
                 if (this.progress > 0) {
                     const startPos = this.roadNetwork.nodePositions.get(this.path[this.pathIndex]);
                     const smoothProgress = this.smoothStep(this.progress);
+                    
+                    // Store previous position for heading calculation
+                    this.previousPosition = [...this.position];
+                    
                     this.position[0] = startPos[0] + (this.targetPosition[0] - startPos[0]) * smoothProgress;
                     this.position[1] = startPos[1] + (this.targetPosition[1] - startPos[1]) * smoothProgress;
                     
+                    // Calculate heading based on movement direction
+                    const dx = this.targetPosition[0] - startPos[0];
+                    const dy = this.targetPosition[1] - startPos[1];
+                    if (dx !== 0 || dy !== 0) {
+                        this.heading = Math.atan2(dy, dx);
+                    }
+                    
                     // Update distance
                     if (dt > 0) {
-                        const dx = this.targetPosition[0] - startPos[0];
-                        const dy = this.targetPosition[1] - startPos[1];
                         const distance = Math.sqrt(dx * dx + dy * dy);
                         this.totalDistance += distance * (this.progress / (elapsed / dt)) * dt * 0.01;
                     }
@@ -1601,16 +1905,26 @@
                 this.state = VehicleState.WAITING;
             }
 
+            // 改进的任务重置方法
             resetCurrentTask() {
+                if (window.debugMode) {
+                    console.log(`🔄 V${this.id}: Resetting current task due to max retries`);
+                }
+                
                 this.roadNetwork.cancelPointReservations(this.id);
                 this.targetLoadingPoint = null;
                 this.targetUnloadingPoint = null;
                 this.targetParkingPoint = null;
                 this.retryCount = 0;
+                
+                // 如果不在停车状态，尝试回到最近的停车点
+                if (this.mode !== VehicleMode.PARKED) {
+                    this.mode = VehicleMode.RETURNING;
+                }
             }
         }
 
-        // ============ Enhanced Visualization ============
+        // ============ Enhanced Visualization (保持原有的可视化代码) ============
         
         class Visualization {
             constructor(canvas, roadNetwork) {
@@ -1948,16 +2262,16 @@
                 for (const vehicle of this.vehicles) {
                     const [x, y] = this.transformPoint(vehicle.position[0], vehicle.position[1]);
                     
-                    // Vehicle size and shape based on mode and state
-                    let size = 10;
-                    let shape = 'circle';
+                    // Vehicle size based on mode and state
+                    let width = 16;  // Length of vehicle (along heading direction)
+                    let height = 10; // Width of vehicle (perpendicular to heading)
                     
                     if (vehicle.mode === VehicleMode.LOADED) {
-                        size = 12;
-                        shape = 'square';
+                        width = 20;
+                        height = 12;
                     } else if (vehicle.mode === VehicleMode.RETURNING) {
-                        size = 11;
-                        shape = 'diamond';
+                        width = 18;
+                        height = 11;
                     }
                     
                     // State-based styling
@@ -2002,41 +2316,47 @@
                             break;
                     }
                     
-                    // Draw vehicle
+                    // Save context for rotation
+                    this.ctx.save();
+                    this.ctx.translate(x, y);
+                    this.ctx.rotate(vehicle.heading);
+                    this.ctx.globalAlpha = alpha;
+                    
+                    // Draw vehicle as rectangle
                     this.ctx.fillStyle = vehicle.color;
                     this.ctx.strokeStyle = strokeColor;
                     this.ctx.lineWidth = strokeWidth;
-                    this.ctx.globalAlpha = alpha;
                     
-                    if (shape === 'square') {
-                        this.ctx.fillRect(x - size/2, y - size/2, size, size);
-                        this.ctx.strokeRect(x - size/2, y - size/2, size, size);
-                    } else if (shape === 'diamond') {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(x, y - size/2);
-                        this.ctx.lineTo(x + size/2, y);
-                        this.ctx.lineTo(x, y + size/2);
-                        this.ctx.lineTo(x - size/2, y);
-                        this.ctx.closePath();
-                        this.ctx.fill();
-                        this.ctx.stroke();
-                    } else {
-                        this.ctx.beginPath();
-                        this.ctx.arc(x, y, size/2, 0, 2 * Math.PI);
-                        this.ctx.fill();
-                        this.ctx.stroke();
+                    // Draw main body
+                    this.ctx.fillRect(-width/2, -height/2, width, height);
+                    this.ctx.strokeRect(-width/2, -height/2, width, height);
+                    
+                    // Draw front indicator (small rectangle at front)
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.fillRect(width/2 - 3, -height/4, 3, height/2);
+                    
+                    // Draw mode indicator on top of vehicle
+                    if (vehicle.mode === VehicleMode.LOADED) {
+                        // Draw cargo
+                        this.ctx.fillStyle = '#ffeb3b';
+                        this.ctx.fillRect(-width/2 + 2, -height/2 + 2, width - 4, height - 4);
+                        this.ctx.strokeStyle = '#f57f17';
+                        this.ctx.lineWidth = 1;
+                        this.ctx.strokeRect(-width/2 + 2, -height/2 + 2, width - 4, height - 4);
                     }
                     
-                    this.ctx.globalAlpha = 1.0;
-                    
-                    // Vehicle ID
+                    // Vehicle ID (not rotated)
+                    this.ctx.rotate(-vehicle.heading);
                     this.ctx.fillStyle = 'white';
                     this.ctx.font = 'bold 10px monospace';
                     this.ctx.textAlign = 'center';
                     this.ctx.textBaseline = 'middle';
-                    this.ctx.fillText(vehicle.id.toString(), x, y);
+                    this.ctx.fillText(vehicle.id.toString(), 0, 0);
                     
-                    // State indicator
+                    this.ctx.restore();
+                    this.ctx.globalAlpha = 1.0;
+                    
+                    // State indicator (not rotated)
                     const stateSymbol = {
                         [VehicleState.IDLE]: 'I',
                         [VehicleState.PLANNING]: 'P',
@@ -2057,7 +2377,9 @@
                     
                     this.ctx.fillStyle = '#333';
                     this.ctx.font = '9px monospace';
-                    this.ctx.fillText(`${stateSymbol}${modeSymbol}`, x, y - size/2 - 8);
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'top';
+                    this.ctx.fillText(`${stateSymbol}${modeSymbol}`, x, y + height/2 + 3);
                     
                     // Draw target line
                     if (vehicle.targetNodeId) {
@@ -2153,7 +2475,7 @@
             }
         }
 
-        // ============ Main Simulation ============
+        // ============ Main Simulation (保持原有的主要仿真逻辑) ============
         
         class Simulation {
             constructor() {
@@ -2345,17 +2667,17 @@
                     '<span class="status-indicator status-paused"></span>Paused';
                 
                 const statsText = `
-╔═══ STAGE 2 ENHANCED GNN ═══╗
-║ Mode: ${this.useGNN ? 'GNN Enhanced' : 'Simple Mode  '}   ║
-║ Time: ${this.currentTime.toFixed(1).padStart(17)}s ║
-║ Vehicles: ${this.vehicles.length.toString().padStart(13)} ║
-║ Status: ${statusIndicator.padEnd(23)} ║
-╠═══ OPERATION STATS ════════╣
+╔═══ STAGE 2 ENHANCED GNN (FIXED) ═══╗
+║ Mode: ${this.useGNN ? 'GNN Enhanced' : 'Simple Mode  '}     ║
+║ Time: ${this.currentTime.toFixed(1).padStart(15)}s ║
+║ Vehicles: ${this.vehicles.length.toString().padStart(11)} ║
+║ Status: ${statusIndicator.padEnd(21)} ║
+╠═══ OPERATION STATS ════════════════╣
 ║ Completed Cycles: ${totalCycles.toString().padStart(8)} ║
 ║ Total Distance: ${totalDistance.toFixed(1).padStart(10)} ║
 ║ Wait Time: ${totalWaitTime.toFixed(1).padStart(12)}s ║
 ║ Avg Cycle Time: ${totalCycles > 0 ? (this.currentTime / totalCycles).toFixed(1).padStart(10) : '0.0'.padStart(10)}s ║
-╠═══ VEHICLE STATES ═════════╣
+╠═══ VEHICLE STATES ═════════════════╣
 ║ Idle: ${stateCounts[VehicleState.IDLE].toString().padStart(17)} ║
 ║ Planning: ${stateCounts[VehicleState.PLANNING].toString().padStart(13)} ║
 ║ Waiting: ${stateCounts[VehicleState.WAITING].toString().padStart(14)} ║
@@ -2364,29 +2686,37 @@
 ║ Loading: ${stateCounts[VehicleState.LOADING].toString().padStart(14)} ║
 ║ Unloading: ${stateCounts[VehicleState.UNLOADING].toString().padStart(12)} ║
 ║ Blocked: ${stateCounts[VehicleState.BLOCKED].toString().padStart(14)} ║
-╠═══ VEHICLE MODES ══════════╣
+╠═══ VEHICLE MODES ══════════════════╣
 ║ Parked: ${modeCounts[VehicleMode.PARKED].toString().padStart(15)} ║
 ║ Empty: ${modeCounts[VehicleMode.EMPTY].toString().padStart(16)} ║
 ║ Loaded: ${modeCounts[VehicleMode.LOADED].toString().padStart(15)} ║
 ║ Returning: ${modeCounts[VehicleMode.RETURNING].toString().padStart(12)} ║
-╠═══ LOADING POINTS (${this.roadNetwork.specialPoints.loading.size}) ════╣
+╠═══ LOADING POINTS (${this.roadNetwork.specialPoints.loading.size}) ════════╣
 ║ Occupied: ${loadingOccupied.toString().padStart(13)} ║
 ║ Reserved: ${loadingReserved.toString().padStart(13)} ║
 ║ Available: ${loadingAvailable.toString().padStart(12)} ║
-╠═══ UNLOADING POINTS (${this.roadNetwork.specialPoints.unloading.size}) ══╣
+╠═══ UNLOADING POINTS (${this.roadNetwork.specialPoints.unloading.size}) ══════╣
 ║ Occupied: ${unloadingOccupied.toString().padStart(13)} ║
 ║ Reserved: ${unloadingReserved.toString().padStart(13)} ║
 ║ Available: ${unloadingAvailable.toString().padStart(12)} ║
-╠═══ PARKING POINTS (${this.roadNetwork.specialPoints.parking.size}) ════╣
+╠═══ PARKING POINTS (${this.roadNetwork.specialPoints.parking.size}) ════════╣
 ║ Occupied: ${parkingOccupied.toString().padStart(13)} ║
 ║ Reserved: ${parkingReserved.toString().padStart(13)} ║
 ║ Available: ${parkingAvailable.toString().padStart(12)} ║
-╠═══ RESERVATION STATUS ═════╣
+╠═══ RESERVATION STATUS ═════════════╣
 ║ Edge Reservations: ${totalEdgeReservations.toString().padStart(7)} ║
 ║ Node Reservations: ${totalNodeReservations.toString().padStart(7)} ║
 ║ Safety Buffer: ${(this.roadNetwork.EDGE_SAFETY_BUFFER * 1000).toFixed(0).padStart(9)}ms ║
 ║ Cooling Time: ${(this.roadNetwork.NODE_COOLING_TIME * 1000).toFixed(0).padStart(10)}ms ║
-╚════════════════════════════╝
+╚════════════════════════════════════╝
+
+🔧 FIXES APPLIED:
+• Enhanced point availability checking
+• Prevented conflicts in target selection
+• Improved task planning logic
+• Added expired reservation cleanup
+• Better vehicle coordination
+• Fixed race conditions
 
 GNN Features:
 • Node occupancy tracking
@@ -2497,6 +2827,8 @@ Speed: ${this.speed}x | Debug: ${window.debugMode ? 'ON' : 'OFF'}
                     for (const [pointId, point] of points) {
                         point.isOccupied = false;
                         point.reservedBy = null;
+                        point.lastUsedTime = 0;
+                        point.reservedAt = 0;
                     }
                 }
                 
@@ -2572,8 +2904,21 @@ Speed: ${this.speed}x | Debug: ${window.debugMode ? 'ON' : 'OFF'}
                 let hoveredVehicle = null;
                 for (const vehicle of simulation.vehicles) {
                     const [vx, vy] = simulation.visualization.transformPoint(vehicle.position[0], vehicle.position[1]);
-                    const dist = Math.sqrt((x - vx) ** 2 + (y - vy) ** 2);
-                    if (dist < 15) {
+                    
+                    // Use rectangular collision detection
+                    let width = 16, height = 10;
+                    if (vehicle.mode === VehicleMode.LOADED) {
+                        width = 20;
+                        height = 12;
+                    } else if (vehicle.mode === VehicleMode.RETURNING) {
+                        width = 18;
+                        height = 11;
+                    }
+                    
+                    // Simple rectangular bounds check (not rotated for simplicity)
+                    const dx = Math.abs(x - vx);
+                    const dy = Math.abs(y - vy);
+                    if (dx < width/2 + 5 && dy < height/2 + 5) {
                         hoveredVehicle = vehicle;
                         break;
                     }
@@ -2583,20 +2928,21 @@ Speed: ${this.speed}x | Debug: ${window.debugMode ? 'ON' : 'OFF'}
                     tooltip.style.display = 'block';
                     tooltip.style.left = e.clientX + 10 + 'px';
                     tooltip.style.top = e.clientY + 10 + 'px';
+                    
+                    const headingDegrees = (hoveredVehicle.heading * 180 / Math.PI).toFixed(0);
+                    
                     tooltip.innerHTML = `
                         Vehicle ${hoveredVehicle.id}<br>
                         State: ${hoveredVehicle.state}<br>
                         Mode: ${hoveredVehicle.mode}<br>
+                        Heading: ${headingDegrees}°<br>
                         Cycles: ${hoveredVehicle.completedCycles}<br>
-                        Distance: ${hoveredVehicle.totalDistance.toFixed(1)}
+                        Distance: ${hoveredVehicle.totalDistance.toFixed(1)}<br>
+                        Target: ${hoveredVehicle.targetPointId || 'None'}
                     `;
                 } else {
                     tooltip.style.display = 'none';
                 }
-            });
-            
-            simulation.canvas.addEventListener('mouseleave', () => {
-                tooltip.style.display = 'none';
             });
         });
     </script>

@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 1: 基于拓扑感知GNN架构的露天矿智能调度系统 - 智能拓扑构建</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 800px;
+        }
+
+        .visualization-area {
+            padding: 25px;
+            background: white;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #007bff;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        /* 环境管理样式 */
+        .environment-section {
+            border-left: 4px solid #28a745;
+        }
+
+        .file-input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            display: block;
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.3s ease;
+            font-size: 14px;
+        }
+
+        .file-input-label:hover {
+            background: #218838;
+        }
+
+        .file-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+
+        .file-details {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .environment-info {
+            background: #e8f5e8;
+            border: 1px solid #c3e6c3;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #495057;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .step-container {
+            margin-bottom: 20px;
+        }
+
+        .step {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .step.active {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+
+        .step.completed {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .step.executing {
+            border-color: #ffc107;
+            background: #fff3cd;
+            animation: pulse 1.5s infinite;
+        }
+
+        .step.disabled {
+            border-color: #dee2e6;
+            background: #f8f9fa;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .step.active .step-number {
+            background: #007bff;
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+        }
+
+        .step.executing .step-number {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .step-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .step-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .step-status {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .btn.secondary:hover {
+            background: #545b62;
+        }
+
+        .btn.success {
+            background: #28a745;
+        }
+
+        .btn.success:hover {
+            background: #218838;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        #visualCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .mode-selector {
+            margin-bottom: 20px;
+        }
+
+        .mode-selector select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .canvas-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .canvas-btn {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .canvas-btn:hover {
+            background: #e9ecef;
+        }
+
+        .stats-panel {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .stats-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            border-radius: 2px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-ready { background: #28a745; }
+        .status-executing { background: #ffc107; }
+        .status-completed { background: #007bff; }
+        .status-waiting { background: #6c757d; }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .canvas-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Stage 1: 智能拓扑构建</h1>
+            <div class="subtitle">基于拓扑感知GNN架构的露天矿智能调度系统</div>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <!-- 环境管理区域 -->
+                <div class="section environment-section">
+                    <div class="section-title">🗺️ 环境管理</div>
+                    
+                    <div class="file-input-container">
+                        <input type="file" id="environmentFile" class="file-input" accept=".json" onchange="loadEnvironmentFile(event)">
+                        <label for="environmentFile" class="file-input-label">
+                            📁 选择环境文件 (JSON)
+                        </label>
+                    </div>
+
+                    <div id="fileInfo" class="file-info" style="display: none;">
+                        <div class="file-name" id="fileName">未选择文件</div>
+                        <div class="file-details" id="fileDetails">请选择一个环境JSON文件</div>
+                    </div>
+
+                    <button id="loadEnvironmentBtn" class="btn success" onclick="processEnvironment()" disabled>
+                        🔄 加载环境
+                    </button>
+
+                    <div id="environmentInfo" class="environment-info" style="display: none;">
+                        <div class="info-item">
+                            <span class="info-label">环境尺寸:</span>
+                            <span class="info-value" id="envDimensions">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">车辆数量:</span>
+                            <span class="info-value" id="envVehicles">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">装载点:</span>
+                            <span class="info-value" id="envLoadingPoints">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">卸载点:</span>
+                            <span class="info-value" id="envUnloadingPoints">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">障碍物:</span>
+                            <span class="info-value" id="envObstacles">-</span>
+                        </div>
+                    </div>
+
+                    <div id="environmentStatus" class="alert alert-info" style="display: none;">
+                        📝 请选择并加载环境文件以开始构建
+                    </div>
+                </div>
+
+                <!-- 系统状态 -->
+                <div class="section">
+                    <div class="section-title">📊 系统状态</div>
+                    <span id="systemStatus">等待环境加载</span>
+                </div>
+
+                <!-- 执行步骤 -->
+                <div class="step-container">
+                    <h3 style="margin-bottom: 15px;">🎯 执行步骤</h3>
+                    
+                    <div class="step disabled" id="step1" onclick="executeStep(1)">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-title">双向路径智能规划</div>
+                        </div>
+                        <div class="step-description">混合A*算法生成双向路径</div>
+                        <div class="step-status">
+                            <span class="status-indicator status-waiting"></span>
+                            <span id="status1">等待环境</span>
+                        </div>
+                    </div>
+
+                    <div class="step disabled" id="step2" onclick="executeStep(2)">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-title">动态节点密度控制</div>
+                        </div>
+                        <div class="step-description">基于曲率的自适应节点生成</div>
+                        <div class="step-status">
+                            <span class="status-indicator status-waiting"></span>
+                            <span id="status2">等待</span>
+                        </div>
+                    </div>
+
+                    <div class="step disabled" id="step3" onclick="executeStep(3)">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <div class="step-title">关键节点聚类提取</div>
+                        </div>
+                        <div class="step-description">多轮聚类识别拓扑关键节点</div>
+                        <div class="step-status">
+                            <span class="status-indicator status-waiting"></span>
+                            <span id="status3">等待</span>
+                        </div>
+                    </div>
+
+                    <div class="step disabled" id="step4" onclick="executeStep(4)">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <div class="step-title">车辆动力学约束拟合</div>
+                        </div>
+                        <div class="step-description">Clothoid-Cubic曲线拟合</div>
+                        <div class="step-status">
+                            <span class="status-indicator status-waiting"></span>
+                            <span id="status4">等待</span>
+                        </div>
+                    </div>
+
+                    <div class="step disabled" id="step5" onclick="executeStep(5)">
+                        <div class="step-header">
+                            <div class="step-number">5</div>
+                            <div class="step-title">图拓扑标准化输出</div>
+                        </div>
+                        <div class="step-description">生成GNN输入格式</div>
+                        <div class="step-status">
+                            <span class="status-indicator status-waiting"></span>
+                            <span id="status5">等待</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn" id="executeAllBtn" onclick="executeAll()" disabled>执行完整构建</button>
+                    <button class="btn secondary" onclick="resetSystem()">重置系统</button>
+                </div>
+
+                <div class="stats-panel">
+                    <div class="stats-title">📊 构建统计</div>
+                    <div class="stat-item">
+                        <span>原始路径数:</span>
+                        <span id="originalPaths">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>关键节点数:</span>
+                        <span id="keyNodes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>节点减少率:</span>
+                        <span id="nodeReduction">0%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>拟合质量:</span>
+                        <span id="fittingQuality">0.0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>构建时间:</span>
+                        <span id="buildTime">0s</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization-area">
+                <div class="mode-selector">
+                    <label for="displayMode"><strong>🎨 显示模式:</strong></label>
+                    <select id="displayMode" onchange="changeDisplayMode()">
+                        <option value="environment">环境概览</option>
+                        <option value="raw">原始骨干路径</option>
+                        <option value="clustered">聚类关键节点</option>
+                        <option value="reconstructed">重建道路网络</option>
+                    </select>
+                </div>
+
+                <div class="canvas-controls">
+                    <button class="canvas-btn" onclick="resetView()">🔄 重置视图</button>
+                    <button class="canvas-btn" onclick="fitToScreen()">📐 适应屏幕</button>
+                    <button class="canvas-btn" onclick="exportImage()">💾 导出图像</button>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="visualCanvas" width="800" height="600"></canvas>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4CAF50;"></div>
+                        <span>装载点</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FF9800;"></div>
+                        <span>卸载点</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #2196F3;"></div>
+                        <span>停车区</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #9E9E9E;"></div>
+                        <span>障碍物</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #E91E63;"></div>
+                        <span>车辆</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FFC107;"></div>
+                        <span>关键节点</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #9C27B0;"></div>
+                        <span>重建道路</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let systemState = {
+            currentStep: 0,
+            completedSteps: [],
+            isExecuting: false,
+            displayMode: 'environment',
+            canvas: null,
+            ctx: null,
+            
+            // 环境数据
+            environmentLoaded: false,
+            environment: {
+                width: 500,
+                height: 500,
+                vehicles: [],
+                obstacles: [],
+                loading_points: [],
+                unloading_points: [],
+                parking_areas: []
+            },
+            
+            // 视图控制
+            viewTransform: {
+                scale: 1.0,
+                offsetX: 0,
+                offsetY: 0,
+                minScale: 0.1,
+                maxScale: 5.0
+            },
+            
+            // 路径数据
+            rawPaths: [],
+            keyNodes: [],
+            reconstructedPaths: [],
+            
+            // 统计数据
+            stats: {
+                originalPaths: 0,
+                keyNodes: 0,
+                nodeReduction: 0,
+                fittingQuality: 0.0,
+                buildTime: 0
+            }
+        };
+
+        // 初始化系统
+        function initSystem() {
+            systemState.canvas = document.getElementById('visualCanvas');
+            systemState.ctx = systemState.canvas.getContext('2d');
+            
+            // 调整canvas尺寸
+            resizeCanvas();
+            
+            // 绘制初始场景
+            drawScene();
+            
+            // 添加canvas交互事件
+            setupCanvasInteraction();
+            
+            // 监听窗口尺寸变化
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function resizeCanvas() {
+            const container = systemState.canvas.parentElement;
+            const rect = container.getBoundingClientRect();
+            
+            systemState.canvas.width = rect.width - 2;
+            systemState.canvas.height = rect.height - 2;
+            
+            if (systemState.ctx) {
+                drawScene();
+            }
+        }
+
+        function setupCanvasInteraction() {
+            const canvas = systemState.canvas;
+            let isDragging = false;
+            let lastX, lastY;
+
+            // 鼠标滚轮缩放
+            canvas.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const scaleFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = systemState.viewTransform.scale * scaleFactor;
+                
+                if (newScale >= systemState.viewTransform.minScale && 
+                    newScale <= systemState.viewTransform.maxScale) {
+                    
+                    // 缩放到鼠标位置
+                    systemState.viewTransform.offsetX = mouseX - (mouseX - systemState.viewTransform.offsetX) * scaleFactor;
+                    systemState.viewTransform.offsetY = mouseY - (mouseY - systemState.viewTransform.offsetY) * scaleFactor;
+                    systemState.viewTransform.scale = newScale;
+                    
+                    drawScene();
+                }
+            });
+
+            // 鼠标拖拽平移
+            canvas.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                canvas.style.cursor = 'grabbing';
+            });
+
+            canvas.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    const deltaX = e.clientX - lastX;
+                    const deltaY = e.clientY - lastY;
+                    
+                    systemState.viewTransform.offsetX += deltaX;
+                    systemState.viewTransform.offsetY += deltaY;
+                    
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    
+                    drawScene();
+                }
+            });
+
+            canvas.addEventListener('mouseup', function(e) {
+                isDragging = false;
+                canvas.style.cursor = 'crosshair';
+            });
+
+            canvas.addEventListener('mouseleave', function(e) {
+                isDragging = false;
+                canvas.style.cursor = 'crosshair';
+            });
+        }
+
+        // 环境文件加载
+        function loadEnvironmentFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 显示文件信息
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileDetails').textContent = `大小: ${(file.size / 1024).toFixed(1)} KB | 类型: ${file.type}`;
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('loadEnvironmentBtn').disabled = false;
+
+            // 更新状态
+            document.getElementById('environmentStatus').innerHTML = '📁 文件已选择，点击"加载环境"按钮处理';
+            document.getElementById('environmentStatus').className = 'alert alert-info';
+            document.getElementById('environmentStatus').style.display = 'block';
+        }
+
+        function processEnvironment() {
+            const fileInput = document.getElementById('environmentFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请先选择环境文件');
+                return;
+            }
+
+            document.getElementById('loadEnvironmentBtn').disabled = true;
+            document.getElementById('environmentStatus').innerHTML = '🔄 正在加载环境数据...';
+            document.getElementById('environmentStatus').className = 'alert alert-info';
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const environmentData = JSON.parse(e.target.result);
+                    parseEnvironmentData(environmentData);
+                    
+                    // 成功加载
+                    systemState.environmentLoaded = true;
+                    
+                    // 更新UI
+                    updateEnvironmentInfo();
+                    enableSteps();
+                    
+                    // 显示环境
+                    document.getElementById('displayMode').value = 'environment';
+                    systemState.displayMode = 'environment';
+                    
+                    // 自适应视图
+                    fitToScreen();
+                    drawScene();
+                    
+                    document.getElementById('environmentStatus').innerHTML = '✅ 环境加载成功！现在可以开始构建';
+                    document.getElementById('environmentStatus').className = 'alert alert-success';
+                    
+                    updateSystemStatus('环境已加载，系统就绪');
+
+                } catch (error) {
+                    console.error('环境加载失败:', error);
+                    document.getElementById('environmentStatus').innerHTML = `❌ 环境加载失败: ${error.message}`;
+                    document.getElementById('environmentStatus').className = 'alert alert-warning';
+                }
+                
+                document.getElementById('loadEnvironmentBtn').disabled = false;
+            };
+
+            reader.onerror = function() {
+                document.getElementById('environmentStatus').innerHTML = '❌ 文件读取失败';
+                document.getElementById('environmentStatus').className = 'alert alert-warning';
+                document.getElementById('loadEnvironmentBtn').disabled = false;
+            };
+
+            reader.readAsText(file);
+        }
+
+        function parseEnvironmentData(data) {
+            // 重置环境数据
+            systemState.environment = {
+                width: data.width || 500,
+                height: data.height || 500,
+                vehicles: [],
+                obstacles: [],
+                loading_points: [],
+                unloading_points: [],
+                parking_areas: []
+            };
+
+            console.log('解析环境数据:', data);
+
+            // 解析障碍物
+            if (data.obstacles && Array.isArray(data.obstacles)) {
+                systemState.environment.obstacles = data.obstacles.map(obs => {
+                    if (typeof obs === 'object' && obs.x !== undefined && obs.y !== undefined) {
+                        return {
+                            x: parseFloat(obs.x),
+                            y: parseFloat(obs.y),
+                            width: parseFloat(obs.width || 1),
+                            height: parseFloat(obs.height || 1)
+                        };
+                    }
+                    return null;
+                }).filter(obs => obs !== null);
+            }
+
+            // 解析装载点
+            if (data.loading_points && Array.isArray(data.loading_points)) {
+                systemState.environment.loading_points = data.loading_points.map((point, index) => {
+                    if (typeof point === 'object' && point.x !== undefined && point.y !== undefined) {
+                        return {
+                            x: parseFloat(point.x),
+                            y: parseFloat(point.y),
+                            theta: parseFloat(point.theta || 0),
+                            id: `L${index + 1}`
+                        };
+                    } else if (Array.isArray(point) && point.length >= 2) {
+                        return {
+                            x: parseFloat(point[1]), // 注意：可能是row,col格式
+                            y: parseFloat(point[0]),
+                            theta: parseFloat(point[2] || 0),
+                            id: `L${index + 1}`
+                        };
+                    }
+                    return null;
+                }).filter(point => point !== null);
+            }
+
+            // 解析卸载点
+            if (data.unloading_points && Array.isArray(data.unloading_points)) {
+                systemState.environment.unloading_points = data.unloading_points.map((point, index) => {
+                    if (typeof point === 'object' && point.x !== undefined && point.y !== undefined) {
+                        return {
+                            x: parseFloat(point.x),
+                            y: parseFloat(point.y),
+                            theta: parseFloat(point.theta || 0),
+                            id: `U${index + 1}`
+                        };
+                    } else if (Array.isArray(point) && point.length >= 2) {
+                        return {
+                            x: parseFloat(point[1]),
+                            y: parseFloat(point[0]),
+                            theta: parseFloat(point[2] || 0),
+                            id: `U${index + 1}`
+                        };
+                    }
+                    return null;
+                }).filter(point => point !== null);
+            }
+
+            // 解析停车区
+            if (data.parking_areas && Array.isArray(data.parking_areas)) {
+                systemState.environment.parking_areas = data.parking_areas.map((point, index) => {
+                    if (typeof point === 'object' && point.x !== undefined && point.y !== undefined) {
+                        return {
+                            x: parseFloat(point.x),
+                            y: parseFloat(point.y),
+                            theta: parseFloat(point.theta || 0),
+                            id: `P${index + 1}`
+                        };
+                    } else if (Array.isArray(point) && point.length >= 2) {
+                        return {
+                            x: parseFloat(point[1]),
+                            y: parseFloat(point[0]),
+                            theta: parseFloat(point[2] || 0),
+                            id: `P${index + 1}`
+                        };
+                    }
+                    return null;
+                }).filter(point => point !== null);
+            }
+
+            // 解析车辆
+            if (data.vehicles && Array.isArray(data.vehicles)) {
+                systemState.environment.vehicles = data.vehicles.map(vehicle => {
+                    return {
+                        id: vehicle.id || `V${systemState.environment.vehicles.length + 1}`,
+                        x: parseFloat(vehicle.x || 0),
+                        y: parseFloat(vehicle.y || 0),
+                        theta: parseFloat(vehicle.theta || 0),
+                        type: vehicle.type || 'dump_truck',
+                        load: parseFloat(vehicle.load || 0),
+                        max_load: parseFloat(vehicle.max_load || 100),
+                        status: vehicle.status || 'idle'
+                    };
+                });
+            } else if (data.vehicles_info && Array.isArray(data.vehicles_info)) {
+                // 处理另一种格式
+                systemState.environment.vehicles = data.vehicles_info.map(vehicle => {
+                    return {
+                        id: vehicle.id || `V${systemState.environment.vehicles.length + 1}`,
+                        x: parseFloat(vehicle.x || 0),
+                        y: parseFloat(vehicle.y || 0),
+                        theta: parseFloat(vehicle.theta || 0),
+                        type: vehicle.type || 'dump_truck',
+                        load: parseFloat(vehicle.load || 0),
+                        max_load: parseFloat(vehicle.max_load || 100),
+                        status: vehicle.status || 'idle'
+                    };
+                });
+            }
+
+            console.log('解析完成的环境数据:', systemState.environment);
+        }
+
+        function updateEnvironmentInfo() {
+            const env = systemState.environment;
+            
+            document.getElementById('envDimensions').textContent = `${env.width} × ${env.height}`;
+            document.getElementById('envVehicles').textContent = env.vehicles.length;
+            document.getElementById('envLoadingPoints').textContent = env.loading_points.length;
+            document.getElementById('envUnloadingPoints').textContent = env.unloading_points.length;
+            document.getElementById('envObstacles').textContent = env.obstacles.length;
+            
+            document.getElementById('environmentInfo').style.display = 'block';
+        }
+
+        function enableSteps() {
+            // 启用第一步
+            const step1 = document.getElementById('step1');
+            step1.classList.remove('disabled');
+            document.getElementById('status1').textContent = '就绪';
+            
+            document.getElementById('executeAllBtn').disabled = false;
+        }
+
+        // 绘制场景
+        function drawScene() {
+            const ctx = systemState.ctx;
+            const width = systemState.canvas.width;
+            const height = systemState.canvas.height;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 应用变换
+            ctx.save();
+            ctx.translate(systemState.viewTransform.offsetX, systemState.viewTransform.offsetY);
+            ctx.scale(systemState.viewTransform.scale, systemState.viewTransform.scale);
+            
+            // 绘制背景网格
+            drawGrid();
+            
+            // 根据显示模式绘制内容
+            if (systemState.environmentLoaded) {
+                switch (systemState.displayMode) {
+                    case 'environment':
+                        drawEnvironmentOverview();
+                        break;
+                    case 'raw':
+                        drawEnvironmentBackground();
+                        drawRawPaths();
+                        break;
+                    case 'clustered':
+                        drawEnvironmentBackground();
+                        drawRawPaths(0.3); // 半透明显示原始路径
+                        drawKeyNodes();
+                        break;
+                    case 'reconstructed':
+                        drawEnvironmentBackground();
+                        drawReconstructedPaths();
+                        drawKeyNodes();
+                        break;
+                }
+            } else {
+                drawPlaceholder();
+            }
+            
+            ctx.restore();
+            
+            // 绘制状态信息
+            drawStatusInfo();
+        }
+
+        function drawGrid() {
+            if (!systemState.environmentLoaded) return;
+            
+            const ctx = systemState.ctx;
+            const env = systemState.environment;
+            const gridSize = 50;
+            
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5 / systemState.viewTransform.scale;
+            
+            // 垂直线
+            for (let x = 0; x <= env.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, env.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y <= env.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(env.width, y);
+                ctx.stroke();
+            }
+            
+            // 边界
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2 / systemState.viewTransform.scale;
+            ctx.strokeRect(0, 0, env.width, env.height);
+        }
+
+        function drawEnvironmentOverview() {
+            drawEnvironmentBackground();
+        }
+
+        function drawEnvironmentBackground() {
+            const ctx = systemState.ctx;
+            const env = systemState.environment;
+            
+            // 绘制障碍物
+            ctx.fillStyle = '#9E9E9E';
+            env.obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width || 5, obstacle.height || 5);
+            });
+            
+            // 绘制装载点
+            ctx.fillStyle = '#4CAF50';
+            env.loading_points.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // 标签
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${12 / systemState.viewTransform.scale}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(point.id, point.x, point.y + 3);
+                ctx.fillStyle = '#4CAF50';
+            });
+            
+            // 绘制卸载点
+            ctx.fillStyle = '#FF9800';
+            env.unloading_points.forEach(point => {
+                const size = 16;
+                ctx.fillRect(point.x - size/2, point.y - size/2, size, size);
+                
+                // 标签
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${12 / systemState.viewTransform.scale}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(point.id, point.x, point.y + 3);
+                ctx.fillStyle = '#FF9800';
+            });
+            
+            // 绘制停车区
+            ctx.fillStyle = '#2196F3';
+            env.parking_areas.forEach(point => {
+                const size = 12;
+                ctx.fillRect(point.x - size/2, point.y - size/2, size, size);
+                
+                // 标签
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${10 / systemState.viewTransform.scale}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(point.id, point.x, point.y + 3);
+                ctx.fillStyle = '#2196F3';
+            });
+            
+            // 绘制车辆
+            ctx.fillStyle = '#E91E63';
+            env.vehicles.forEach(vehicle => {
+                ctx.save();
+                ctx.translate(vehicle.x, vehicle.y);
+                ctx.rotate(vehicle.theta);
+                
+                const width = 6;
+                const height = 3;
+                ctx.fillRect(-width/2, -height/2, width, height);
+                
+                ctx.restore();
+                
+                // 车辆ID
+                ctx.fillStyle = '#333';
+                ctx.font = `${8 / systemState.viewTransform.scale}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(vehicle.id, vehicle.x, vehicle.y - 10);
+                ctx.fillStyle = '#E91E63';
+            });
+        }
+
+        function drawRawPaths(alpha = 1.0) {
+            const ctx = systemState.ctx;
+            ctx.globalAlpha = alpha;
+            
+            systemState.rawPaths.forEach((path, index) => {
+                const colors = ['#2196F3', '#E91E63', '#00BCD4', '#4CAF50', '#FF5722'];
+                ctx.strokeStyle = colors[index % colors.length];
+                ctx.lineWidth = 2 / systemState.viewTransform.scale;
+                
+                if (path.points && path.points.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(path.points[0].x, path.points[0].y);
+                    
+                    for (let i = 1; i < path.points.length; i++) {
+                        ctx.lineTo(path.points[i].x, path.points[i].y);
+                    }
+                    
+                    ctx.stroke();
+                    
+                    // 绘制路径节点
+                    ctx.fillStyle = ctx.strokeStyle;
+                    path.points.forEach(point => {
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 1.5 / systemState.viewTransform.scale, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                }
+            });
+            
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawKeyNodes() {
+            const ctx = systemState.ctx;
+            
+            systemState.keyNodes.forEach(node => {
+                if (node.isEndpoint) {
+                    ctx.fillStyle = '#F44336';
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, 6 / systemState.viewTransform.scale, 0, 2 * Math.PI);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = '#FFC107';
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, 4 / systemState.viewTransform.scale, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                
+                // 绘制节点连接
+                ctx.strokeStyle = '#9E9E9E';
+                ctx.lineWidth = 1 / systemState.viewTransform.scale;
+                ctx.setLineDash([3, 3]);
+                
+                if (node.connections) {
+                    node.connections.forEach(connId => {
+                        const connNode = systemState.keyNodes.find(n => n.id === connId);
+                        if (connNode) {
+                            ctx.beginPath();
+                            ctx.moveTo(node.x, node.y);
+                            ctx.lineTo(connNode.x, connNode.y);
+                            ctx.stroke();
+                        }
+                    });
+                }
+                
+                ctx.setLineDash([]);
+            });
+        }
+
+        function drawReconstructedPaths() {
+            const ctx = systemState.ctx;
+            
+            systemState.reconstructedPaths.forEach((path, index) => {
+                const colors = ['#9C27B0', '#673AB7', '#3F51B5', '#009688', '#795548'];
+                ctx.strokeStyle = colors[index % colors.length];
+                ctx.lineWidth = 3 / systemState.viewTransform.scale;
+                
+                // 绘制平滑曲线
+                if (path.points && path.points.length > 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(path.points[0].x, path.points[0].y);
+                    
+                    for (let i = 1; i < path.points.length - 1; i++) {
+                        const cp1x = (path.points[i - 1].x + path.points[i].x) / 2;
+                        const cp1y = (path.points[i - 1].y + path.points[i].y) / 2;
+                        const cp2x = (path.points[i].x + path.points[i + 1].x) / 2;
+                        const cp2y = (path.points[i].y + path.points[i + 1].y) / 2;
+                        
+                        ctx.quadraticCurveTo(path.points[i].x, path.points[i].y, cp2x, cp2y);
+                    }
+                    
+                    ctx.lineTo(path.points[path.points.length - 1].x, path.points[path.points.length - 1].y);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function drawPlaceholder() {
+            const ctx = systemState.ctx;
+            const canvas = systemState.canvas;
+            
+            ctx.fillStyle = '#666';
+            ctx.font = '24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('请先加载环境文件', canvas.width / 2, canvas.height / 2);
+            
+            ctx.fillStyle = '#999';
+            ctx.font = '16px sans-serif';
+            ctx.fillText('选择JSON格式的环境文件开始构建', canvas.width / 2, canvas.height / 2 + 40);
+        }
+
+        function drawStatusInfo() {
+            const ctx = systemState.ctx;
+            const width = systemState.canvas.width;
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(width - 220, 10, 200, 100);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'left';
+            
+            const info = [
+                `模式: ${getDisplayModeText()}`,
+                `缩放: ${(systemState.viewTransform.scale * 100).toFixed(0)}%`,
+                `环境: ${systemState.environmentLoaded ? '已加载' : '未加载'}`,
+                `路径: ${systemState.rawPaths.length}`,
+                `关键节点: ${systemState.keyNodes.length}`,
+                `步骤: ${systemState.completedSteps.length}/5`
+            ];
+            
+            info.forEach((text, index) => {
+                ctx.fillText(text, width - 210, 30 + index * 15);
+            });
+        }
+
+        function getDisplayModeText() {
+            switch (systemState.displayMode) {
+                case 'environment': return '环境概览';
+                case 'raw': return '原始路径';
+                case 'clustered': return '聚类节点';
+                case 'reconstructed': return '重建道路';
+                default: return '未知';
+            }
+        }
+
+        // 视图控制
+        function resetView() {
+            systemState.viewTransform = {
+                scale: 1.0,
+                offsetX: 0,
+                offsetY: 0,
+                minScale: 0.1,
+                maxScale: 5.0
+            };
+            drawScene();
+        }
+
+        function fitToScreen() {
+            if (!systemState.environmentLoaded) return;
+            
+            const canvas = systemState.canvas;
+            const env = systemState.environment;
+            
+            const padding = 50;
+            const scaleX = (canvas.width - padding * 2) / env.width;
+            const scaleY = (canvas.height - padding * 2) / env.height;
+            const scale = Math.min(scaleX, scaleY);
+            
+            systemState.viewTransform.scale = Math.max(systemState.viewTransform.minScale, 
+                                                      Math.min(systemState.viewTransform.maxScale, scale));
+            systemState.viewTransform.offsetX = (canvas.width - env.width * systemState.viewTransform.scale) / 2;
+            systemState.viewTransform.offsetY = (canvas.height - env.height * systemState.viewTransform.scale) / 2;
+            
+            drawScene();
+        }
+
+        function exportImage() {
+            const canvas = systemState.canvas;
+            const link = document.createElement('a');
+            link.download = `topology_stage1_${new Date().getTime()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // 步骤执行逻辑（基于环境数据）
+        function executeStep(stepNumber) {
+            if (systemState.isExecuting) return;
+            
+            if (!systemState.environmentLoaded) {
+                alert('请先加载环境文件');
+                return;
+            }
+            
+            // 检查前置条件
+            if (stepNumber > 1 && !systemState.completedSteps.includes(stepNumber - 1)) {
+                alert(`请先完成步骤 ${stepNumber - 1}`);
+                return;
+            }
+            
+            systemState.isExecuting = true;
+            systemState.currentStep = stepNumber;
+            
+            updateStepUI(stepNumber, 'executing');
+            updateSystemStatus(`正在执行步骤 ${stepNumber}...`);
+            
+            setTimeout(() => {
+                executeStepLogic(stepNumber);
+            }, 500);
+        }
+
+        function executeStepLogic(stepNumber) {
+            const startTime = Date.now();
+            
+            switch (stepNumber) {
+                case 1:
+                    generateRawPaths();
+                    break;
+                case 2:
+                    optimizeNodeDensity();
+                    break;
+                case 3:
+                    performClustering();
+                    break;
+                case 4:
+                    performCurveFitting();
+                    break;
+                case 5:
+                    standardizeTopology();
+                    break;
+            }
+            
+            const endTime = Date.now();
+            const duration = (endTime - startTime) / 1000;
+            
+            systemState.completedSteps.push(stepNumber);
+            systemState.isExecuting = false;
+            
+            updateStepUI(stepNumber, 'completed');
+            updateProgress();
+            updateStats();
+            drawScene();
+            
+            // 启用下一步
+            if (stepNumber < 5) {
+                enableStep(stepNumber + 1);
+            }
+            
+            updateSystemStatus(`步骤 ${stepNumber} 完成 (${duration.toFixed(1)}s)`);
+            
+            setTimeout(() => {
+                if (stepNumber === 5) {
+                    updateSystemStatus('🎉 Stage 1 智能拓扑构建完成！');
+                } else {
+                    updateSystemStatus('就绪');
+                }
+            }, 2000);
+        }
+
+        function generateRawPaths() {
+            systemState.rawPaths = [];
+            const env = systemState.environment;
+            
+            // 基于实际环境数据生成路径
+            const loading = env.loading_points;
+            const unloading = env.unloading_points;
+            
+            // 生成装载点到卸载点的路径
+            loading.forEach((loadPoint, i) => {
+                unloading.forEach((unloadPoint, j) => {
+                    const path = createPath(loadPoint, unloadPoint, `L${i+1}_U${j+1}`);
+                    systemState.rawPaths.push(path);
+                });
+            });
+            
+            // 添加一些停车区路径
+            const parking = env.parking_areas;
+            loading.forEach((loadPoint, i) => {
+                if (i < parking.length) {
+                    const path = createPath(loadPoint, parking[i], `L${i+1}_P${i+1}`);
+                    systemState.rawPaths.push(path);
+                }
+            });
+            
+            systemState.stats.originalPaths = systemState.rawPaths.length;
+        }
+
+        function createPath(start, end, id) {
+            const points = [];
+            const steps = 8 + Math.floor(Math.random() * 5);
+            const env = systemState.environment;
+            
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const noise = (Math.random() - 0.5) * 20;
+                
+                let x = start.x + t * (end.x - start.x) + noise * Math.sin(t * Math.PI);
+                let y = start.y + t * (end.y - start.y) + noise * Math.cos(t * Math.PI);
+                
+                // 确保路径点在环境边界内
+                x = Math.max(10, Math.min(x, env.width - 10));
+                y = Math.max(10, Math.min(y, env.height - 10));
+                
+                points.push({ x, y });
+            }
+            
+            return {
+                id: id,
+                points: points,
+                quality: 0.6 + Math.random() * 0.3
+            };
+        }
+
+        function optimizeNodeDensity() {
+            // 优化节点密度（模拟）
+            systemState.rawPaths.forEach(path => {
+                // 减少一些节点
+                if (path.points.length > 6) {
+                    const newPoints = [];
+                    for (let i = 0; i < path.points.length; i += 2) {
+                        newPoints.push(path.points[i]);
+                    }
+                    if (newPoints[newPoints.length - 1] !== path.points[path.points.length - 1]) {
+                        newPoints.push(path.points[path.points.length - 1]);
+                    }
+                    path.points = newPoints;
+                }
+            });
+        }
+
+        function performClustering() {
+            systemState.keyNodes = [];
+            const allPoints = [];
+            const env = systemState.environment;
+            
+            // 收集所有路径点
+            systemState.rawPaths.forEach(path => {
+                path.points.forEach((point, index) => {
+                    if (index > 0 && index < path.points.length - 1) {
+                        allPoints.push({
+                            x: point.x,
+                            y: point.y,
+                            pathId: path.id,
+                            isEndpoint: false
+                        });
+                    }
+                });
+            });
+            
+            // 添加端点（基于实际环境数据）
+            env.loading_points.forEach(point => {
+                systemState.keyNodes.push({
+                    x: point.x,
+                    y: point.y,
+                    id: point.id,
+                    isEndpoint: true,
+                    type: 'loading'
+                });
+            });
+            
+            env.unloading_points.forEach(point => {
+                systemState.keyNodes.push({
+                    x: point.x,
+                    y: point.y,
+                    id: point.id,
+                    isEndpoint: true,
+                    type: 'unloading'
+                });
+            });
+            
+            // 简单聚类：选择一些关键点
+            const clusterRadius = Math.min(env.width, env.height) * 0.15;
+            const visited = new Set();
+            
+            allPoints.forEach((point, index) => {
+                if (visited.has(index)) return;
+                
+                const cluster = [point];
+                visited.add(index);
+                
+                // 查找附近的点
+                allPoints.forEach((otherPoint, otherIndex) => {
+                    if (visited.has(otherIndex)) return;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(point.x - otherPoint.x, 2) + 
+                        Math.pow(point.y - otherPoint.y, 2)
+                    );
+                    
+                    if (distance < clusterRadius) {
+                        cluster.push(otherPoint);
+                        visited.add(otherIndex);
+                    }
+                });
+                
+                if (cluster.length >= 2) {
+                    // 计算聚类中心
+                    const centerX = cluster.reduce((sum, p) => sum + p.x, 0) / cluster.length;
+                    const centerY = cluster.reduce((sum, p) => sum + p.y, 0) / cluster.length;
+                    
+                    systemState.keyNodes.push({
+                        x: centerX,
+                        y: centerY,
+                        id: `K${systemState.keyNodes.length}`,
+                        isEndpoint: false,
+                        clusterSize: cluster.length
+                    });
+                }
+            });
+            
+            systemState.stats.keyNodes = systemState.keyNodes.length;
+            const originalNodes = systemState.rawPaths.reduce((sum, path) => sum + path.points.length, 0);
+            systemState.stats.nodeReduction = Math.round((1 - systemState.keyNodes.length / originalNodes) * 100);
+        }
+
+        function performCurveFitting() {
+            systemState.reconstructedPaths = [];
+            
+            // 基于关键节点重建路径
+            const endpointNodes = systemState.keyNodes.filter(node => node.isEndpoint);
+            const loadingNodes = endpointNodes.filter(node => node.type === 'loading');
+            const unloadingNodes = endpointNodes.filter(node => node.type === 'unloading');
+            
+            loadingNodes.forEach((loadNode, i) => {
+                unloadingNodes.forEach((unloadNode, j) => {
+                    const path = createSmoothPath(loadNode, unloadNode, `R${i}_${j}`);
+                    systemState.reconstructedPaths.push(path);
+                });
+            });
+            
+            systemState.stats.fittingQuality = 0.75 + Math.random() * 0.2;
+        }
+
+        function createSmoothPath(start, end, id) {
+            const points = [];
+            const keyNodes = systemState.keyNodes.filter(node => !node.isEndpoint);
+            
+            // 选择1-2个中间关键节点
+            const intermediateNodes = [];
+            if (keyNodes.length > 0 && Math.random() > 0.3) {
+                const randomNode = keyNodes[Math.floor(Math.random() * keyNodes.length)];
+                intermediateNodes.push(randomNode);
+            }
+            
+            const pathNodes = [start, ...intermediateNodes, end];
+            
+            // 生成平滑路径
+            for (let i = 0; i < pathNodes.length - 1; i++) {
+                const segmentPoints = generateSmoothSegment(pathNodes[i], pathNodes[i + 1]);
+                if (i === 0) {
+                    points.push(...segmentPoints);
+                } else {
+                    points.push(...segmentPoints.slice(1)); // 避免重复点
+                }
+            }
+            
+            return {
+                id: id,
+                points: points,
+                quality: 0.8 + Math.random() * 0.15
+            };
+        }
+
+        function generateSmoothSegment(start, end) {
+            const points = [];
+            const steps = 12;
+            
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const smoothT = t * t * (3 - 2 * t); // 平滑函数
+                
+                points.push({
+                    x: start.x + smoothT * (end.x - start.x),
+                    y: start.y + smoothT * (end.y - start.y)
+                });
+            }
+            
+            return points;
+        }
+
+        function standardizeTopology() {
+            // 标准化拓扑（模拟最终处理）
+            systemState.stats.buildTime = (Math.random() * 3 + 2).toFixed(1);
+            
+            // 为关键节点添加连接信息
+            systemState.keyNodes.forEach(node => {
+                if (!node.isEndpoint) {
+                    node.connections = [];
+                    systemState.keyNodes.forEach(otherNode => {
+                        if (otherNode !== node) {
+                            const distance = Math.sqrt(
+                                Math.pow(node.x - otherNode.x, 2) + 
+                                Math.pow(node.y - otherNode.y, 2)
+                            );
+                            const maxDistance = Math.min(systemState.environment.width, systemState.environment.height) * 0.3;
+                            if (distance < maxDistance && Math.random() > 0.6) {
+                                node.connections.push(otherNode.id);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function executeAll() {
+            if (systemState.isExecuting) return;
+            
+            if (!systemState.environmentLoaded) {
+                alert('请先加载环境文件');
+                return;
+            }
+            
+            let currentStep = 1;
+            
+            function executeNext() {
+                if (currentStep <= 5) {
+                    executeStep(currentStep);
+                    
+                    setTimeout(() => {
+                        currentStep++;
+                        executeNext();
+                    }, 1500);
+                }
+            }
+            
+            executeNext();
+        }
+
+        function resetSystem() {
+            systemState.currentStep = 0;
+            systemState.completedSteps = [];
+            systemState.isExecuting = false;
+            systemState.rawPaths = [];
+            systemState.keyNodes = [];
+            systemState.reconstructedPaths = [];
+            
+            systemState.stats = {
+                originalPaths: 0,
+                keyNodes: 0,
+                nodeReduction: 0,
+                fittingQuality: 0.0,
+                buildTime: 0
+            };
+            
+            // 重置UI
+            for (let i = 1; i <= 5; i++) {
+                updateStepUI(i, 'waiting');
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed', 'executing');
+                step.classList.add('disabled');
+            }
+            
+            if (systemState.environmentLoaded) {
+                enableSteps();
+            }
+            
+            updateProgress();
+            updateStats();
+            updateSystemStatus(systemState.environmentLoaded ? '系统已重置，环境已保持' : '系统已重置');
+            drawScene();
+        }
+
+        function changeDisplayMode() {
+            systemState.displayMode = document.getElementById('displayMode').value;
+            drawScene();
+        }
+
+        function updateStepUI(stepNumber, status) {
+            const step = document.getElementById(`step${stepNumber}`);
+            const statusSpan = document.getElementById(`status${stepNumber}`);
+            const indicator = step.querySelector('.status-indicator');
+            
+            step.classList.remove('active', 'completed', 'executing', 'disabled');
+            indicator.classList.remove('status-ready', 'status-executing', 'status-completed', 'status-waiting');
+            
+            switch (status) {
+                case 'executing':
+                    step.classList.add('executing');
+                    indicator.classList.add('status-executing');
+                    statusSpan.textContent = '执行中...';
+                    break;
+                case 'completed':
+                    step.classList.add('completed');
+                    indicator.classList.add('status-completed');
+                    statusSpan.textContent = '已完成';
+                    break;
+                case 'waiting':
+                    step.classList.add('disabled');
+                    indicator.classList.add('status-waiting');
+                    statusSpan.textContent = '等待';
+                    break;
+                default:
+                    indicator.classList.add('status-ready');
+                    statusSpan.textContent = '就绪';
+            }
+        }
+
+        function enableStep(stepNumber) {
+            if (stepNumber <= 5) {
+                const step = document.getElementById(`step${stepNumber}`);
+                const statusSpan = document.getElementById(`status${stepNumber}`);
+                const indicator = step.querySelector('.status-indicator');
+                
+                step.classList.remove('disabled');
+                indicator.classList.remove('status-waiting');
+                indicator.classList.add('status-ready');
+                statusSpan.textContent = '就绪';
+            }
+        }
+
+        function updateProgress() {
+            const progress = (systemState.completedSteps.length / 5) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function updateStats() {
+            document.getElementById('originalPaths').textContent = systemState.stats.originalPaths;
+            document.getElementById('keyNodes').textContent = systemState.stats.keyNodes;
+            document.getElementById('nodeReduction').textContent = `${systemState.stats.nodeReduction}%`;
+            document.getElementById('fittingQuality').textContent = systemState.stats.fittingQuality.toFixed(2);
+            document.getElementById('buildTime').textContent = `${systemState.stats.buildTime}s`;
+        }
+
+        function updateSystemStatus(status) {
+            document.getElementById('systemStatus').textContent = status;
+        }
+
+        // 初始化系统
+        document.addEventListener('DOMContentLoaded', () => {
+            initSystem();
+        });
+    </script>
+</body>
+</html>

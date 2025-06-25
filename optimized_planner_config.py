@@ -301,8 +301,8 @@ class EnhancedIntegratedPlannerConfig:
             'enhanced_professional_integration': ENHANCED_CONSOLIDATION_AVAILABLE,
             'safety_rectangle_integration': False,
             'curve_fitting_integration': ENHANCED_CURVE_FITTING_AVAILABLE,
-            'skip_safety_checks': True,
-            'assume_safe_environment': True,
+            'skip_safety_checks': False,
+            'assume_safe_environment': False,
             'performance_priority': True  # 新增：性能优先模式
         }
         
@@ -324,7 +324,7 @@ class EnhancedIntegratedPlannerConfig:
                 'rs_fitting_radius': 35.0,
                 'quality_threshold': 0.3,
                 'timeout': 8.0,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True,
                 'aggressive_mode': True
             },
@@ -338,7 +338,7 @@ class EnhancedIntegratedPlannerConfig:
                 'rs_fitting_radius': 30.0,
                 'quality_threshold': 0.4,
                 'timeout': 10.0,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True
             },
             'balanced_fast': {
@@ -351,7 +351,7 @@ class EnhancedIntegratedPlannerConfig:
                 'rs_fitting_radius': 25.0,
                 'quality_threshold': 0.5,
                 'timeout': 12.0,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True
             },
             'emergency_fast': {
@@ -365,7 +365,7 @@ class EnhancedIntegratedPlannerConfig:
                 'quality_threshold': 0.2,
                 'timeout': 5.0,
                 'emergency_mode': True,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True,
                 'no_constraints': True
             }
@@ -382,7 +382,7 @@ class EnhancedIntegratedPlannerConfig:
                 'max_curve_attempts': 2,
                 'smoothness_preference': 0.4,
                 'enable_obstacle_avoidance': False,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True,
                 'aggressive_mode': True
             },
@@ -395,7 +395,7 @@ class EnhancedIntegratedPlannerConfig:
                 'max_curve_attempts': 3,
                 'smoothness_preference': 0.5,
                 'enable_obstacle_avoidance': False,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True
             },
             'balanced_fast': {
@@ -407,7 +407,7 @@ class EnhancedIntegratedPlannerConfig:
                 'max_curve_attempts': 4,
                 'smoothness_preference': 0.6,
                 'enable_obstacle_avoidance': False,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True
             },
             'emergency_fast': {
@@ -420,7 +420,7 @@ class EnhancedIntegratedPlannerConfig:
                 'smoothness_preference': 0.3,
                 'enable_obstacle_avoidance': False,
                 'emergency_mode': True,
-                'skip_safety_checks': True,
+                'skip_safety_checks': False,
                 'assume_safe': True,
                 'no_constraints': True
             }

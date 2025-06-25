@@ -32,6 +32,9 @@ class MineMapCreator(tk.Tk):
         
         # 创建UI
         self.create_ui()
+        
+        # 确保数据格式一致性
+        self.normalize_all_data()
 
     def create_ui(self):
         # 主布局
@@ -418,11 +421,112 @@ class MineMapCreator(tk.Tk):
         self.draw_grid()
 
     def remove_special_at_position(self, x, y):
-        """移除指定位置的特殊点"""
-        self.loading_points = [p for p in self.loading_points if not (p["x"] == x and p["y"] == y)]
-        self.unloading_points = [p for p in self.unloading_points if not (p["x"] == x and p["y"] == y)]
-        self.parking_areas = [p for p in self.parking_areas if not (p["x"] == x and p["y"] == y)]
-        self.vehicles = [v for v in self.vehicles if not (v["x"] == x and v["y"] == y)]
+        """移除指定位置的特殊点 - 修复版本，处理混合格式"""
+        
+        def safe_remove_points(points_list, x, y):
+            """安全地移除点位，处理字典和列表两种格式"""
+            filtered_points = []
+            for point in points_list:
+                if isinstance(point, dict):
+                    # 字典格式：{"x": col, "y": row, ...}
+                    if not (point.get("x") == x and point.get("y") == y):
+                        filtered_points.append(point)
+                elif isinstance(point, list) and len(point) >= 2:
+                    # 列表格式：[row, col, ...] 注意：列表格式中是 [row, col]
+                    point_col, point_row = point[1], point[0]  # 列表格式中 [0]=row, [1]=col
+                    if not (point_col == x and point_row == y):
+                        # 将列表格式转换为字典格式保存
+                        theta = point[2] if len(point) > 2 else 0.0
+                        dict_point = {"x": point_col, "y": point_row, "theta": theta}
+                        # 如果是停车区，还需要处理容量
+                        if len(point) > 3:
+                            dict_point["capacity"] = point[3]
+                        filtered_points.append(dict_point)
+                # 忽略其他格式的无效数据
+            return filtered_points
+        
+        # 安全地过滤各类特殊点
+        self.loading_points = safe_remove_points(self.loading_points, x, y)
+        self.unloading_points = safe_remove_points(self.unloading_points, x, y)
+        self.parking_areas = safe_remove_points(self.parking_areas, x, y)
+        
+        # 车辆需要特殊处理，因为有额外的字段
+        filtered_vehicles = []
+        for vehicle in self.vehicles:
+            if isinstance(vehicle, dict):
+                if not (vehicle.get("x") == x and vehicle.get("y") == y):
+                    filtered_vehicles.append(vehicle)
+            elif isinstance(vehicle, list) and len(vehicle) >= 2:
+                vehicle_col, vehicle_row = vehicle[1], vehicle[0]
+                if not (vehicle_col == x and vehicle_row == y):
+                    # 转换列表格式的车辆为字典格式
+                    theta = vehicle[2] if len(vehicle) > 2 else 0.0
+                    dict_vehicle = {
+                        "id": len(filtered_vehicles) + 1,  # 重新分配ID
+                        "x": vehicle_col,
+                        "y": vehicle_row,
+                        "theta": theta,
+                        "type": "dump_truck",
+                        "max_load": 100.0
+                    }
+                    filtered_vehicles.append(dict_vehicle)
+        self.vehicles = filtered_vehicles
+
+    def normalize_all_data(self):
+        """标准化所有现有数据，确保格式一致性"""
+        def ensure_dict_format(points_list, point_type="basic"):
+            """确保点位列表中的所有元素都是字典格式"""
+            normalized_list = []
+            for point in points_list:
+                if isinstance(point, list):
+                    if len(point) >= 2:
+                        result = {
+                            "x": float(point[1]),  # x对应col
+                            "y": float(point[0]),  # y对应row
+                            "theta": float(point[2]) if len(point) > 2 else 0.0
+                        }
+                        if point_type == "parking" and len(point) > 3:
+                            result["capacity"] = int(point[3])
+                        normalized_list.append(result)
+                elif isinstance(point, dict):
+                    result = {
+                        "x": float(point.get("x", 0)),
+                        "y": float(point.get("y", 0)),
+                        "theta": float(point.get("theta", 0.0))
+                    }
+                    if point_type == "parking":
+                        result["capacity"] = int(point.get("capacity", 5))
+                    normalized_list.append(result)
+            return normalized_list
+        
+        # 标准化所有特殊点
+        self.loading_points = ensure_dict_format(self.loading_points, "loading")
+        self.unloading_points = ensure_dict_format(self.unloading_points, "unloading")
+        self.parking_areas = ensure_dict_format(self.parking_areas, "parking")
+        
+        # 标准化车辆
+        normalized_vehicles = []
+        for i, vehicle in enumerate(self.vehicles):
+            if isinstance(vehicle, list):
+                if len(vehicle) >= 2:
+                    normalized_vehicles.append({
+                        "id": i + 1,
+                        "x": float(vehicle[1]),
+                        "y": float(vehicle[0]),
+                        "theta": float(vehicle[2]) if len(vehicle) > 2 else 0.0,
+                        "type": "dump_truck",
+                        "max_load": 100.0
+                    })
+            elif isinstance(vehicle, dict):
+                normalized_vehicles.append({
+                    "id": int(vehicle.get("id", i + 1)),
+                    "x": float(vehicle.get("x", 0)),
+                    "y": float(vehicle.get("y", 0)),
+                    "theta": float(vehicle.get("theta", 0.0)),
+                    "type": str(vehicle.get("type", "dump_truck")),
+                    "max_load": float(vehicle.get("max_load", 100.0))
+                })
+        self.vehicles = normalized_vehicles
 
     def update_map_size(self):
         """更新地图大小"""
@@ -528,6 +632,7 @@ class MineMapCreator(tk.Tk):
         
         messagebox.showinfo("保存成功", f"地图已保存为: {mine_filename}\n场景文件: {scen_filename}")
         self.set_status(f"地图已保存: {mine_filename}")
+
     def convert_grid_to_obstacles(self):
         """将网格转换为障碍物列表 - 分离成单点障碍物"""
         obstacles = []
@@ -541,6 +646,7 @@ class MineMapCreator(tk.Tk):
                         "height": 1
                     })
         return obstacles
+
     def convert_grid_to_rectangles(self):
         """将点阵障碍物转换为小矩形列表"""
         obstacles = []
@@ -618,8 +724,9 @@ class MineMapCreator(tk.Tk):
             }
             validated.append(valid_vehicle)
         return validated
+
     def load_mine_map(self, data):
-        """加载标准矿山格式的数据"""
+        """加载标准矿山格式的数据 - 改进版本，确保数据格式一致性"""
         # 获取尺寸
         self.rows = data.get("dimensions", {}).get("rows", self.rows)
         self.cols = data.get("dimensions", {}).get("cols", self.cols)
@@ -656,73 +763,106 @@ class MineMapCreator(tk.Tk):
         self.parking_areas = []
         self.vehicles = []
         
-        # 加载装载点 - 处理两种可能的格式
-        for point in data.get("loading_points", []):
+        def normalize_point_to_dict(point, point_type="basic"):
+            """将点位数据标准化为字典格式"""
             if isinstance(point, list):
-                # 格式是 [row, col, theta]
-                row, col = point[0], point[1]
-                theta = point[2] if len(point) > 2 else 0.0
-                self.loading_points.append({
-                    "x": col,  # 注意x对应col
-                    "y": row,  # y对应row
-                    "theta": theta
-                })
+                # 列表格式：[row, col, theta, ...additional]
+                if len(point) < 2:
+                    return None
+                
+                result = {
+                    "x": point[1],  # x对应col
+                    "y": point[0],  # y对应row
+                    "theta": point[2] if len(point) > 2 else 0.0
+                }
+                
+                # 停车区有额外的容量参数
+                if point_type == "parking" and len(point) > 3:
+                    result["capacity"] = int(point[3])
+                
+                return result
+                
             elif isinstance(point, dict):
-                # 直接字典格式
-                self.loading_points.append(point.copy())
+                # 已经是字典格式，确保有必要的键
+                result = {
+                    "x": float(point.get("x", 0)),
+                    "y": float(point.get("y", 0)),
+                    "theta": float(point.get("theta", 0.0))
+                }
+                
+                # 停车区的容量
+                if point_type == "parking" and "capacity" in point:
+                    result["capacity"] = int(point["capacity"])
+                
+                return result
+            else:
+                return None
         
-        # 加载卸载点 - 处理两种可能的格式
-        for point in data.get("unloading_points", []):
-            if isinstance(point, list):
-                # 格式是 [row, col, theta]
-                row, col = point[0], point[1]
-                theta = point[2] if len(point) > 2 else 0.0
-                self.unloading_points.append({
-                    "x": col,
-                    "y": row,
-                    "theta": theta
-                })
-            elif isinstance(point, dict):
-                # 直接字典格式
-                self.unloading_points.append(point.copy())
-        
-        # 加载停车区
-        for point in data.get("parking_areas", []):
-            if isinstance(point, list):
-                # 格式是 [row, col, theta, capacity]
-                row, col = point[0], point[1]
-                theta = point[2] if len(point) > 2 else 0.0
-                capacity = point[3] if len(point) > 3 else 5
-                self.parking_areas.append({
-                    "x": col,
-                    "y": row,
-                    "theta": theta,
-                    "capacity": capacity
-                })
-            elif isinstance(point, dict):
-                # 直接字典格式
-                self.parking_areas.append(point.copy())
-        
-        # 加载车辆
-        # 首先尝试vehicle_positions字段
-        for i, point in enumerate(data.get("vehicle_positions", [])):
-            if isinstance(point, list):
-                # 格式是 [row, col, theta]
-                row, col = point[0], point[1]
-                theta = point[2] if len(point) > 2 else 0.0
-                self.vehicles.append({
-                    "id": i+1,
-                    "x": col,
-                    "y": row,
-                    "theta": theta,
+        def normalize_vehicle_to_dict(vehicle, vehicle_id):
+            """将车辆数据标准化为字典格式"""
+            if isinstance(vehicle, list):
+                # 列表格式：[row, col, theta]
+                if len(vehicle) < 2:
+                    return None
+                
+                return {
+                    "id": vehicle_id,
+                    "x": float(vehicle[1]),  # x对应col
+                    "y": float(vehicle[0]),  # y对应row
+                    "theta": float(vehicle[2]) if len(vehicle) > 2 else 0.0,
                     "type": "dump_truck",
                     "max_load": 100.0
-                })
+                }
+                
+            elif isinstance(vehicle, dict):
+                # 已经是字典格式，确保有必要的键
+                return {
+                    "id": int(vehicle.get("id", vehicle_id)),
+                    "x": float(vehicle.get("x", 0)),
+                    "y": float(vehicle.get("y", 0)),
+                    "theta": float(vehicle.get("theta", 0.0)),
+                    "type": str(vehicle.get("type", "dump_truck")),
+                    "max_load": float(vehicle.get("max_load", 100.0))
+                }
+            else:
+                return None
         
-        # 然后尝试vehicles_info字段
+        # 加载装载点并标准化
+        for point in data.get("loading_points", []):
+            normalized = normalize_point_to_dict(point, "loading")
+            if normalized:
+                self.loading_points.append(normalized)
+        
+        # 加载卸载点并标准化
+        for point in data.get("unloading_points", []):
+            normalized = normalize_point_to_dict(point, "unloading")
+            if normalized:
+                self.unloading_points.append(normalized)
+        
+        # 加载停车区并标准化
+        for point in data.get("parking_areas", []):
+            normalized = normalize_point_to_dict(point, "parking")
+            if normalized:
+                # 确保停车区有容量字段
+                if "capacity" not in normalized:
+                    normalized["capacity"] = 5
+                self.parking_areas.append(normalized)
+        
+        # 加载车辆位置
+        vehicle_id_counter = 1
+        for point in data.get("vehicle_positions", []):
+            normalized = normalize_vehicle_to_dict(point, vehicle_id_counter)
+            if normalized:
+                self.vehicles.append(normalized)
+                vehicle_id_counter += 1
+        
+        # 加载车辆信息（如果有的话）
         for vehicle in data.get("vehicles_info", []):
-            if isinstance(vehicle, dict):
-                self.vehicles.append(vehicle.copy())
+            normalized = normalize_vehicle_to_dict(vehicle, vehicle_id_counter)
+            if normalized:
+                self.vehicles.append(normalized)
+                vehicle_id_counter += 1
+
     def load_map(self):
         """加载地图文件"""
         file_path = filedialog.askopenfilename(
@@ -794,6 +934,9 @@ class MineMapCreator(tk.Tk):
                 self.unloading_points = data.get("unloading_points", [])
                 self.parking_areas = data.get("parking_areas", [])
                 self.vehicles = data.get("vehicles", [])
+            
+            # 添加这行来确保加载后数据格式一致
+            self.normalize_all_data()
             
             # 更新地图名称
             map_name = os.path.basename(file_path).split('.')[0]

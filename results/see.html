@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>车辆轨迹可视化</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .chart-container {
+            position: relative;
+            height: 600px;
+            margin-bottom: 30px;
+        }
+        .info-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .vehicle-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #007bff;
+        }
+        .vehicle-info.vehicle-1007 {
+            border-left-color: #dc3545;
+        }
+        .vehicle-info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .stats {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            grid-column: 1 / -1;
+            border-left: 5px solid #28a745;
+        }
+        .coordinate {
+            font-family: 'Courier New', monospace;
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .timestamp {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .legend-square {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        .legend-triangle {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid;
+            margin-right: 8px;
+        }
+        .direction-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+        .intersection-highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 车辆1010和1007轨迹可视化</h1>
+        
+        <div class="direction-legend">
+            <div class="legend-item">
+                <div class="legend-square" style="background-color: #4472C4;"></div>
+                <span>🏁 起点</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-triangle" style="border-bottom-color: #4472C4;"></div>
+                <span>🎯 终点</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4472C4;"></div>
+                <span>➡️ 车辆1010轨迹 (西南→东北)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #E74C3C;"></div>
+                <span>➡️ 车辆1007轨迹 (东北→西南)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #27AE60; border: 3px solid #fff; box-shadow: 0 0 0 2px #27AE60;"></div>
+                <span>🔄 交汇点</span>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="trajectoryChart"></canvas>
+        </div>
+        
+        <div class="info-panel">
+            <div class="vehicle-info">
+                <h3>🚛 车辆1010 (蓝色轨迹)</h3>
+                <p><strong>总轨迹点数:</strong> 40个点</p>
+                <p><strong>🏁 起点:</strong> <span class="coordinate">(33.85, -42.97)</span> 📍</p>
+                <p><strong>🎯 终点:</strong> <span class="coordinate">(60.13, -13.87)</span> 🔺</p>
+                <p><strong>➡️ 前进方向:</strong> 西南 → 东北 (右上方向)</p>
+                <p><strong>📏 路径特征:</strong> 相对直线，距离较短</p>
+                <p><strong>采样点:</strong></p>
+                <ul>
+                    <li>🏁 [起点] <span class="coordinate">(33.85, -42.97)</span></li>
+                    <li>⚪ [20] <span class="coordinate">(47.31, -27.89)</span></li>
+                    <li>🎯 [终点] <span class="coordinate">(60.13, -13.87)</span></li>
+                </ul>
+                <div class="timestamp">⏰ 时间戳: 2025-06-25 11:20:59.111</div>
+            </div>
+            
+            <div class="vehicle-info vehicle-1007">
+                <h3>🚛 车辆1007 (红色轨迹)</h3>
+                <p><strong>总轨迹点数:</strong> 74个点</p>
+                <p><strong>🏁 起点:</strong> <span class="coordinate">(3.00, 0.64)</span> 📍</p>
+                <p><strong>🎯 终点:</strong> <span class="coordinate">(33.85, -42.97)</span> 🔺</p>
+                <p><strong>➡️ 前进方向:</strong> 东北 → 西南 (左下方向)</p>
+                <p><strong>📏 路径特征:</strong> 曲线路径，距离较长，多次转向</p>
+                <p><strong>采样点:</strong></p>
+                <ul>
+                    <li>🏁 [起点] <span class="coordinate">(3.00, 0.64)</span></li>
+                    <li>⚪ [20] <span class="coordinate">(20.50, -6.88)</span></li>
+                    <li>⚪ [40] <span class="coordinate">(38.18, -13.32)</span></li>
+                    <li>⚪ [60] <span class="coordinate">(40.55, -32.00)</span></li>
+                    <li>🎯 [终点] <span class="coordinate">(33.85, -42.97)</span></li>
+                </ul>
+                <div class="timestamp">⏰ 时间戳: 2025-06-25 11:21:16.106</div>
+            </div>
+            
+            <div class="stats">
+                <h3>📊 轨迹分析结果</h3>
+                <div class="intersection-highlight">
+                    <strong>⚠️ 发现交汇点:</strong> 车辆1007的终点与车辆1010的起点重合在坐标 
+                    <span class="coordinate">(33.85, -42.97)</span> ⭐
+                    <br><br>
+                    <strong>🔄 交接分析:</strong> 车辆1007先到达交汇点，17秒后车辆1010从该点出发，形成完美的接力运输。
+                </div>
+                <br>
+                <p><strong>🧭 路径方向分析:</strong></p>
+                <ul>
+                    <li><strong>车辆1010:</strong> 🔵 从西南向东北方向行驶 (↗️)，路径相对直线，效率较高</li>
+                    <li><strong>车辆1007:</strong> 🔴 从东北向西南方向行驶 (↙️)，路径呈S形曲线，经过多个关键点</li>
+                    <li><strong>空间布局:</strong> 两车轨迹形成一个"V"字形路径网络，交汇点为转折中心</li>
+                    <li><strong>运行特点:</strong> 1007号车路径更复杂(74点 vs 40点)，可能承担更多站点服务</li>
+                </ul>
+                <br>
+                <p><strong>🎯 视觉标识说明:</strong></p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <div>📍 方形点 = 起点</div>
+                    <div>🎯 三角形点 = 终点</div>
+                    <div>⚪ 圆形点 = 路径点</div>
+                    <div>⭐ 星形点 = 交汇点</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 车辆轨迹数据
+        const vehicle1010StartPoint = [{x: 33.85, y: -42.97, label: '起点', direction: '开始向东北方向行驶'}];
+        const vehicle1010MiddlePoints = [{x: 47.31, y: -27.89, label: '采样点[20]', direction: '继续向东北方向'}];
+        const vehicle1010EndPoint = [{x: 60.13, y: -13.87, label: '终点', direction: '到达目的地'}];
+        
+        const vehicle1007StartPoint = [{x: 3.00, y: 0.64, label: '起点', direction: '开始向西南方向行驶'}];
+        const vehicle1007MiddlePoints = [
+            {x: 20.50, y: -6.88, label: '采样点[20]', direction: '向西南方向'},
+            {x: 38.18, y: -13.32, label: '采样点[40]', direction: '继续向西南'},
+            {x: 40.55, y: -32.00, label: '采样点[60]', direction: '接近交汇点'}
+        ];
+        const vehicle1007EndPoint = [{x: 33.85, y: -42.97, label: '终点', direction: '到达交汇点'}];
+        
+        // 交汇点
+        const intersectionPoint = [{x: 33.85, y: -42.97, label: '交汇点', direction: '两车交汇处'}];
+        
+        // 为了显示箭头方向，创建方向指示数据
+        const vehicle1010Arrows = [
+            {x: 40.58, y: -35.43, label: '→', direction: '前进方向'},  // 中点箭头
+            {x: 53.72, y: -20.88, label: '→', direction: '前进方向'}   // 后段箭头
+        ];
+        
+        const vehicle1007Arrows = [
+            {x: 11.75, y: -3.12, label: '→', direction: '前进方向'},   // 第一段箭头
+            {x: 29.34, y: -10.10, label: '→', direction: '前进方向'},  // 第二段箭头
+            {x: 39.37, y: -22.66, label: '→', direction: '前进方向'},  // 第三段箭头
+            {x: 37.20, y: -37.49, label: '→', direction: '前进方向'}   // 第四段箭头
+        ];
+        
+        const ctx = document.getElementById('trajectoryChart').getContext('2d');
+        
+        const chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    // 车辆1010轨迹线
+                    {
+                        label: '车辆1010轨迹',
+                        data: [...vehicle1010StartPoint, ...vehicle1010MiddlePoints, ...vehicle1010EndPoint],
+                        backgroundColor: 'transparent',
+                        borderColor: '#4472C4',
+                        borderWidth: 4,
+                        pointRadius: 0,
+                        showLine: true,
+                        tension: 0.3,
+                        order: 10
+                    },
+                    // 车辆1010起点
+                    {
+                        label: '车辆1010起点',
+                        data: vehicle1010StartPoint,
+                        backgroundColor: '#4472C4',
+                        borderColor: '#2E5A87',
+                        borderWidth: 3,
+                        pointRadius: 12,
+                        pointStyle: 'rect',
+                        pointHoverRadius: 15,
+                        showLine: false,
+                        order: 1
+                    },
+                    // 车辆1010中间点
+                    {
+                        label: '车辆1010路径点',
+                        data: vehicle1010MiddlePoints,
+                        backgroundColor: '#4472C4',
+                        borderColor: '#2E5A87',
+                        borderWidth: 2,
+                        pointRadius: 8,
+                        pointStyle: 'circle',
+                        pointHoverRadius: 12,
+                        showLine: false,
+                        order: 2
+                    },
+                    // 车辆1010终点
+                    {
+                        label: '车辆1010终点',
+                        data: vehicle1010EndPoint,
+                        backgroundColor: '#4472C4',
+                        borderColor: '#2E5A87',
+                        borderWidth: 3,
+                        pointRadius: 12,
+                        pointStyle: 'triangle',
+                        pointHoverRadius: 15,
+                        showLine: false,
+                        order: 1
+                    },
+                    // 车辆1010方向箭头
+                    {
+                        label: '车辆1010方向',
+                        data: vehicle1010Arrows,
+                        backgroundColor: '#6C8EBF',
+                        borderColor: '#4472C4',
+                        borderWidth: 2,
+                        pointRadius: 6,
+                        pointStyle: 'triangle',
+                        rotation: 45,
+                        pointHoverRadius: 10,
+                        showLine: false,
+                        order: 3
+                    },
+                    
+                    // 车辆1007轨迹线
+                    {
+                        label: '车辆1007轨迹',
+                        data: [...vehicle1007StartPoint, ...vehicle1007MiddlePoints, ...vehicle1007EndPoint],
+                        backgroundColor: 'transparent',
+                        borderColor: '#E74C3C',
+                        borderWidth: 4,
+                        pointRadius: 0,
+                        showLine: true,
+                        tension: 0.3,
+                        order: 10
+                    },
+                    // 车辆1007起点
+                    {
+                        label: '车辆1007起点',
+                        data: vehicle1007StartPoint,
+                        backgroundColor: '#E74C3C',
+                        borderColor: '#C0392B',
+                        borderWidth: 3,
+                        pointRadius: 12,
+                        pointStyle: 'rect',
+                        pointHoverRadius: 15,
+                        showLine: false,
+                        order: 1
+                    },
+                    // 车辆1007中间点
+                    {
+                        label: '车辆1007路径点',
+                        data: vehicle1007MiddlePoints,
+                        backgroundColor: '#E74C3C',
+                        borderColor: '#C0392B',
+                        borderWidth: 2,
+                        pointRadius: 8,
+                        pointStyle: 'circle',
+                        pointHoverRadius: 12,
+                        showLine: false,
+                        order: 2
+                    },
+                    // 车辆1007终点
+                    {
+                        label: '车辆1007终点',
+                        data: vehicle1007EndPoint,
+                        backgroundColor: '#E74C3C',
+                        borderColor: '#C0392B',
+                        borderWidth: 3,
+                        pointRadius: 12,
+                        pointStyle: 'triangle',
+                        pointHoverRadius: 15,
+                        showLine: false,
+                        order: 1
+                    },
+                    // 车辆1007方向箭头
+                    {
+                        label: '车辆1007方向',
+                        data: vehicle1007Arrows,
+                        backgroundColor: '#F1948A',
+                        borderColor: '#E74C3C',
+                        borderWidth: 2,
+                        pointRadius: 6,
+                        pointStyle: 'triangle',
+                        rotation: 225,
+                        pointHoverRadius: 10,
+                        showLine: false,
+                        order: 3
+                    },
+                    
+                    // 交汇点
+                    {
+                        label: '交汇点',
+                        data: intersectionPoint,
+                        backgroundColor: '#27AE60',
+                        borderColor: '#1E8449',
+                        borderWidth: 4,
+                        pointRadius: 16,
+                        pointStyle: 'star',
+                        pointHoverRadius: 20,
+                        showLine: false,
+                        order: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '车辆轨迹坐标图 - 含起点终点及前进方向 (基于2025-06-25日志数据)',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            font: {
+                                size: 11
+                            },
+                            filter: function(item, chart) {
+                                // 只显示主要的图例项，隐藏方向箭头和辅助线
+                                return !item.text.includes('方向') && !item.text.includes('轨迹') && !item.text.includes('路径点');
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                const datasetLabel = context[0].dataset.label;
+                                const pointData = context[0].raw;
+                                let title = `${datasetLabel}`;
+                                if (pointData.label) {
+                                    title += ` - ${pointData.label}`;
+                                }
+                                return title;
+                            },
+                            label: function(context) {
+                                const pointData = context.raw;
+                                let labels = [`坐标: (${context.parsed.x}, ${context.parsed.y})`];
+                                if (pointData.direction) {
+                                    labels.push(`方向: ${pointData.direction}`);
+                                }
+                                return labels;
+                            }
+                        },
+                        displayColors: true,
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#333',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'X 坐标',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Y 坐标',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'point'
+                },
+                onHover: function(event, activeElements) {
+                    event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+                }
+            }
+        });
+        
+        // 添加点击事件来显示详细信息
+        ctx.addEventListener('click', function(event) {
+            const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+            if (points.length) {
+                const point = points[0];
+                const datasetIndex = point.datasetIndex;
+                const index = point.index;
+                const data = chart.data.datasets[datasetIndex].data[index];
+                const label = chart.data.datasets[datasetIndex].label;
+                
+                let message = `${label}\n坐标: (${data.x}, ${data.y})`;
+                if (data.label) {
+                    message += `\n类型: ${data.label}`;
+                }
+                if (data.direction) {
+                    message += `\n方向: ${data.direction}`;
+                }
+                
+                alert(message);
+            }
+        });
+    </script>
+</body>
+</html>
