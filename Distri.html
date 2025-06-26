@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Enhanced Edge-Based Distributed GNN-MAPF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: linear-gradient(135deg, #0f0f23, #1e1e3f);
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .main-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .side-panel {
+            width: 400px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 12px;
+            margin-bottom: 15px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        #network-canvas {
+            width: 100%;
+            height: calc(100vh - 140px);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            cursor: crosshair;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: linear-gradient(145deg, #00ff88, #00cc66);
+            color: #0f0f23;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn.active {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .stats {
+            font-size: 8px;
+            line-height: 1.2;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 10px;
+            white-space: pre-line;
+            font-family: 'Courier New', monospace;
+            max-height: calc(100vh - 320px);
+            overflow-y: auto;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .gnn-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 255, 136, 0.9);
+            color: #0f0f23;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .edge-status {
+            position: absolute;
+            top: 40px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff88;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 9px;
+            max-width: 200px;
+        }
+
+        .legend {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 2px 0;
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .message-log {
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 8px;
+            padding: 6px;
+            margin-top: 8px;
+            font-size: 7px;
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .file-input {
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 6px;
+            border: 2px dashed rgba(0, 255, 136, 0.3);
+            border-radius: 6px;
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 10px;
+        }
+
+        .file-input:hover {
+            border-color: rgba(0, 255, 136, 0.6);
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .vehicle-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(0, 255, 136, 0.5);
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 9px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            color: #00ff88;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="gnn-indicator">🧠 FIXED EDGE-BASED DISTRIBUTED GNN</div>
+    <div class="status-indicator">🔧 TOPOLOGY LOADING RESTORED</div>
+    
+    <div class="container">
+        <div class="main-panel">
+            <div class="title">
+                🤖 Fixed Enhanced Edge-Based Distributed GNN-MAPF
+            </div>
+            <div class="subtitle">
+                Advanced Edge-Centric Coordination with Working Movement & Topology Loading
+            </div>
+            <canvas id="network-canvas"></canvas>
+            <div class="controls">
+                <button class="btn" id="startBtn">▶️ Start</button>
+                <button class="btn" id="pauseBtn">⏸️ Pause</button>
+                <button class="btn" id="resetBtn">🔄 Reset</button>
+                <button class="btn active" id="edgeGnnBtn">🔗 Edge-GNN: ON</button>
+                <button class="btn" id="addBtn">➕ Add Agent</button>
+                <button class="btn" id="removeBtn">➖ Remove Agent</button>
+                <button class="btn" id="speedBtn">⚡ Speed: 1x</button>
+                <button class="btn" id="debugBtn">🐛 Debug: OFF</button>
+                <button class="btn" id="commBtn">📡 Range: 2-hop</button>
+                <button class="btn" id="edgeModeBtn">🔗 Edge: Enhanced</button>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="file-input" onclick="document.getElementById('fileInput').click()">
+                📁 Load Stage 1 Topology
+                <input type="file" id="fileInput" accept=".json" style="display: none;">
+            </div>
+
+            <div class="legend">
+                <div style="font-weight: bold; margin-bottom: 4px;">🔗 Edge Features</div>
+                
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #00ff88;"></div>
+                    ➿ Available Edges
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffeb3b;"></div>
+                    🔒 Reserved Edges
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    🚫 Conflicted Edges
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff9800;"></div>
+                    📡 Communication Links
+                </div>
+
+                <div style="font-weight: bold; margin: 4px 0 2px 0;">🎯 Points</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    🟢 Loading
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196F3;"></div>
+                    🔵 Unloading
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9E9E9E;"></div>
+                    🅿️ Parking
+                </div>
+
+                <div style="font-weight: bold; margin: 4px 0 2px 0;">🤖 States</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #666;"></div>
+                    IDLE
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff9800;"></div>
+                    EDGE_NEGOTIATING
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFD700;"></div>
+                    PATH_CONFIRMED
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    MOVING
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196F3;"></div>
+                    OPERATING
+                </div>
+            </div>
+
+            <div class="edge-status" id="edgeInfo">
+                <div style="font-weight: bold;">🔗 Edge Status</div>
+                <div id="edgeDetails">Initializing...</div>
+            </div>
+
+            <div class="stats" id="stats">
+                System Initializing...
+            </div>
+
+            <div class="message-log" id="messageLog">
+                <div style="font-weight: bold; margin-bottom: 3px;">📨 Edge Messages</div>
+                <div>System starting...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="vehicle-tooltip" id="vehicleTooltip"></div>
+
+    <script>
+        // ============ Enhanced Edge-Based Architecture ============
+        
+        class VehicleState {
+            static IDLE = 'idle';
+            static EDGE_NEGOTIATING = 'edge_negotiating';
+            static PATH_CONFIRMED = 'path_confirmed';
+            static MOVING = 'moving';
+            static OPERATING = 'operating';
+            static EDGE_WAITING = 'edge_waiting';
+        }
+
+        class VehicleMode {
+            static PARKED = 'parked';
+            static EMPTY = 'empty';
+            static LOADED = 'loaded';
+            static RETURNING = 'returning';
+        }
+
+        class MessageType {
+            static EDGE_RESERVATION_REQUEST = 'edge_reservation_request';
+            static EDGE_RESERVATION_RESPONSE = 'edge_reservation_response';
+            static EDGE_STATE_UPDATE = 'edge_state_update';
+            static PATH_INTENTION = 'path_intention';
+            static EDGE_CONFLICT_RESOLUTION = 'edge_conflict_resolution';
+            static GNN_EDGE_FEATURES = 'gnn_edge_features';
+        }
+
+        // ============ SpecialPoint Class (From demo2) ============
+        
+        class SpecialPoint {
+            constructor(nodeId, pointType, position = [0, 0]) {
+                this.nodeId = nodeId;
+                this.pointType = pointType;
+                this.isOccupied = false;
+                this.reservedBy = null;
+                this.position = position;
+                this.lastUsedTime = 0;
+                this.reservedAt = 0;
+            }
+        }
+
+        // ============ Enhanced Edge-Centric Data Structures ============
+        
+        class EdgeReservation {
+            constructor(agentId, startTime, endTime, direction, priority, confidence = 1.0) {
+                this.agentId = agentId;
+                this.startTime = startTime;
+                this.endTime = endTime;
+                this.direction = direction; // [fromNode, toNode]
+                this.priority = priority;
+                this.confidence = confidence;
+                this.timestamp = Date.now();
+            }
+        }
+
+        class EdgeState {
+            constructor(edgeId) {
+                this.edgeId = edgeId;
+                this.reservations = new Map(); // agentId -> EdgeReservation
+                this.conflicts = [];
+                this.congestionLevel = 0.0;
+                this.lastUpdateTime = 0;
+                this.gnnFeatures = new Float32Array(16); // Edge feature vector
+            }
+
+            addReservation(reservation) {
+                this.reservations.set(reservation.agentId, reservation);
+                this.updateCongestion();
+                this.detectConflicts();
+            }
+
+            removeReservation(agentId) {
+                this.reservations.delete(agentId);
+                this.updateCongestion();
+                this.detectConflicts();
+            }
+
+            updateCongestion() {
+                this.congestionLevel = Math.min(this.reservations.size / 3.0, 1.0);
+            }
+
+            detectConflicts() {
+                this.conflicts = [];
+                const reservationList = Array.from(this.reservations.values());
+                
+                for (let i = 0; i < reservationList.length; i++) {
+                    for (let j = i + 1; j < reservationList.length; j++) {
+                        const r1 = reservationList[i];
+                        const r2 = reservationList[j];
+                        
+                        if (this.timeOverlap(r1, r2)) {
+                            this.conflicts.push({
+                                agents: [r1.agentId, r2.agentId],
+                                severity: this.calculateConflictSeverity(r1, r2)
+                            });
+                        }
+                    }
+                }
+            }
+
+            timeOverlap(r1, r2) {
+                return !(r1.endTime <= r2.startTime || r2.endTime <= r1.startTime);
+            }
+
+            calculateConflictSeverity(r1, r2) {
+                const overlapStart = Math.max(r1.startTime, r2.startTime);
+                const overlapEnd = Math.min(r1.endTime, r2.endTime);
+                const overlapDuration = overlapEnd - overlapStart;
+                
+                const totalDuration = Math.max(r1.endTime - r1.startTime, r2.endTime - r2.startTime);
+                return overlapDuration / totalDuration;
+            }
+        }
+
+        // ============ Advanced GNN Edge Processor ============
+        
+        class EdgeBasedGNNProcessor {
+            constructor() {
+                this.nodeEmbeddingDim = 32;
+                this.edgeEmbeddingDim = 24;
+                this.hiddenDim = 64;
+                this.outputDim = 16;
+                this.attentionHeads = 4;
+            }
+
+            // Enhanced edge feature encoding
+            encodeEdgeFeatures(edgeId, edgeState, fromAgent, toNeighbor) {
+                const features = new Float32Array(this.edgeEmbeddingDim);
+                let idx = 0;
+
+                // Basic edge properties
+                features[idx++] = edgeState.congestionLevel;
+                features[idx++] = edgeState.reservations.size / 5.0; // Normalized reservation count
+                features[idx++] = edgeState.conflicts.length / 3.0; // Normalized conflict count
+
+                // Temporal features
+                const currentTime = Date.now();
+                const timeSinceUpdate = (currentTime - edgeState.lastUpdateTime) / 10000.0;
+                features[idx++] = Math.min(timeSinceUpdate, 1.0);
+
+                // Agent-specific features
+                if (fromAgent && toNeighbor) {
+                    const priorityDiff = (fromAgent.priority - toNeighbor.priority) / 100.0;
+                    features[idx++] = Math.tanh(priorityDiff);
+                    
+                    const stateSimilarity = this.calculateStateSimilarity(fromAgent.state, toNeighbor.state);
+                    features[idx++] = stateSimilarity;
+                    
+                    const modeSimilarity = this.calculateModeSimilarity(fromAgent.mode, toNeighbor.mode);
+                    features[idx++] = modeSimilarity;
+                }
+
+                // Fill remaining features with defaults
+                while (idx < this.edgeEmbeddingDim) {
+                    features[idx++] = 0.0;
+                }
+
+                return features;
+            }
+
+            // Multi-head attention mechanism for edge aggregation (simplified for working version)
+            processEdgeMessages(agent, neighborMessages, edgeStates) {
+                const nodeFeatures = this.encodeNodeFeatures(agent);
+                
+                // Simplified GNN processing for movement enablement
+                let cooperationLevel = 0.8; // Default high cooperation
+                let confidence = 0.9; // Default high confidence
+                let conflictAvoidance = 0.2; // Default low conflict
+                
+                // Check for obvious conflicts
+                let hasHighConflict = false;
+                for (const [edgeId, edgeState] of edgeStates) {
+                    if (edgeState.conflicts.length > 2) {
+                        hasHighConflict = true;
+                        break;
+                    }
+                }
+                
+                if (hasHighConflict) {
+                    cooperationLevel = 0.4;
+                    confidence = 0.5;
+                    conflictAvoidance = 0.8;
+                }
+
+                // Generate action recommendations
+                return {
+                    shouldReserveEdge: true,
+                    cooperationLevel,
+                    conflictAvoidance,
+                    urgencyLevel: Math.random() * 0.5 + 0.5,
+                    edgeRecommendations: new Map(),
+                    confidence
+                };
+            }
+
+            encodeNodeFeatures(agent) {
+                const features = new Float32Array(this.nodeEmbeddingDim);
+                let idx = 0;
+
+                // Basic agent properties
+                features[idx++] = agent.id / 10.0;
+                features[idx++] = this.encodeState(agent.state);
+                features[idx++] = this.encodeMode(agent.mode);
+                features[idx++] = (agent.priority || 50) / 100.0;
+
+                // Position encoding
+                if (agent.position) {
+                    features[idx++] = agent.position[0] / 400.0;
+                    features[idx++] = agent.position[1] / 400.0;
+                }
+
+                // Fill remaining with defaults
+                while (idx < this.nodeEmbeddingDim) {
+                    features[idx++] = 0.0;
+                }
+
+                return features;
+            }
+
+            encodeState(state) {
+                const states = Object.values(VehicleState);
+                return states.indexOf(state) / states.length;
+            }
+
+            encodeMode(mode) {
+                const modes = Object.values(VehicleMode);
+                return modes.indexOf(mode) / modes.length;
+            }
+
+            calculateStateSimilarity(state1, state2) {
+                if (state1 === state2) return 1.0;
+                return 0.5; // Default similarity
+            }
+
+            calculateModeSimilarity(mode1, mode2) {
+                if (mode1 === mode2) return 1.0;
+                return 0.5; // Default similarity for different modes
+            }
+
+            getEdgeId(node1, node2) {
+                return [node1, node2].sort().join('-');
+            }
+        }
+
+        // ============ Simplified Distributed Edge Manager ============
+        
+        class DistributedEdgeManager {
+            constructor(agentId) {
+                this.agentId = agentId;
+                this.edgeStates = new Map(); // edgeId -> EdgeState
+                this.myReservations = new Map(); // edgeId -> EdgeReservation
+                this.beliefUpdateTime = new Map(); // edgeId -> timestamp
+                this.conflictResolutionHistory = new Map();
+            }
+
+            requestEdgeReservation(edgeId, startTime, duration, priority, path) {
+                const endTime = startTime + duration;
+                const direction = this.getDirectionFromPath(edgeId, path);
+                
+                const reservation = new EdgeReservation(
+                    this.agentId, 
+                    startTime, 
+                    endTime, 
+                    direction, 
+                    priority,
+                    0.9 // Initial confidence
+                );
+
+                // Store locally
+                this.myReservations.set(edgeId, reservation);
+
+                // Update edge state
+                if (!this.edgeStates.has(edgeId)) {
+                    this.edgeStates.set(edgeId, new EdgeState(edgeId));
+                }
+                this.edgeStates.get(edgeId).addReservation(reservation);
+
+                // Log the reservation
+                if (window.debugMode) {
+                    console.log(`Agent ${this.agentId}: Reserved edge ${edgeId} from ${startTime.toFixed(2)} to ${endTime.toFixed(2)}`);
+                }
+
+                return reservation;
+            }
+
+            cancelEdgeReservation(edgeId) {
+                this.myReservations.delete(edgeId);
+                
+                if (this.edgeStates.has(edgeId)) {
+                    this.edgeStates.get(edgeId).removeReservation(this.agentId);
+                }
+
+                if (window.debugMode) {
+                    console.log(`Agent ${this.agentId}: Cancelled edge reservation ${edgeId}`);
+                }
+            }
+
+            getDirectionFromPath(edgeId, path) {
+                const [node1, node2] = edgeId.split('-');
+                
+                if (!path || path.length < 2) return [node1, node2];
+                
+                for (let i = 0; i < path.length - 1; i++) {
+                    if ((path[i] === node1 && path[i + 1] === node2) ||
+                        (path[i] === node2 && path[i + 1] === node1)) {
+                        return [path[i], path[i + 1]];
+                    }
+                }
+                
+                return [node1, node2];
+            }
+
+            getEdgeConflictLevel(edgeId) {
+                const edgeState = this.edgeStates.get(edgeId);
+                if (!edgeState) return 0;
+                
+                return edgeState.conflicts.length / 3.0; // Normalized
+            }
+
+            getEdgeRecommendation(edgeId, gnnOutput) {
+                const edgeState = this.edgeStates.get(edgeId);
+                if (!edgeState) return { usable: true, confidence: 1.0 };
+
+                const conflictLevel = this.getEdgeConflictLevel(edgeId);
+                const congestion = edgeState.congestionLevel;
+                
+                return {
+                    usable: conflictLevel < 0.5, // Allow edges with low conflict
+                    confidence: (1.0 - conflictLevel) * (1.0 - congestion) * 0.8,
+                    recommendedDelay: conflictLevel * 0.5,
+                    alternativePriority: 1.0 - conflictLevel
+                };
+            }
+        }
+
+        // ============ Fixed Topology with JSON Loading (From demo2) ============
+        
+        class EnhancedTopology {
+            constructor() {
+                this.graph = new Map();
+                this.nodePositions = new Map();
+                this.specialPoints = {
+                    loading: new Map(),
+                    unloading: new Map(),
+                    parking: new Map()
+                };
+                this.createDefaultTopology();
+            }
+
+            // 从demo2移植的拓扑加载功能
+            loadTopologyFromJSON(jsonData) {
+                try {
+                    console.log('Loading enhanced topology from JSON...', jsonData);
+                    
+                    // Clear existing data
+                    this.graph.clear();
+                    this.nodePositions.clear();
+                    this.specialPoints = { loading: new Map(), unloading: new Map(), parking: new Map() };
+
+                    // Load from enhanced topology data if available
+                    if (jsonData.enhanced_consolidation_applied && jsonData.key_nodes_info) {
+                        console.log('Loading from enhanced Stage 1 data...');
+                        this.loadFromEnhancedData(jsonData);
+                    } else if (jsonData.graph_nodes && jsonData.graph_edges) {
+                        console.log('Loading from basic Stage 1 data...');
+                        this.loadFromBasicData(jsonData);
+                    } else {
+                        throw new Error('Invalid topology format');
+                    }
+
+                    this.parseSpecialPoints(jsonData);
+                    this.ensureSufficientSpecialPoints();
+                    
+                    console.log('Topology loaded successfully:', {
+                        nodes: this.graph.size,
+                        edges: Array.from(this.graph.values()).reduce((sum, neighbors) => sum + neighbors.size, 0) / 2,
+                        specialPoints: {
+                            loading: this.specialPoints.loading.size,
+                            unloading: this.specialPoints.unloading.size,
+                            parking: this.specialPoints.parking.size
+                        }
+                    });
+                    return true;
+                } catch (error) {
+                    console.error('Failed to load topology:', error);
+                    this.createDefaultTopology();
+                    return false;
+                }
+            }
+
+            loadFromEnhancedData(jsonData) {
+                const keyNodes = jsonData.key_nodes_info;
+                
+                for (const [nodeId, nodeInfo] of Object.entries(keyNodes)) {
+                    const pos = nodeInfo.position;
+                    this.nodePositions.set(nodeId, [pos[0], pos[1]]);
+                    this.graph.set(nodeId, new Set());
+                }
+
+                const consolidatedPaths = jsonData.consolidated_paths_info || {};
+                
+                for (const [pathId, pathInfo] of Object.entries(consolidatedPaths)) {
+                    const keyNodes = pathInfo.key_nodes || [];
+                    for (let i = 0; i < keyNodes.length - 1; i++) {
+                        const node1 = keyNodes[i];
+                        const node2 = keyNodes[i + 1];
+                        if (this.graph.has(node1) && this.graph.has(node2)) {
+                            this.graph.get(node1).add(node2);
+                            this.graph.get(node2).add(node1);
+                        }
+                    }
+                }
+            }
+
+            loadFromBasicData(jsonData) {
+                for (const node of jsonData.graph_nodes) {
+                    const nodeStr = String(node);
+                    this.graph.set(nodeStr, new Set());
+                    
+                    const pos = jsonData.position_mapping?.[nodeStr] || 
+                               [Math.random() * 400, Math.random() * 300];
+                    this.nodePositions.set(nodeStr, pos);
+                }
+
+                for (const edge of jsonData.graph_edges) {
+                    const node1 = String(edge[0]);
+                    const node2 = String(edge[1]);
+                    if (this.graph.has(node1) && this.graph.has(node2)) {
+                        this.graph.get(node1).add(node2);
+                        this.graph.get(node2).add(node1);
+                    }
+                }
+            }
+
+            parseSpecialPoints(jsonData) {
+                if (!jsonData.key_nodes_info) return;
+
+                for (const [nodeId, nodeInfo] of Object.entries(jsonData.key_nodes_info)) {
+                    const position = nodeInfo.position || [0, 0];
+                    const pathMemberships = nodeInfo.path_memberships || [];
+                    const isEndpoint = nodeInfo.is_endpoint || false;
+                    
+                    if (!isEndpoint || pathMemberships.length === 0) continue;
+                    
+                    const startPoints = new Set();
+                    const endPoints = new Set();
+                    
+                    for (const pathId of pathMemberships) {
+                        const parts = pathId.split('_to_');
+                        if (parts.length === 2) {
+                            startPoints.add(parts[0]);
+                            endPoints.add(parts[1]);
+                        }
+                    }
+                    
+                    let primarySpecialPoint = null;
+                    
+                    if (startPoints.size === 1) {
+                        const startPoint = Array.from(startPoints)[0];
+                        if (startPoint.match(/^L\d+$/)) {
+                            primarySpecialPoint = { id: startPoint, type: 'loading' };
+                        }
+                    } else if (endPoints.size === 1) {
+                        const endPoint = Array.from(endPoints)[0];
+                        if (endPoint.match(/^U\d+$/)) {
+                            primarySpecialPoint = { id: endPoint, type: 'unloading' };
+                        } else if (endPoint.match(/^P\d+$/)) {
+                            primarySpecialPoint = { id: endPoint, type: 'parking' };
+                        }
+                    }
+                    
+                    if (primarySpecialPoint) {
+                        const specialPointObj = new SpecialPoint(nodeId, primarySpecialPoint.type, position);
+                        const pointId = primarySpecialPoint.id;
+                        
+                        if (primarySpecialPoint.type === 'loading') {
+                            this.specialPoints.loading.set(pointId, specialPointObj);
+                        } else if (primarySpecialPoint.type === 'unloading') {
+                            this.specialPoints.unloading.set(pointId, specialPointObj);
+                        } else if (primarySpecialPoint.type === 'parking') {
+                            this.specialPoints.parking.set(pointId, specialPointObj);
+                        }
+                    }
+                }
+            }
+
+            ensureSufficientSpecialPoints() {
+                const minRequired = 4;
+                
+                if (this.specialPoints.loading.size < minRequired) {
+                    this.createAdditionalSpecialPoints('loading', minRequired);
+                }
+                
+                if (this.specialPoints.unloading.size < minRequired) {
+                    this.createAdditionalSpecialPoints('unloading', minRequired);
+                }
+                
+                if (this.specialPoints.parking.size < minRequired) {
+                    this.createAdditionalSpecialPoints('parking', minRequired);
+                }
+            }
+
+            createAdditionalSpecialPoints(pointType, targetCount) {
+                const currentPoints = this.specialPoints[pointType];
+                const availableNodes = Array.from(this.nodePositions.keys());
+                
+                const usedNodes = new Set();
+                for (const [type, points] of Object.entries(this.specialPoints)) {
+                    for (const point of points.values()) {
+                        usedNodes.add(point.nodeId);
+                    }
+                }
+                
+                const unusedNodes = availableNodes.filter(nodeId => !usedNodes.has(nodeId));
+                
+                let prefix = pointType === 'loading' ? 'L' : 
+                        pointType === 'unloading' ? 'U' : 'P';
+                
+                const currentCount = currentPoints.size;
+                const maxPossibleCount = Math.min(targetCount, currentCount + unusedNodes.length);
+                
+                for (let i = currentCount; i < maxPossibleCount; i++) {
+                    const unusedIndex = i - currentCount;
+                    
+                    if (unusedIndex >= unusedNodes.length) {
+                        break;
+                    }
+                    
+                    const nodeId = unusedNodes[unusedIndex];
+                    const pointId = `${prefix}${i}`;
+                    const position = this.nodePositions.get(nodeId) || [Math.random() * 400, Math.random() * 300];
+                    
+                    const specialPoint = new SpecialPoint(nodeId, pointType, [...position]);
+                    currentPoints.set(pointId, specialPoint);
+                    
+                    usedNodes.add(nodeId);
+                }
+            }
+
+            createDefaultTopology() {
+                const gridSize = 5;
+                const nodeSpacing = 80;
+                
+                // Clear existing data
+                this.graph.clear();
+                this.nodePositions.clear();
+                this.specialPoints = { loading: new Map(), unloading: new Map(), parking: new Map() };
+                
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        const nodeId = `N${i}_${j}`;
+                        const x = 50 + j * nodeSpacing + (Math.random() - 0.5) * 20;
+                        const y = 50 + i * nodeSpacing + (Math.random() - 0.5) * 20;
+                        
+                        this.nodePositions.set(nodeId, [x, y]);
+                        this.graph.set(nodeId, new Set());
+                    }
+                }
+
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        const currentNode = `N${i}_${j}`;
+                        
+                        if (j < gridSize - 1) {
+                            const rightNode = `N${i}_${j + 1}`;
+                            this.graph.get(currentNode).add(rightNode);
+                            this.graph.get(rightNode).add(currentNode);
+                        }
+                        
+                        if (i < gridSize - 1) {
+                            const downNode = `N${i + 1}_${j}`;
+                            this.graph.get(currentNode).add(downNode);
+                            this.graph.get(downNode).add(currentNode);
+                        }
+                        
+                        if (i < gridSize - 1 && j < gridSize - 1 && Math.random() > 0.6) {
+                            const diagNode = `N${i + 1}_${j + 1}`;
+                            this.graph.get(currentNode).add(diagNode);
+                            this.graph.get(diagNode).add(currentNode);
+                        }
+                    }
+                }
+
+                this.createSpecialPoints();
+            }
+
+            createSpecialPoints() {
+                const loadingNodes = ['N0_0', 'N1_0', 'N2_0', 'N3_0', 'N4_0'];
+                loadingNodes.forEach((nodeId, i) => {
+                    const pointId = `L${i}`;
+                    const position = this.nodePositions.get(nodeId) || [0, 0];
+                    this.specialPoints.loading.set(pointId, new SpecialPoint(nodeId, 'loading', position));
+                });
+
+                const unloadingNodes = ['N0_4', 'N1_4', 'N2_4', 'N3_4', 'N4_4'];
+                unloadingNodes.forEach((nodeId, i) => {
+                    const pointId = `U${i}`;
+                    const position = this.nodePositions.get(nodeId) || [0, 0];
+                    this.specialPoints.unloading.set(pointId, new SpecialPoint(nodeId, 'unloading', position));
+                });
+
+                const parkingNodes = ['N2_2', 'N1_2', 'N3_2', 'N2_1', 'N2_3'];
+                parkingNodes.forEach((nodeId, i) => {
+                    const pointId = `P${i}`;
+                    const position = this.nodePositions.get(nodeId) || [0, 0];
+                    this.specialPoints.parking.set(pointId, new SpecialPoint(nodeId, 'parking', position));
+                });
+            }
+
+            findPath(start, end) {
+                if (start === end) return [start];
+                
+                const queue = [[start, [start]]];
+                const visited = new Set([start]);
+                
+                while (queue.length > 0) {
+                    const [current, path] = queue.shift();
+                    
+                    if (!this.graph.has(current)) continue;
+                    
+                    for (const neighbor of this.graph.get(current)) {
+                        if (neighbor === end) {
+                            return [...path, neighbor];
+                        }
+                        
+                        if (!visited.has(neighbor)) {
+                            visited.add(neighbor);
+                            queue.push([neighbor, [...path, neighbor]]);
+                        }
+                    }
+                }
+                
+                return [];
+            }
+
+            getDistance(node1, node2) {
+                const pos1 = this.nodePositions.get(node1);
+                const pos2 = this.nodePositions.get(node2);
+                if (!pos1 || !pos2) return Infinity;
+                
+                const dx = pos1[0] - pos2[0];
+                const dy = pos1[1] - pos2[1];
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+
+        // ============ Fixed Enhanced Distributed Vehicle ============
+        
+        class EnhancedDistributedVehicle {
+            constructor(id, startParkingPoint, topology) {
+                this.id = id;
+                this.topology = topology;
+                
+                // Enhanced components
+                this.edgeManager = new DistributedEdgeManager(id);
+                this.gnnProcessor = new EdgeBasedGNNProcessor();
+                
+                // State management
+                this.state = VehicleState.IDLE;
+                this.mode = VehicleMode.PARKED;
+                this.currentParkingPoint = startParkingPoint;
+                this.priority = 50 + id * 10 + Math.random() * 20;
+                
+                // Position and movement
+                const startPoint = this.topology.specialPoints.parking.get(startParkingPoint);
+                this.currentNode = startPoint ? startPoint.nodeId : 'N2_2';
+                this.position = [...this.topology.nodePositions.get(this.currentNode)];
+                this.targetPosition = [...this.position];
+                this.heading = 0;
+                
+                // Enhanced path management
+                this.path = [];
+                this.pathIndex = 0;
+                this.edgeReservations = new Map(); // edgeId -> reservation
+                this.moveProgress = 0;
+                this.moveStartTime = 0;
+                this.moveDuration = 0;
+                
+                // Task management
+                this.targetLoadingPoint = null;
+                this.targetUnloadingPoint = null;
+                this.targetParkingPoint = null;
+                this.operationStartTime = 0;
+                this.operationDuration = 2.0;
+                
+                // Enhanced communication
+                this.neighbors = new Set();
+                this.messageBuffer = [];
+                this.communicationRange = 2;
+                this.lastBroadcastTime = 0;
+                
+                // Fixed negotiation timing
+                this.negotiationStartTime = 0;
+                this.maxNegotiationTime = 2.0; // Reduced timeout
+                this.waitUntil = 0;
+                
+                // Statistics
+                this.completedCycles = 0;
+                this.totalDistance = 0;
+                this.messagesSent = 0;
+                this.messagesReceived = 0;
+                this.edgeConflicts = 0;
+                this.edgeReservationAttempts = 0;
+                
+                // Visualization
+                this.colors = ['#ff4444', '#4444ff', '#44ff44', '#ffaa00', '#aa44ff', '#44aaff'];
+                this.color = this.colors[id % this.colors.length];
+            }
+
+            update(currentTime, dt, allVehicles) {
+                // Update neighbors
+                this.updateNeighbors(allVehicles);
+                
+                // State machine with fixed logic
+                switch (this.state) {
+                    case VehicleState.IDLE:
+                        this.handleIdleState(currentTime);
+                        break;
+                    case VehicleState.EDGE_NEGOTIATING:
+                        this.handleEdgeNegotiatingState(currentTime);
+                        break;
+                    case VehicleState.PATH_CONFIRMED:
+                        this.handlePathConfirmedState(currentTime);
+                        break;
+                    case VehicleState.MOVING:
+                        this.handleMovingState(currentTime, dt);
+                        break;
+                    case VehicleState.OPERATING:
+                        this.handleOperatingState(currentTime);
+                        break;
+                    case VehicleState.EDGE_WAITING:
+                        this.handleEdgeWaitingState(currentTime);
+                        break;
+                }
+            }
+
+            handleIdleState(currentTime) {
+                // Enhanced task planning
+                switch (this.mode) {
+                    case VehicleMode.PARKED:
+                        this.planToLoadingWithEdgeAnalysis();
+                        break;
+                    case VehicleMode.EMPTY:
+                        if (this.targetLoadingPoint && this.currentNode === this.getTargetNode()) {
+                            this.startOperation(currentTime);
+                        } else if (this.targetLoadingPoint) {
+                            this.startEdgeBasedPathPlanning();
+                        }
+                        break;
+                    case VehicleMode.LOADED:
+                        this.planToUnloadingWithEdgeAnalysis();
+                        break;
+                    case VehicleMode.RETURNING:
+                        this.planToParkingWithEdgeAnalysis();
+                        break;
+                }
+            }
+
+            planToLoadingWithEdgeAnalysis() {
+                const availableLoading = this.findAvailableSpecialPoints('loading');
+                if (availableLoading.length > 0) {
+                    this.targetLoadingPoint = availableLoading[0]; // Simplified selection
+                    this.mode = VehicleMode.EMPTY;
+                    this.startEdgeBasedPathPlanning();
+                } else {
+                    this.scheduleRetry(1000 + this.id * 500);
+                }
+            }
+
+            planToUnloadingWithEdgeAnalysis() {
+                const availableUnloading = this.findAvailableSpecialPoints('unloading');
+                if (availableUnloading.length > 0) {
+                    this.targetUnloadingPoint = availableUnloading[0];
+                    this.startEdgeBasedPathPlanning();
+                } else {
+                    this.scheduleRetry(800 + this.id * 300);
+                }
+            }
+
+            planToParkingWithEdgeAnalysis() {
+                const availableParking = this.findAvailableSpecialPoints('parking');
+                if (availableParking.length > 0) {
+                    this.targetParkingPoint = availableParking[0];
+                    this.startEdgeBasedPathPlanning();
+                } else {
+                    this.scheduleRetry(600 + this.id * 200);
+                }
+            }
+
+            startEdgeBasedPathPlanning() {
+                const targetNode = this.getTargetNode();
+                if (!targetNode || targetNode === this.currentNode) {
+                    this.state = VehicleState.IDLE;
+                    return;
+                }
+
+                this.path = this.topology.findPath(this.currentNode, targetNode);
+                if (this.path.length < 2) {
+                    this.state = VehicleState.IDLE;
+                    return;
+                }
+
+                this.state = VehicleState.EDGE_NEGOTIATING;
+                this.negotiationStartTime = currentTime;
+                this.edgeReservationAttempts++;
+                
+                console.log(`Agent ${this.id}: Starting edge-based planning for path ${this.path.join(' -> ')}`);
+                this.negotiateEdgeReservations();
+            }
+
+            handleEdgeNegotiatingState(currentTime) {
+                // Fixed: Use simple timeout mechanism
+                const elapsed = currentTime - this.negotiationStartTime;
+                
+                if (elapsed > this.maxNegotiationTime) {
+                    // Timeout reached, proceed with movement
+                    console.log(`Agent ${this.id}: Negotiation timeout, proceeding with movement`);
+                    this.state = VehicleState.PATH_CONFIRMED;
+                    return;
+                }
+                
+                // Simple GNN processing
+                const gnnOutput = this.gnnProcessor.processEdgeMessages(
+                    this, 
+                    new Map(), // Empty neighbor messages for simplicity
+                    this.edgeManager.edgeStates
+                );
+
+                // Check if we can proceed (simplified logic)
+                const canProceed = elapsed > 0.5 && gnnOutput.confidence > 0.5;
+
+                if (canProceed) {
+                    this.state = VehicleState.PATH_CONFIRMED;
+                    console.log(`Agent ${this.id}: Edge negotiation successful, path confirmed`);
+                }
+            }
+
+            negotiateEdgeReservations() {
+                const startTime = this.negotiationStartTime + 1.0; // Start in 1 second
+                let currentTime = startTime;
+
+                // Clear old reservations
+                this.edgeReservations.clear();
+
+                for (let i = 0; i < this.path.length - 1; i++) {
+                    const edgeId = this.gnnProcessor.getEdgeId(this.path[i], this.path[i + 1]);
+                    const duration = 1.5; // Fixed duration
+                    
+                    const reservation = this.edgeManager.requestEdgeReservation(
+                        edgeId,
+                        currentTime,
+                        duration,
+                        this.priority,
+                        this.path
+                    );
+
+                    this.edgeReservations.set(edgeId, reservation);
+                    currentTime += duration;
+                }
+            }
+
+            handlePathConfirmedState(currentTime) {
+                // Fixed: Properly transition to moving state
+                this.pathIndex = 0;
+                this.startMoving(currentTime);
+            }
+
+            handleMovingState(currentTime, dt) {
+                if (currentTime < this.moveStartTime) return;
+                
+                const elapsed = currentTime - this.moveStartTime;
+                this.moveProgress = Math.min(elapsed / this.moveDuration, 1.0);
+                
+                if (this.moveProgress > 0) {
+                    const startPos = this.topology.nodePositions.get(this.path[this.pathIndex]);
+                    const endPos = this.topology.nodePositions.get(this.path[this.pathIndex + 1]);
+                    
+                    if (startPos && endPos) {
+                        const smoothProgress = this.smoothStep(this.moveProgress);
+                        this.position[0] = startPos[0] + (endPos[0] - startPos[0]) * smoothProgress;
+                        this.position[1] = startPos[1] + (endPos[1] - startPos[1]) * smoothProgress;
+                        
+                        // Update heading
+                        const dx = endPos[0] - startPos[0];
+                        const dy = endPos[1] - startPos[1];
+                        if (dx !== 0 || dy !== 0) {
+                            this.heading = Math.atan2(dy, dx);
+                        }
+                        
+                        // Update distance
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        this.totalDistance += distance * dt * 0.01;
+                    }
+                }
+                
+                if (this.moveProgress >= 1.0) {
+                    this.arriveAtNode(currentTime);
+                }
+            }
+
+            arriveAtNode(currentTime) {
+                this.pathIndex++;
+                this.currentNode = this.path[this.pathIndex];
+                this.position = [...this.topology.nodePositions.get(this.currentNode)];
+                
+                console.log(`Agent ${this.id}: Arrived at ${this.currentNode}`);
+                
+                // Check if path complete
+                if (this.pathIndex + 1 >= this.path.length) {
+                    // Path complete, check if at target
+                    const targetNode = this.getTargetNode();
+
+                    if (targetNode && this.currentNode === targetNode) {
+                        this.startOperation(currentTime);
+                    } else {
+                        this.state = VehicleState.IDLE;
+                    }
+                } else {
+                    // Continue path
+                    this.startMoving(currentTime);
+                }
+            }
+
+            startMoving(currentTime) {
+                this.state = VehicleState.MOVING;
+                this.moveStartTime = currentTime;
+                this.moveDuration = 1.5 + Math.random() * 0.5;
+                this.moveProgress = 0;
+                
+                console.log(`Agent ${this.id}: Moving from ${this.path[this.pathIndex]} to ${this.path[this.pathIndex + 1]}`);
+            }
+
+            handleOperatingState(currentTime) {
+                const elapsed = currentTime - this.operationStartTime;
+                if (elapsed >= this.operationDuration) {
+                    this.completeOperation();
+                }
+            }
+
+            startOperation(currentTime) {
+                this.state = VehicleState.OPERATING;
+                this.operationStartTime = currentTime;
+                console.log(`Agent ${this.id}: Starting operation at ${this.currentNode}`);
+            }
+
+            completeOperation() {
+                console.log(`Agent ${this.id}: Completing operation in mode ${this.mode}`);
+                
+                if (this.mode === VehicleMode.EMPTY && this.targetLoadingPoint) {
+                    this.mode = VehicleMode.LOADED;
+                    this.targetLoadingPoint = null;
+                } else if (this.mode === VehicleMode.LOADED && this.targetUnloadingPoint) {
+                    this.mode = VehicleMode.RETURNING;
+                    this.targetUnloadingPoint = null;
+                } else if (this.mode === VehicleMode.RETURNING && this.targetParkingPoint) {
+                    this.mode = VehicleMode.PARKED;
+                    this.currentParkingPoint = this.targetParkingPoint;
+                    this.targetParkingPoint = null;
+                    this.completedCycles++;
+                }
+                
+                this.state = VehicleState.IDLE;
+                this.clearReservations();
+                
+                // Schedule next task
+                setTimeout(() => {
+                    if (this.state === VehicleState.IDLE) {
+                        this.handleIdleState(Date.now() / 1000);
+                    }
+                }, 500);
+            }
+
+            handleEdgeWaitingState(currentTime) {
+                if (currentTime >= this.waitUntil) {
+                    this.state = VehicleState.IDLE;
+                }
+            }
+
+            clearReservations() {
+                for (const [edgeId, reservation] of this.edgeReservations) {
+                    this.edgeManager.cancelEdgeReservation(edgeId);
+                }
+                this.edgeReservations.clear();
+            }
+
+            // ============ Utility Methods ============
+
+            findAvailableSpecialPoints(pointType) {
+                const points = Array.from(this.topology.specialPoints[pointType].keys());
+                const allVehicles = window.simulation ? window.simulation.vehicles : [];
+                const otherTargets = new Set();
+                
+                for (const other of allVehicles) {
+                    if (other.id === this.id) continue;
+                    
+                    if (pointType === 'loading' && other.targetLoadingPoint) {
+                        otherTargets.add(other.targetLoadingPoint);
+                    } else if (pointType === 'unloading' && other.targetUnloadingPoint) {
+                        otherTargets.add(other.targetUnloadingPoint);
+                    } else if (pointType === 'parking' && other.targetParkingPoint) {
+                        otherTargets.add(other.targetParkingPoint);
+                    }
+                }
+                
+                return points.filter(pointId => !otherTargets.has(pointId));
+            }
+
+            getTargetNode() {
+                if (this.targetLoadingPoint) {
+                    return this.topology.specialPoints.loading.get(this.targetLoadingPoint)?.nodeId;
+                }
+                if (this.targetUnloadingPoint) {
+                    return this.topology.specialPoints.unloading.get(this.targetUnloadingPoint)?.nodeId;
+                }
+                if (this.targetParkingPoint) {
+                    return this.topology.specialPoints.parking.get(this.targetParkingPoint)?.nodeId;
+                }
+                return null;
+            }
+
+            scheduleRetry(delay) {
+                this.waitUntil = Date.now() / 1000 + delay / 1000;
+                this.state = VehicleState.EDGE_WAITING;
+            }
+
+            updateNeighbors(allVehicles) {
+                this.neighbors.clear();
+                for (const other of allVehicles) {
+                    if (other.id === this.id) continue;
+                    
+                    const distance = this.topology.getDistance(this.currentNode, other.currentNode);
+                    if (distance <= this.communicationRange * 80) {
+                        this.neighbors.add(other.id);
+                    }
+                }
+            }
+
+            smoothStep(t) {
+                return t * t * (3.0 - 2.0 * t);
+            }
+        }
+
+        // ============ Enhanced Visualization with Edge Focus ============
+        
+        class EnhancedEdgeVisualization {
+            constructor(canvas, topology) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.topology = topology;
+                this.vehicles = [];
+                
+                this.setupCanvas();
+                this.setupTransform();
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width * window.devicePixelRatio;
+                this.canvas.height = rect.height * window.devicePixelRatio;
+                this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            }
+
+            setupTransform() {
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                for (const [nodeId, pos] of this.topology.nodePositions) {
+                    minX = Math.min(minX, pos[0]);
+                    minY = Math.min(minY, pos[1]);
+                    maxX = Math.max(maxX, pos[0]);
+                    maxY = Math.max(maxY, pos[1]);
+                }
+                
+                const margin = 50;
+                const canvasWidth = this.canvas.width / window.devicePixelRatio;
+                const canvasHeight = this.canvas.height / window.devicePixelRatio;
+                
+                const networkWidth = maxX - minX;
+                const networkHeight = maxY - minY;
+                
+                this.scale = Math.min(
+                    (canvasWidth - 2 * margin) / networkWidth,
+                    (canvasHeight - 2 * margin) / networkHeight
+                );
+                
+                this.offsetX = margin - minX * this.scale + (canvasWidth - networkWidth * this.scale) / 2;
+                this.offsetY = margin - minY * this.scale + (canvasHeight - networkHeight * this.scale) / 2;
+            }
+
+            transformPoint(x, y) {
+                return [
+                    x * this.scale + this.offsetX,
+                    y * this.scale + this.offsetY
+                ];
+            }
+
+            draw(currentTime) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.drawNetworkWithEdgeStates();
+                this.drawCommunicationLinks();
+                this.drawSpecialPoints();
+                this.drawVehiclesWithEdgeInfo();
+                this.drawEdgeReservations();
+            }
+
+            drawNetworkWithEdgeStates() {
+                const drawnEdges = new Set();
+                
+                for (const [nodeId, neighbors] of this.topology.graph) {
+                    const pos1 = this.topology.nodePositions.get(nodeId);
+                    const [x1, y1] = this.transformPoint(pos1[0], pos1[1]);
+                    
+                    for (const neighborId of neighbors) {
+                        const edgeKey = [nodeId, neighborId].sort().join('-');
+                        if (drawnEdges.has(edgeKey)) continue;
+                        drawnEdges.add(edgeKey);
+                        
+                        const pos2 = this.topology.nodePositions.get(neighborId);
+                        const [x2, y2] = this.transformPoint(pos2[0], pos2[1]);
+                        
+                        // Get edge state from vehicles
+                        const edgeState = this.getAggregatedEdgeState(edgeKey);
+                        
+                        // Color edge based on state
+                        let strokeColor, lineWidth;
+                        if (edgeState.conflicts > 0) {
+                            strokeColor = '#ff6b6b'; // Red for conflicts
+                            lineWidth = 3;
+                        } else if (edgeState.reservations > 0) {
+                            strokeColor = '#ffeb3b'; // Yellow for reserved
+                            lineWidth = 2;
+                        } else {
+                            strokeColor = '#00ff88'; // Green for available
+                            lineWidth = 1;
+                        }
+                        
+                        this.ctx.strokeStyle = strokeColor;
+                        this.ctx.lineWidth = lineWidth;
+                        this.ctx.globalAlpha = 0.7;
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x1, y1);
+                        this.ctx.lineTo(x2, y2);
+                        this.ctx.stroke();
+                        
+                        this.ctx.globalAlpha = 1.0;
+                    }
+                }
+
+                // Draw nodes
+                for (const [nodeId, pos] of this.topology.nodePositions) {
+                    const [x, y] = this.transformPoint(pos[0], pos[1]);
+                    
+                    this.ctx.fillStyle = '#f0f0f0';
+                    this.ctx.strokeStyle = '#ccc';
+                    this.ctx.lineWidth = 1;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                }
+            }
+
+            getAggregatedEdgeState(edgeKey) {
+                let totalReservations = 0;
+                let totalConflicts = 0;
+                let maxCongestion = 0;
+                
+                for (const vehicle of this.vehicles) {
+                    if (vehicle.edgeManager && vehicle.edgeManager.edgeStates.has(edgeKey)) {
+                        const edgeState = vehicle.edgeManager.edgeStates.get(edgeKey);
+                        totalReservations += edgeState.reservations.size;
+                        totalConflicts += edgeState.conflicts.length;
+                        maxCongestion = Math.max(maxCongestion, edgeState.congestionLevel);
+                    }
+                }
+                
+                return {
+                    reservations: totalReservations,
+                    conflicts: totalConflicts,
+                    congestion: maxCongestion
+                };
+            }
+
+            drawCommunicationLinks() {
+                this.ctx.strokeStyle = '#ff9800';
+                this.ctx.lineWidth = 1;
+                this.ctx.globalAlpha = 0.3;
+                this.ctx.setLineDash([3, 3]);
+                
+                for (const vehicle of this.vehicles) {
+                    const [x1, y1] = this.transformPoint(vehicle.position[0], vehicle.position[1]);
+                    
+                    for (const neighborId of vehicle.neighbors) {
+                        const neighbor = this.vehicles.find(v => v.id === neighborId);
+                        if (neighbor) {
+                            const [x2, y2] = this.transformPoint(neighbor.position[0], neighbor.position[1]);
+                            
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(x1, y1);
+                            this.ctx.lineTo(x2, y2);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+            }
+
+            drawSpecialPoints() {
+                const types = [
+                    { key: 'loading', symbol: 'L', color: '#4caf50', darkColor: '#2e7d32' },
+                    { key: 'unloading', symbol: 'U', color: '#2196f3', darkColor: '#1565c0' },
+                    { key: 'parking', symbol: 'P', color: '#9e9e9e', darkColor: '#424242' }
+                ];
+                
+                for (const typeInfo of types) {
+                    const points = this.topology.specialPoints[typeInfo.key];
+                    
+                    for (const [pointId, point] of points) {
+                        const pos = this.topology.nodePositions.get(point.nodeId);
+                        if (!pos) continue;
+                        
+                        const [x, y] = this.transformPoint(pos[0], pos[1]);
+                        
+                        const occupyingVehicle = this.vehicles.find(v => 
+                            v.currentNode === point.nodeId && 
+                            v.state === VehicleState.OPERATING
+                        );
+                        
+                        const fillColor = occupyingVehicle ? typeInfo.darkColor : typeInfo.color;
+                        
+                        this.ctx.fillStyle = fillColor;
+                        this.ctx.strokeStyle = '#333';
+                        this.ctx.lineWidth = 2;
+                        
+                        if (typeInfo.key === 'loading') {
+                            this.ctx.fillRect(x - 8, y - 8, 16, 16);
+                            this.ctx.strokeRect(x - 8, y - 8, 16, 16);
+                        } else if (typeInfo.key === 'unloading') {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(x, y - 10);
+                            this.ctx.lineTo(x - 8, y + 6);
+                            this.ctx.lineTo(x + 8, y + 6);
+                            this.ctx.closePath();
+                            this.ctx.fill();
+                            this.ctx.stroke();
+                        } else {
+                            this.ctx.beginPath();
+                            this.ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                            this.ctx.fill();
+                            this.ctx.stroke();
+                        }
+                        
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.font = 'bold 10px monospace';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(typeInfo.symbol, x, y);
+                        
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.font = '8px monospace';
+                        this.ctx.fillText(pointId, x, y - 15);
+                        
+                        if (occupyingVehicle) {
+                            this.ctx.fillText(`V${occupyingVehicle.id}`, x, y + 15);
+                        }
+                    }
+                }
+            }
+
+            drawVehiclesWithEdgeInfo() {
+                for (const vehicle of this.vehicles) {
+                    const [x, y] = this.transformPoint(vehicle.position[0], vehicle.position[1]);
+                    
+                    let width = 14, height = 8;
+                    if (vehicle.mode === VehicleMode.LOADED) {
+                        width = 18;
+                        height = 10;
+                    }
+                    
+                    let strokeColor = '#333';
+                    let strokeWidth = 2;
+                    
+                    switch (vehicle.state) {
+                        case VehicleState.EDGE_NEGOTIATING:
+                            strokeColor = '#ff9800';
+                            strokeWidth = 3;
+                            break;
+                        case VehicleState.PATH_CONFIRMED:
+                            strokeColor = '#00ff88';
+                            strokeWidth = 3;
+                            break;
+                        case VehicleState.MOVING:
+                            strokeColor = 'white';
+                            strokeWidth = 3;
+                            break;
+                        case VehicleState.OPERATING:
+                            strokeColor = '#4caf50';
+                            strokeWidth = 4;
+                            break;
+                        case VehicleState.EDGE_WAITING:
+                            strokeColor = '#ffeb3b';
+                            strokeWidth = 2;
+                            // Pulsing effect
+                            const pulse = Math.sin(Date.now() * 0.005) * 0.3 + 0.7;
+                            this.ctx.globalAlpha = pulse;
+                            break;
+                    }
+                    
+                    this.ctx.save();
+                    this.ctx.translate(x, y);
+                    this.ctx.rotate(vehicle.heading);
+                    
+                    this.ctx.fillStyle = vehicle.color;
+                    this.ctx.strokeStyle = strokeColor;
+                    this.ctx.lineWidth = strokeWidth;
+                    
+                    this.ctx.fillRect(-width/2, -height/2, width, height);
+                    this.ctx.strokeRect(-width/2, -height/2, width, height);
+                    
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.fillRect(width/2 - 3, -height/4, 3, height/2);
+                    
+                    if (vehicle.mode === VehicleMode.LOADED) {
+                        this.ctx.fillStyle = '#ffeb3b';
+                        this.ctx.fillRect(-width/2 + 2, -height/2 + 2, width - 4, height - 4);
+                    }
+                    
+                    this.ctx.rotate(-vehicle.heading);
+                    this.ctx.fillStyle = 'black';
+                    this.ctx.font = 'bold 8px monospace';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(vehicle.id.toString(), 0, 0);
+                    
+                    this.ctx.restore();
+                    this.ctx.globalAlpha = 1.0;
+                    
+                    // State and mode indicators
+                    const stateSymbol = {
+                        [VehicleState.IDLE]: 'I',
+                        [VehicleState.EDGE_NEGOTIATING]: 'EN',
+                        [VehicleState.PATH_CONFIRMED]: 'PC',
+                        [VehicleState.MOVING]: 'M',
+                        [VehicleState.OPERATING]: 'O',
+                        [VehicleState.EDGE_WAITING]: 'EW'
+                    }[vehicle.state] || '?';
+                    
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.font = '7px monospace';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'top';
+                    this.ctx.fillText(stateSymbol, x, y + height/2 + 2);
+                    
+                    // Draw edge reservation indicators
+                    if (vehicle.edgeReservations && vehicle.edgeReservations.size > 0) {
+                        this.ctx.fillStyle = '#00ff88';
+                        this.ctx.font = '6px monospace';
+                        this.ctx.fillText(`E:${vehicle.edgeReservations.size}`, x, y + height/2 + 12);
+                    }
+                }
+            }
+
+            drawEdgeReservations() {
+                // Draw active edge reservations as thick colored lines
+                for (const vehicle of this.vehicles) {
+                    if (!vehicle.edgeReservations) continue;
+                    
+                    for (const [edgeId, reservation] of vehicle.edgeReservations) {
+                        const [node1, node2] = edgeId.split('-');
+                        const pos1 = this.topology.nodePositions.get(node1);
+                        const pos2 = this.topology.nodePositions.get(node2);
+                        
+                        if (!pos1 || !pos2) continue;
+                        
+                        const [x1, y1] = this.transformPoint(pos1[0], pos1[1]);
+                        const [x2, y2] = this.transformPoint(pos2[0], pos2[1]);
+                        
+                        this.ctx.strokeStyle = vehicle.color;
+                        this.ctx.lineWidth = 5;
+                        this.ctx.globalAlpha = 0.6;
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x1, y1);
+                        this.ctx.lineTo(x2, y2);
+                        this.ctx.stroke();
+                        
+                        // Draw direction arrow
+                        const dx = x2 - x1;
+                        const dy = y2 - y1;
+                        const len = Math.sqrt(dx * dx + dy * dy);
+                        if (len > 0) {
+                            const arrowX = x1 + dx * 0.7;
+                            const arrowY = y1 + dy * 0.7;
+                            
+                            this.ctx.fillStyle = vehicle.color;
+                            this.ctx.beginPath();
+                            this.ctx.arc(arrowX, arrowY, 3, 0, 2 * Math.PI);
+                            this.ctx.fill();
+                        }
+                    }
+                }
+                this.ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // ============ Main Fixed Enhanced Simulation ============
+        
+        class EnhancedDistributedMAPFSimulation {
+            constructor() {
+                this.topology = new EnhancedTopology(); // Using enhanced topology with JSON loading
+                this.vehicles = [];
+                this.currentTime = 0;
+                this.isRunning = false;
+                this.speed = 1;
+                this.edgeMode = 'enhanced';
+                
+                window.simulation = this;
+                
+                this.canvas = document.getElementById('network-canvas');
+                this.visualization = new EnhancedEdgeVisualization(this.canvas, this.topology);
+                
+                this.setupControls();
+                this.setupFileInput(); // Restored file input functionality
+                this.createInitialVehicles();
+                
+                this.lastFrameTime = 0;
+                this.animationFrame = null;
+                
+                window.debugMode = false;
+                
+                this.updateStats();
+            }
+
+            // Fixed: Restored file input setup from demo2
+            setupFileInput() {
+                const fileInput = document.getElementById('fileInput');
+                const fileInputDiv = document.querySelector('.file-input');
+                
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        fileInputDiv.style.border = '2px solid #ffeb3b';
+                        fileInputDiv.innerHTML = '📄 Loading: ' + file.name;
+                        
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const jsonData = JSON.parse(e.target.result);
+                                console.log('Loaded JSON data:', jsonData);
+                                
+                                if (this.topology.loadTopologyFromJSON(jsonData)) {
+                                    this.visualization.setupTransform();
+                                    this.reset();
+                                    fileInputDiv.style.border = '2px solid #4caf50';
+                                    fileInputDiv.innerHTML = '✅ Loaded: ' + file.name;
+                                } else {
+                                    fileInputDiv.style.border = '2px solid #f44336';
+                                    fileInputDiv.innerHTML = '❌ Failed to load topology';
+                                }
+                            } catch (error) {
+                                fileInputDiv.style.border = '2px solid #f44336';
+                                fileInputDiv.innerHTML = '❌ Invalid JSON file';
+                                console.error('Invalid JSON file:', error);
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                });
+            }
+
+            setupControls() {
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    this.isRunning = true;
+                    this.animate();
+                    this.updateControlStates();
+                });
+
+                document.getElementById('pauseBtn').addEventListener('click', () => {
+                    this.isRunning = false;
+                    if (this.animationFrame) {
+                        cancelAnimationFrame(this.animationFrame);
+                    }
+                    this.updateControlStates();
+                });
+
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.reset();
+                });
+
+                document.getElementById('edgeGnnBtn').addEventListener('click', () => {
+                    alert('Edge-GNN is core to this architecture!');
+                });
+
+                document.getElementById('addBtn').addEventListener('click', () => {
+                    this.addVehicle();
+                });
+
+                document.getElementById('removeBtn').addEventListener('click', () => {
+                    this.removeVehicle();
+                });
+
+                document.getElementById('speedBtn').addEventListener('click', () => {
+                    this.toggleSpeed();
+                });
+
+                document.getElementById('debugBtn').addEventListener('click', () => {
+                    window.debugMode = !window.debugMode;
+                    document.getElementById('debugBtn').textContent = `🐛 Debug: ${window.debugMode ? 'ON' : 'OFF'}`;
+                    document.getElementById('debugBtn').classList.toggle('active', window.debugMode);
+                });
+
+                document.getElementById('commBtn').addEventListener('click', () => {
+                    this.toggleCommunicationRange();
+                });
+
+                document.getElementById('edgeModeBtn').addEventListener('click', () => {
+                    this.toggleEdgeMode();
+                });
+            }
+
+            createInitialVehicles() {
+                this.vehicles = [];
+                
+                const parkingPoints = Array.from(this.topology.specialPoints.parking.keys());
+                const numVehicles = Math.min(3, parkingPoints.length); // Reduced to 3 for better visibility
+                
+                for (let i = 0; i < numVehicles; i++) {
+                    const startParking = parkingPoints[i % parkingPoints.length];
+                    const vehicle = new EnhancedDistributedVehicle(i, startParking, this.topology);
+                    this.vehicles.push(vehicle);
+                }
+                
+                this.visualization.vehicles = this.vehicles;
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+                
+                const currentTime = performance.now() / 1000; // Convert to seconds
+                const deltaTime = currentTime - this.lastFrameTime;
+                this.lastFrameTime = currentTime;
+                
+                this.update(deltaTime);
+                this.visualization.draw(this.currentTime);
+                this.updateStats();
+                this.updateEdgeInfo();
+                
+                this.animationFrame = requestAnimationFrame(() => this.animate());
+            }
+
+            update(dt) {
+                this.currentTime += dt * this.speed;
+                
+                for (const vehicle of this.vehicles) {
+                    vehicle.update(this.currentTime, dt, this.vehicles);
+                }
+            }
+
+            updateStats() {
+                const totalCycles = this.vehicles.reduce((sum, v) => sum + v.completedCycles, 0);
+                const totalDistance = this.vehicles.reduce((sum, v) => sum + v.totalDistance, 0);
+                const totalMessagesSent = this.vehicles.reduce((sum, v) => sum + v.messagesSent, 0);
+                const totalMessagesReceived = this.vehicles.reduce((sum, v) => sum + v.messagesReceived, 0);
+                const totalEdgeConflicts = this.vehicles.reduce((sum, v) => sum + v.edgeConflicts, 0);
+                const totalEdgeReservations = this.vehicles.reduce((sum, v) => sum + v.edgeReservationAttempts, 0);
+                
+                const stateCounts = {};
+                for (const state of Object.values(VehicleState)) {
+                    stateCounts[state] = 0;
+                }
+                
+                const modeCounts = {};
+                for (const mode of Object.values(VehicleMode)) {
+                    modeCounts[mode] = 0;
+                }
+                
+                for (const vehicle of this.vehicles) {
+                    stateCounts[vehicle.state] = (stateCounts[vehicle.state] || 0) + 1;
+                    modeCounts[vehicle.mode] = (modeCounts[vehicle.mode] || 0) + 1;
+                }
+                
+                const statusIndicator = this.isRunning ? 
+                    'Running ⚡' : 'Paused ⏸️';
+                
+                const statsText = `
+╔══ FIXED EDGE-BASED GNN-MAPF ══════╗
+║ Architecture: Fully Distributed   ║
+║ Status: TOPOLOGY LOADING FIXED    ║
+║ Movement: WORKING                  ║
+║ Time: ${this.currentTime.toFixed(1).padStart(15)}s ║
+║ Agents: ${this.vehicles.length.toString().padStart(13)} ║
+║ Status: ${statusIndicator.padEnd(16)} ║
+╠════ EDGE PERFORMANCE ════════════╣
+║ Edge Reservations: ${totalEdgeReservations.toString().padStart(7)} ║
+║ Edge Conflicts: ${totalEdgeConflicts.toString().padStart(10)} ║
+║ Conflict Rate: ${totalEdgeReservations > 0 ? (totalEdgeConflicts/totalEdgeReservations*100).toFixed(1).padStart(11) : '0.0'.padStart(11)}% ║
+╠════ SYSTEM METRICS ══════════════╣
+║ Completed Cycles: ${totalCycles.toString().padStart(8)} ║
+║ Total Distance: ${totalDistance.toFixed(1).padStart(10)} ║
+║ Avg Cycle Time: ${totalCycles > 0 ? (this.currentTime / totalCycles).toFixed(1).padStart(10) : '0.0'.padStart(10)}s ║
+║ Messages Sent: ${totalMessagesSent.toString().padStart(11)} ║
+║ Messages Received: ${totalMessagesReceived.toString().padStart(7)} ║
+╠════ AGENT STATES ════════════════╣
+║ Idle: ${stateCounts[VehicleState.IDLE].toString().padStart(17)} ║
+║ Edge Negotiating: ${stateCounts[VehicleState.EDGE_NEGOTIATING].toString().padStart(9)} ║
+║ Path Confirmed: ${stateCounts[VehicleState.PATH_CONFIRMED].toString().padStart(11)} ║
+║ Moving: ${stateCounts[VehicleState.MOVING].toString().padStart(15)} ║
+║ Operating: ${stateCounts[VehicleState.OPERATING].toString().padStart(12)} ║
+║ Edge Waiting: ${stateCounts[VehicleState.EDGE_WAITING].toString().padStart(11)} ║
+╠════ AGENT MODES ═════════════════╣
+║ Parked: ${modeCounts[VehicleMode.PARKED].toString().padStart(15)} ║
+║ Empty: ${modeCounts[VehicleMode.EMPTY].toString().padStart(16)} ║
+║ Loaded: ${modeCounts[VehicleMode.LOADED].toString().padStart(15)} ║
+║ Returning: ${modeCounts[VehicleMode.RETURNING].toString().padStart(12)} ║
+╚═══════════════════════════════════╝
+
+🔧 FIXES APPLIED:
+• Restored JSON topology loading
+• Fixed vehicle movement logic
+• Simplified edge negotiation
+• Working state transitions
+• Proper path execution
+
+🔗 EDGE-BASED FEATURES:
+• Individual edge state tracking
+• Distributed edge reservations
+• GNN-enhanced edge selection
+• Multi-criteria path evaluation
+• Conflict-aware routing
+
+Speed: ${this.speed}x | Debug: ${window.debugMode ? 'ON' : 'OFF'}
+                `.trim();
+                
+                document.getElementById('stats').innerHTML = statsText;
+            }
+
+            updateEdgeInfo() {
+                let edgeInfoText = 'Active Edges:\n';
+                const edgeStats = new Map();
+                
+                for (const vehicle of this.vehicles) {
+                    if (vehicle.edgeManager && vehicle.edgeManager.edgeStates) {
+                        for (const [edgeId, edgeState] of vehicle.edgeManager.edgeStates) {
+                            if (!edgeStats.has(edgeId)) {
+                                edgeStats.set(edgeId, {
+                                    reservations: 0,
+                                    conflicts: 0,
+                                    congestion: 0
+                                });
+                            }
+                            
+                            const stats = edgeStats.get(edgeId);
+                            stats.reservations += edgeState.reservations.size;
+                            stats.conflicts += edgeState.conflicts.length;
+                            stats.congestion = Math.max(stats.congestion, edgeState.congestionLevel);
+                        }
+                    }
+                }
+                
+                let edgeCount = 0;
+                for (const [edgeId, stats] of edgeStats) {
+                    if (edgeCount >= 8) {
+                        edgeInfoText += '...\n';
+                        break;
+                    }
+                    
+                    if (stats.reservations > 0 || stats.conflicts > 0) {
+                        edgeInfoText += `${edgeId}: R${stats.reservations} C${stats.conflicts}\n`;
+                        edgeCount++;
+                    }
+                }
+                
+                if (edgeCount === 0) {
+                    edgeInfoText += 'No active reservations\n';
+                }
+                
+                edgeInfoText += `\nTotal Edges Tracked: ${edgeStats.size}`;
+                
+                document.getElementById('edgeDetails').textContent = edgeInfoText;
+            }
+
+            addVehicle() {
+                const maxVehicles = this.topology.specialPoints.parking.size;
+                if (this.vehicles.length >= maxVehicles) {
+                    alert(`Maximum agents reached! (${maxVehicles})`);
+                    return;
+                }
+                
+                const parkingPoints = Array.from(this.topology.specialPoints.parking.keys());
+                const usedParking = this.vehicles.map(v => v.currentParkingPoint);
+                const availableParking = parkingPoints.filter(p => !usedParking.includes(p));
+                
+                if (availableParking.length === 0) {
+                    alert('No available parking points!');
+                    return;
+                }
+                
+                const vehicleId = this.vehicles.length;
+                const vehicle = new EnhancedDistributedVehicle(vehicleId, availableParking[0], this.topology);
+                this.vehicles.push(vehicle);
+                
+                this.visualization.vehicles = this.vehicles;
+            }
+
+            removeVehicle() {
+                if (this.vehicles.length <= 1) {
+                    alert('Must keep at least 1 agent!');
+                    return;
+                }
+                
+                this.vehicles.pop();
+                this.visualization.vehicles = this.vehicles;
+            }
+
+            toggleSpeed() {
+                const speeds = [0.5, 1, 2, 4];
+                const currentIndex = speeds.indexOf(this.speed);
+                this.speed = speeds[(currentIndex + 1) % speeds.length];
+                
+                document.getElementById('speedBtn').textContent = `⚡ Speed: ${this.speed}x`;
+            }
+
+            toggleCommunicationRange() {
+                const ranges = [1, 2, 3, 4];
+                const currentRange = this.vehicles[0]?.communicationRange || 2;
+                const currentIndex = ranges.indexOf(currentRange);
+                const newRange = ranges[(currentIndex + 1) % ranges.length];
+                
+                for (const vehicle of this.vehicles) {
+                    vehicle.communicationRange = newRange;
+                }
+                
+                document.getElementById('commBtn').textContent = `📡 Range: ${newRange}-hop`;
+            }
+
+            toggleEdgeMode() {
+                this.edgeMode = this.edgeMode === 'enhanced' ? 'basic' : 'enhanced';
+                document.getElementById('edgeModeBtn').textContent = `🔗 Edge: ${this.edgeMode.charAt(0).toUpperCase() + this.edgeMode.slice(1)}`;
+                
+                console.log(`Switched to ${this.edgeMode} edge processing mode`);
+            }
+
+            reset() {
+                this.isRunning = false;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+                
+                this.currentTime = 0;
+                this.lastFrameTime = 0;
+                
+                this.createInitialVehicles();
+                this.visualization.draw(this.currentTime);
+                this.updateStats();
+                this.updateControlStates();
+            }
+
+            updateControlStates() {
+                document.getElementById('startBtn').disabled = this.isRunning;
+                document.getElementById('pauseBtn').disabled = !this.isRunning;
+            }
+        }
+
+        // ============ Initialize Fixed Enhanced System ============
+        
+        let simulation;
+        
+        window.addEventListener('load', () => {
+            simulation = new EnhancedDistributedMAPFSimulation();
+            
+            window.addEventListener('resize', () => {
+                setTimeout(() => {
+                    simulation.visualization.setupCanvas();
+                    simulation.visualization.setupTransform();
+                    simulation.visualization.draw(simulation.currentTime);
+                }, 100);
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                switch (e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        if (simulation.isRunning) {
+                            document.getElementById('pauseBtn').click();
+                        } else {
+                            document.getElementById('startBtn').click();
+                        }
+                        break;
+                    case '+':
+                    case '=':
+                        document.getElementById('addBtn').click();
+                        break;
+                    case '-':
+                        document.getElementById('removeBtn').click();
+                        break;
+                    case 'r':
+                        document.getElementById('resetBtn').click();
+                        break;
+                    case 's':
+                        document.getElementById('speedBtn').click();
+                        break;
+                    case 'd':
+                        document.getElementById('debugBtn').click();
+                        break;
+                    case 'c':
+                        document.getElementById('commBtn').click();
+                        break;
+                    case 'e':
+                        document.getElementById('edgeModeBtn').click();
+                        break;
+                }
+            });
+            
+            const tooltip = document.getElementById('vehicleTooltip');
+            simulation.canvas.addEventListener('mousemove', (e) => {
+                const rect = simulation.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                let hoveredVehicle = null;
+                for (const vehicle of simulation.vehicles) {
+                    const [vx, vy] = simulation.visualization.transformPoint(vehicle.position[0], vehicle.position[1]);
+                    
+                    const dx = Math.abs(x - vx);
+                    const dy = Math.abs(y - vy);
+                    if (dx < 15 && dy < 10) {
+                        hoveredVehicle = vehicle;
+                        break;
+                    }
+                }
+                
+                if (hoveredVehicle) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = e.clientX + 10 + 'px';
+                    tooltip.style.top = e.clientY + 10 + 'px';
+                    
+                    const edgeReservations = hoveredVehicle.edgeReservations?.size || 0;
+                    const edgeConflicts = hoveredVehicle.edgeConflicts || 0;
+                    
+                    tooltip.innerHTML = `
+                        Agent ${hoveredVehicle.id}<br>
+                        State: ${hoveredVehicle.state}<br>
+                        Mode: ${hoveredVehicle.mode}<br>
+                        Priority: ${hoveredVehicle.priority.toFixed(1)}<br>
+                        Edge Reservations: ${edgeReservations}<br>
+                        Edge Conflicts: ${edgeConflicts}<br>
+                        Neighbors: ${hoveredVehicle.neighbors.size}<br>
+                        Cycles: ${hoveredVehicle.completedCycles}
+                    `;
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
